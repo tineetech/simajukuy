@@ -29,7 +29,7 @@ const upload = multer({ dest: uploadDir });
 const app = express();
 
 app.use(cors({
-  origin: base_url_fe,
+  origin: "*",
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
