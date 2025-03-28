@@ -10,7 +10,7 @@ import path from 'path';
 import { InferenceClient } from "@huggingface/inference";
 
 dotenv.config();
-
+// tes
 // Inisialisasi express
 const PORT = process.env.PORT || 5000;
 const base_url_fe = process.env.FE_URL;
