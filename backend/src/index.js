@@ -8,19 +8,21 @@ import axios from 'axios';
 import { pipeline } from "@xenova/transformers";
 import path from 'path';
 import { InferenceClient } from "@huggingface/inference";
+import os from "os";
 
 dotenv.config();
 // tes
 // Inisialisasi express
 const PORT = process.env.PORT || 5000;
 const base_url_fe = process.env.FE_URL;
-const uploadDir = path.join(process.cwd(), 'uploads');
+// const uploadDir = path.join(process.cwd(), 'uploads'); // dev
+const uploadDir = path.join(os.tmpdir(), "uploads"); // prod
 const HF_ACCESS_TOKEN = process.env.HF_API_KEY;
 const client = new InferenceClient(HF_ACCESS_TOKEN);
 
 // Pastikan folder uploads ada
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 const upload = multer({ dest: uploadDir });
