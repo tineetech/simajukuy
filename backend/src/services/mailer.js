@@ -20,8 +20,7 @@ const transporter = nodemailer.createTransport({
 export const sendVerificationEmail = async (email, token) => {
   try {
     const templatePath = path.join(
-      __dirname,
-      "../templates/verify.hbs"
+      "../backend/src/templates/verify.hbs"
     );
     const source = fs.readFileSync(templatePath, "utf-8");
     const template = handlebars.compile(source);
@@ -38,7 +37,7 @@ export const sendVerificationEmail = async (email, token) => {
       attachments: [
         {
           filename: "/LIT.png",
-          path: path.join(__dirname, "../../public/LIT.png"),
+          path: path.join("../backend/public/LIT.png"),
           cid: "logo",
         },
       ],
@@ -59,7 +58,7 @@ transporter.verify((error) => {
 
 export const sendResetPassEmail = async (email, token) => {
   try {
-    const templatePath = path.join(__dirname, "../templates", "resetpass.hbs");
+    const templatePath = path.join("../backend/src/templates", "resetpass.hbs");
     const templateSource = fs.readFileSync(templatePath, "utf-8");
     const compiledTemplate = handlebars.compile(templateSource);
     const html = compiledTemplate({
@@ -74,7 +73,7 @@ export const sendResetPassEmail = async (email, token) => {
       attachments: [
         {
           filename: "/LIT.png",
-          path: path.join(__dirname, "../../public/LIT.png"),
+          path: path.join("../backend/public/LIT.png"),
           cid: "logo",
         },
       ],

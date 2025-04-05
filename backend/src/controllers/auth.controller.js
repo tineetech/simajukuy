@@ -46,25 +46,38 @@ export class AuthController {
     }
   }
 
-  async registerCustomer(req, res) {
+  async registerGuest(req, res) {
     try {
-      const { email } = req.body;
-
+      const { username, email, password, confirmPassword } = req.body
+      if (!username && !email && !password) {
+        return res.status(400).json({
+          message: "A unique identifier (username, email, password) is required."
+        });  
+      }
+ 
       const existingUser = await prisma.user.findUnique({
-        where: { email },
+        where: { 
+          username: username || undefined, // Ensure `username` is not undefined
+         },
       });
 
       if (existingUser) {
-        return res.status(400).json({ message: "Email address already exists" });
+        return res.status(400).json({ message: "Username already exists." });
+      }
+      
+      if (password !== confirmPassword) {
+        return res.status(400).json({ message: "Confirm Password does not match." });
       }
 
       // const token = tokenService.createEmailToken({ id: 0, role: "customer", email });
 
+      const hashedPassword = await hashPass(password);
       const newUser = await prisma.user.create({
         data: {
           email,
-          role: "customer",
-          verified: false,
+          username,
+          password: hashedPassword,
+          role: "guest",
         },
       });
 
@@ -76,7 +89,7 @@ export class AuthController {
 
       await prisma.user.update({
         where: { user_id: newUser.user_id },
-        data: { verify_token: token }
+        data: { verify_email_token: token }
       })
 
       await sendVerificationEmail(email, token);
@@ -90,33 +103,47 @@ export class AuthController {
       });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Could Reach The Server Database" });
+      return res.status(500).json({ message: error.message });
     }
   }
 
-  async registerStoreAdmin(req, res) {
+  async registerAdmin(req, res) {
     try {
-      const { email } = req.body;
+      const { email, username, password, confirmPassword } = req.body;
+
+      if (!username && !email && !password) {
+        return res.status(400).json({
+          message: "A unique identifier (username, email, password) is required."
+        });  
+      }      
 
       const existingUser = await prisma.user.findUnique({
-        where: { email },
+        where: { 
+          username: username || undefined, // Ensure `username` is not undefined
+         },
       });
 
       if (existingUser) {
-        return res.status(400).json({ message: "Email address already exists" });
+        return res.status(400).json({ message: "Username already exists." });
+      }
+      
+      if (password !== confirmPassword) {
+        return res.status(400).json({ message: "Confirm Password does not match." });
       }
 
       // const token = tokenService.createEmailToken({ id: 0, role: "customer", email });
 
+      const hashedPassword = await hashPass(password);
       const newUser = await prisma.user.create({
         data: {
           email,
-          role: "store_admin",
-          verified: false,
+          username,
+          password: hashedPassword,
+          role: "admin",
         },
       });
 
-      const token = tokenService.createEmailToken({
+      const token = tokenService.createEmailRegisterToken({
         id: newUser.user_id,
         role: newUser.role,
         email,
@@ -124,7 +151,7 @@ export class AuthController {
 
       await prisma.user.update({
         where: { user_id: newUser.user_id },
-        data: { verify_token: token }
+        data: { verify_email_token: token }
       })
 
       await sendVerificationEmail(email, token);
@@ -133,12 +160,12 @@ export class AuthController {
         status: "success",
         token: token,
         message:
-          "Registration successful. Please check your email for verification.",
+          "Registration successful. Please activate this account from administrator.",
         user: newUser,
       });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Could Reach The Server Database" });
+      return res.status(500).json({ message: error.message });
     }
   }
 
@@ -147,43 +174,35 @@ export class AuthController {
       if (!req.user) {
         return res.status(401).json({ error: "Unauthorized" });
       }
-      const {
-        username,
-        firstName,
-        lastName,
-        phone,
-        password,
-        confirmPassword,
-      } = req.body;
 
-      if (password !== confirmPassword) {
-        return res.status(400).json({ message: "Passwords do not match" });
-      }
+      const {
+        user_id,
+      } = req.body;
 
       const userId = req.user.id;
 
       const user = await prisma.user.findUnique({
-        where: { user_id: userId },
+        where: { user_id: userId || user_id },
       });
 
       if (!user || user.verified) {
         return res.status(400).json({ message: "Invalid verification request" });
       }
 
-      const hashedPassword = await hashPass(password);
-
       await prisma.user.update({
-        where: { user_id: userId },
+        where: { user_id: userId || user_id },
         data: {
-          username,
-          first_name: firstName ? firstName : null,
-          last_name: lastName ? lastName : null,
-          phone,
-          password: hashedPassword,
-          verified: true,
-          verify_token: null
+          status: true,
+          verify_email_token: null
         },
       });
+
+      await prisma.koin.create({
+        data: {
+          amount: 0,
+          user_id: user.user_id,
+        }
+      })
 
       return res.status(200).json({
         status: "success",
@@ -196,25 +215,57 @@ export class AuthController {
     }
   }
 
+  async verifyAdmin(req, res) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const {
+        user_id,
+      } = req.body;
+
+      const userId = req.user.id;
+
+      const user = await prisma.user.findUnique({
+        where: { user_id: userId || user_id },
+      });
+
+      if (!user || user.verified) {
+        return res.status(400).json({ message: "Invalid verification request" });
+      }
+
+      await prisma.user.update({
+        where: { user_id: userId || user_id },
+        data: {
+          status: true,
+        },
+      });
+
+      await prisma.koin.create({
+        data: {
+          amount: 0,
+          user_id: user.user_id,
+        }
+      })
+
+      return res.status(200).json({
+        status: "success",
+        message: "Account admin actived",
+        role: user.role
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Could Reach The Server Database" });
+    }
+  }
+
   async resetPassword(req, res) {
     try {
       const { email } = req.body;
 
-      const isNewbie = await prisma.user.findFirst({
-        where: { email, password: null }
-      })
-
-      if (isNewbie) {
-        return res.status(403).json({
-          status: "error",
-          token: "",
-          message:
-          "The email is have no password, Please choose antoher account.",
-        });
-      }
-
       const findUser = await prisma.user.findFirst({
-        where: { email, role: "customer" },
+        where: { email, role: "guest" },
         select: {
           user_id: true,
           email: true,
@@ -224,7 +275,7 @@ export class AuthController {
           last_name: true,
           phone: true,
           role: true,
-          verified: true,
+          status: true,
           created_at: true,
           updated_at: true,
         },
@@ -271,17 +322,17 @@ export class AuthController {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const { oldPassword, password, confirmPassword } = req.body;
+      const { oldPassword, newPassword, confirmNewPassword } = req.body;
       // Validasi kesesuaian password baru
-      if (password !== confirmPassword) {
+      if (newPassword !== confirmNewPassword) {
         return res.status(400).json({ message: "Passwords do not match" });
       }
       
-      if (!oldPassword || !password) {
+      if (!oldPassword || !newPassword) {
         return res.status(400).json({ message: "Both old and new passwords are required" });
       }
       
-      const userId = req.user.id;
+      const userId = req.user.id || req.body.user_id;
       
       // Cari pengguna berdasarkan ID
       const user = await prisma.user.findUnique({
@@ -302,13 +353,13 @@ export class AuthController {
       console.log(user)
 
       // Hash dan simpan password baru
-      const hashedPassword = await hashPass(password);
+      const hashedPassword = await hashPass(newPassword);
 
       await prisma.user.update({
         where: { user_id: userId },
         data: {
           password: hashedPassword,
-          verify_token: null,
+          verify_email_token: null,
           password_reset_token: null
         },
       });
@@ -325,13 +376,15 @@ export class AuthController {
   }
 
   async loginAny(req, res) {
-    // validation
-    if (!req.body.email || !req.body.password) {
-      return res.status(400).json({ message: "Email and password are required" });
-    }
     try {
+      const { username, password } = req.body;
+      console.log('req : ',req.body)
+      //  validation
+      if (!username && !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
       const user = await prisma.user.findUnique({
-        where: { email: req.body.email },
+        where: { username: req.body.username },  
       });
       
       if (!user) {
@@ -339,6 +392,7 @@ export class AuthController {
       }
       
       const validPass = await bcrypt.compare(req.body.password, user.password);
+      console.log(user)
       if (!validPass) {
         return res.status(400).json({ message: "Password incorrect!" });
       }
@@ -350,6 +404,45 @@ export class AuthController {
       return res
         .status(201)
         .send({ status: "ok", msg: "Login Success", token, user });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Internal server error" });
+    }    
+  }
+
+  async loginAdmin(req, res) {
+    try {
+      const { username, password } = req.body;
+      console.log('req : ',req.body)
+      //  validation
+      if (!username && !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+      const user = await prisma.user.findUnique({
+        where: { username: req.body.username },  
+      });
+      
+      if (!user) {
+        return res.status(400).json({ message: "User not found" });
+      }
+
+      if (user.status == false && user.role !== 'admin') {
+        return res.status(400).json({ message: "Akun admin belum aktif dan akun ini bukan admin." });
+      }
+      
+      const validPass = await bcrypt.compare(req.body.password, user.password);
+      console.log(user)
+      if (!validPass) {
+        return res.status(400).json({ message: "Password incorrect!" });
+      }
+      const token = tokenService.createLoginToken({
+        id: user.user_id,
+        role: user.role,
+      });
+
+      return res
+        .status(201)
+        .send({ status: "ok", msg: "Login Success Go to dashboard", isAdmin: true, token, user });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Internal server error" });

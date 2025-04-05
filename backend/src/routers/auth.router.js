@@ -22,16 +22,16 @@ export class AuthRouter {
 
     this.router.post(
       "/register",
-      this.authController.registerCustomer
+      this.authController.registerGuest
     );
 
     this.router.post(
-      "/register/store-admin",
-      this.authController.registerStoreAdmin
+      "/register-admin",
+      this.authController.registerAdmin
     );
 
     this.router.post(
-      "/verification",
+      "/verification-email",
       this.authMiddleware.verifyToken,
       this.authController.verifyAccount
     );
@@ -50,6 +50,16 @@ export class AuthRouter {
     this.router.post(
       "/login",
       this.authController.loginAny
+    );
+
+    this.router.post(
+      "/login-admin",
+      this.authController.loginAdmin
+    );
+
+    this.router.post(
+      "/verify-admin",
+      this.authController.verifyAdmin
     );
 
     this.router.get(

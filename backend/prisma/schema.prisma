@@ -12,21 +12,212 @@ enum Role {
   admin
 }
 
+enum TransactionStatus {
+  pending
+  process
+  success
+  failed
+}
+
+enum PostType {
+  text
+  pict
+  video
+  polling
+  map
+}
+
+enum StatusType {
+  active
+  draft
+}
+
+enum VerificationType {
+  automatic
+  manual
+}
+
+enum ReportStatus {
+  pending
+  process
+  failed
+  success
+}
+
+enum NotificationTarget {
+  semua
+  guest
+  admin
+}
+
+enum NotificationStatus {
+  access
+  failed
+  normal
+}
+
 model User {
   user_id    Int       @id @default(autoincrement())
-  email      String    @unique
-  username   String?
-  password   String?
-  phone      String?   @unique
+  username   String    @unique
   first_name String?
   last_name  String?
-  date_ob    DateTime?
-  avatar     String?
-  google_id  Int?
+  avatar     String?   @default("https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg")
+  email      String    @unique
+  phone      String?   @unique
   role       Role
-  verified   Boolean   @default(false)
-  created_at DateTime  @default(now())
-  updated_at DateTime  @default(now())
-  verify_token String? 
+  password   String
   password_reset_token String? 
+  google_id  String? 
+  verify_email_token String? 
+  status     Boolean   @default(false)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  // Relasi
+  koin       Koin?
+  transactions transactionKoin[]
+  articles   Artikel[]
+  reports    Laporan[]
+  notifications Notification[]
+  posts      Postingan[]
+  pollings   PostinganPolling[]
+  chat_history RiwayatChatbot[]
+}
+
+model Koin {
+  id        Int      @id @default(autoincrement())
+  user_id   Int      @unique
+  amount    Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relasi ke User
+  user      User     @relation(fields: [user_id], references: [user_id])
+}
+
+model transactionKoin {
+  id                   Int @id @default(autoincrement())
+  user_id              Int
+  target               String
+  method_target        String
+  method_pay           String?
+  success_convert_amount Int?
+  status               TransactionStatus @default(pending)
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+
+  // Relasi ke User
+  user                 User @relation(fields: [user_id], references: [user_id])
+}
+
+model Artikel {
+  id        Int     @id @default(autoincrement())
+  user_id   Int
+  banner    String?
+  title     String
+  description String?
+  content   String
+  status    StatusType @default(draft)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relasi ke User
+  user      User @relation(fields: [user_id], references: [user_id])
+}
+
+model Laporan {
+  id                 Int @id @default(autoincrement())
+  user_id            Int
+  image              String?
+  description        String?
+  type_verification  VerificationType
+  status            ReportStatus @default(pending)
+  notes             String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  // Relasi ke User
+  user              User @relation(fields: [user_id], references: [user_id])
+}
+
+model Notification {
+  id                Int @id @default(autoincrement())
+  target           NotificationTarget
+  target_user_id   Int?
+  title            String
+  description      String?
+  content         String
+  status_notification NotificationStatus @default(normal)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  // Relasi ke User (opsional, jika targetnya user_id)
+  user             User? @relation(fields: [target_user_id], references: [user_id])
+}
+
+model Postingan {
+  id              Int @id @default(autoincrement())
+  user_id         Int
+  type           PostType
+  content        String
+  status         StatusType @default(active)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  // Relasi ke User
+  user           User @relation(fields: [user_id], references: [user_id])
+
+  // Relasi ke tabel terkait
+  images        PostinganImage[]
+  videos        PostinganVideo[]
+  pollings      PostinganPolling[]
+}
+
+model PostinganImage {
+  id        Int @id @default(autoincrement())
+  post_id   Int
+  image     String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relasi ke Postingan
+  post      Postingan @relation(fields: [post_id], references: [id])
+}
+
+model PostinganVideo {
+  id        Int @id @default(autoincrement())
+  post_id   Int
+  url_video String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relasi ke Postingan
+  post      Postingan @relation(fields: [post_id], references: [id])
+}
+
+model PostinganPolling {
+  id                Int @id @default(autoincrement())
+  post_id           Int
+  content           String
+  select_percentage Int @default(0)
+  select_user_id    Int?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  // Relasi ke Postingan
+  post             Postingan @relation(fields: [post_id], references: [id])
+
+  // Relasi ke User yang memilih polling
+  user             User? @relation(fields: [select_user_id], references: [user_id])
+}
+
+model RiwayatChatbot {
+  id        Int @id @default(autoincrement())
+  user_id   Int
+  model     String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relasi ke User
+  user      User @relation(fields: [user_id], references: [user_id])
 }

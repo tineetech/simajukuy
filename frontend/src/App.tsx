@@ -1,6 +1,5 @@
 // ImageUpload.jsx
-import React, { useState } from 'react';
-import axios from 'axios';
+import { useState } from 'react';
 
 const App = () => {
   const [image, setImage] = useState(null);
@@ -16,13 +15,15 @@ const App = () => {
     formData.append("image", image);
   
     try {
-      const response = await fetch("https://simajukuybackend.vercel.app/analisis", {
+      const response = await fetch("http://localhost:5000/analisis", {
         method: "POST",
         body: formData, // Jangan set Content-Type secara manual
       });
   
       const data = await response.json();
       setResult(data);
+      console.log(response)
+      console.log(data)
     } catch (error) {
       console.error("Error saat mengunggah:", error);
     }
@@ -31,13 +32,13 @@ const App = () => {
   return (
     <div>
       <h2>Upload Gambar</h2>
-      <input type="file" onChange={e => setImage(e.target.files[0])} />
+      <input type="file" onChange={e => setImage(e?.target?.files?[0])} />
       <button onClick={handleUpload}>Kirim & Analisa</button>
 
       {result && (
         <div>
-          <p><strong>Hasil:</strong> {result.result ? 'True' : 'False'}</p>
-          <p><strong>Catatan:</strong> {result.catatan}</p>
+          <p><strong>Hasil:</strong> {result ? 'True' : 'False'}</p>
+          <p><strong>Catatan:</strong> {result}</p>
         </div>
       )}
     </div>

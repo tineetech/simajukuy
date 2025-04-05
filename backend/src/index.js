@@ -2,30 +2,18 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { AuthRouter } from "./routers/auth.router.js";
-import multer from 'multer';
-import fs from 'fs';
-import axios from 'axios';
-import { pipeline } from "@xenova/transformers";
-import path from 'path';
 import { InferenceClient } from "@huggingface/inference";
-import os from "os";
+import { AnalisisRouter } from "./routers/analisis.router.js";
+import { UsersRouter } from "./routers/users.router.js";
+import { NotifRouter } from "./routers/notif.router.js";
+import { LaporanRouter } from "./routers/laporan.router.js";
+import { PostRouter } from "./routers/post.router.js";
 
 dotenv.config();
-// tes
-// Inisialisasi express
+
 const PORT = process.env.PORT || 5000;
 const base_url_fe = process.env.FE_URL;
-// const uploadDir = path.join(process.cwd(), 'uploads'); // dev
-const uploadDir = path.join(os.tmpdir(), "uploads"); // prod
-const HF_ACCESS_TOKEN = process.env.HF_API_KEY;
-const client = new InferenceClient(HF_ACCESS_TOKEN);
 
-// Pastikan folder uploads ada
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const upload = multer({ dest: uploadDir });
 const app = express();
 
 app.use(cors({
@@ -36,47 +24,25 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const authRouter = new AuthRouter().getRouter();
-app.use("/auth", authRouter);
+const usersRouter = new UsersRouter().getRouter();
+const notifRouter = new NotifRouter().getRouter();
+const laporanRouter = new LaporanRouter().getRouter();
+const postinganRouter = new PostRouter().getRouter();
+const analisisRouter = new AnalisisRouter().getRouter();
+app.use("/api/auth", authRouter);
+app.use("/api/users", usersRouter);
+app.use("/api/notification", notifRouter);
+app.use("/api/laporan", laporanRouter);
+app.use("/api/postingan", postinganRouter);
+app.use('/api/analisis', analisisRouter)
 
-// Route test
+// Route home
 app.get("/", (req, res) => {
-  res.send("🚀 Backend Express is running!");
+  res.status(200).json({ server: 'on', message: 'server is online.' });
 });
-
-app.post('/analisis', upload.single('image'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-  
-  const imagePath = req.file.path;
-  try {
-    const imageData = fs.readFileSync(imagePath);
-    
-    async function query(data) {
-      const response = await fetch(
-        "https://router.huggingface.co/hf-inference/models/microsoft/resnet-50",
-        {
-          headers: {
-            Authorization: `Bearer ${HF_ACCESS_TOKEN}`,
-            "Content-Type": "image/jpeg"
-          },
-          method: "POST",
-          body: data,
-        }
-      );
-      const result = await response.json();
-      return result;
-    }
-    
-    const respon = await query(imageData);
-    res.send({ respon });
-  } catch (e) {
-    console.log(e)
-  }
-})
-
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`);
