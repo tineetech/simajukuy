@@ -31,7 +31,7 @@ export default function Header() {
 
     return (
         <header
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-secondary shadow-md" : "bg-transparent"
+            className={`fixed top-0 left-0 right-0 z-50 transition-all text-text duration-300 ${scrolled ? "bg-secondary shadow-md" : "bg-transparent"
                 }`}
         >
             <div className="container mx-auto w-full px-6 md:px-20 py-4 flex items-center justify-between">
@@ -43,18 +43,22 @@ export default function Header() {
 
                 {/* Navigasi (Desktop) */}
                 <nav className="hidden md:flex font-medium">
-                    {navLinks.map((link) => (
-                        <Link
-                            key={link.path}
-                            to={link.path}
-                            className={`px-4 py-2 space-x-2 transition ${location.pathname === link.path
-                                ? "bg-accent rounded-3xl"
-                                : "hover:text-accent"
-                                }`}
-                        >
-                            {link.name}
-                        </Link>
-                    ))}
+                    {navLinks.map((link) => {
+                        const isActive = link.path === "/"
+                            ? location.pathname === "/"
+                            : location.pathname.startsWith(link.path);
+
+                        return (
+                            <Link
+                                key={link.path}
+                                to={link.path}
+                                className={`px-4 py-2 space-x-2 transition ${isActive ? "bg-accent rounded-3xl" : "hover:text-accent"
+                                    }`}
+                            >
+                                {link.name}
+                            </Link>
+                        );
+                    })}
                 </nav>
 
                 {/* Profile (Desktop) */}
@@ -106,20 +110,24 @@ export default function Header() {
                                 <p className="text-lg font-semibold ">Username</p>
                             </div>
                         </div>
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.path}
-                                to={link.path}
-                                onClick={() => setIsOpen(false)}
-                                className={`flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg transition ease-in-out ${location.pathname === link.path
-                                    ? "bg-accent"
-                                    : "hover:bg-accent"
-                                    }`}
-                            >
-                                {link.icon}
-                                <span>{link.name}</span>
-                            </Link>
-                        ))}
+                        {navLinks.map((link) => {
+                            const isActive = link.path === "/"
+                                ? location.pathname === "/"
+                                : location.pathname.startsWith(link.path);
+
+                            return (
+                                <Link
+                                    key={link.path}
+                                    to={link.path}
+                                    onClick={() => setIsOpen(false)}
+                                    className={`flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg transition ease-in-out ${isActive ? "bg-accent" : "hover:bg-accent"
+                                        }`}
+                                >
+                                    {link.icon}
+                                    <span>{link.name}</span>
+                                </Link>
+                            );
+                        })}
                         <Link
                             to="/profile"
                             onClick={() => setIsOpen(false)}

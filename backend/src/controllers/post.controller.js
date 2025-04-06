@@ -87,7 +87,7 @@ export class PostController {
         type,
         content,
         status,
-       } = req.body
+      } = req.body
 
       const dataUpdate = await prisma.postingan.update({
         where: { id: parseInt(req.params.id) },

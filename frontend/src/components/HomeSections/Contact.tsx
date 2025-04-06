@@ -37,7 +37,7 @@ export default function Contact() {
     };
 
     return (
-        <section className="px-6 md:px-16 lg:px-32 mb-20">
+        <section className="px-6 md:px-16 lg:px-32 pb-20">
             <div className="flex flex-col md:flex-row gap-12 md:items-start md:justify-between space-x-4">
                 <div className="md:w-1/2 space-y-6 md:pr-12 text-center md:text-left">
                     <h2 className="text-2xl md:text-4xl font-bold leading-snug">

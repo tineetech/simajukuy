@@ -1,6 +1,4 @@
 import { useState } from "react";
-import Header from "../components/Navigations/Header";
-import Footer from "../components/Navigations/Footer";
 import PostForm from "../components/PostForm";
 import PostItem from "../components/PostItem";
 import SortFilter from "../components/SortFilter";
@@ -38,7 +36,6 @@ export default function Community() {
 
     return (
         <section className="bg-background text-text h-full">
-            <Header />
             <div className="container mx-auto max-w-4xl py-12 pt-24 px-6">
                 <h1 className="text-3xl font-bold mb-6">Komunitas</h1>
                 <PostForm />
@@ -50,7 +47,6 @@ export default function Community() {
                     ))}
                 </div>
             </div>
-            <Footer />
         </section>
     );
 }

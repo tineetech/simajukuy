@@ -15,3 +15,11 @@ export interface CommentInterface {
     replyTo?: string;
     content: string;
 }
+
+export interface ArticleInterface {
+    id: number;
+    title: string;
+    image: string;
+    description: string;
+    content: string;
+}
