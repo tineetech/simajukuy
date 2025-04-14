@@ -10,6 +10,10 @@
 /backend/notification_service/node_modules
 /backend/laporan_service/node_modules
 /backend/.env
+/backend/user_service/.env
+/backend/post_service/.env
+/backend/notification_service/.env
+/backend/laporan_service/.env
 
 # common
 .DS_Store
