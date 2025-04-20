@@ -1,4 +1,5 @@
 import connection from "../services/db.js";
+import { hashPass } from "../helpers/hashpassword.js";
 
 export class UsersController {
   async getUsers (req, res) {
@@ -30,13 +31,31 @@ export class UsersController {
         password,
         role
       } = req.body
-      const sqlCreateData = 'INSET INTO users (username, first_name, last_name, email, phone, password, role) VALUES (?, ?, ?, ?, ?, ?, ?)';
-      connection.query(sqlCreateData, [username, first_name, last_name, email, phone, password, role], (err, result) => {
+      const sqlCreateData = 'INSERT INTO users (username, first_name, last_name, email, phone, password, role) VALUES (?, ?, ?, ?, ?, ?, ?)';
+      const sqlCreateKoin = 'INSERT INTO koin (user_id, amount) VALUES (?, ?)';
+      const hashedPass = await hashPass(password)
+      connection.query(sqlCreateData, [username, first_name, last_name, email, phone, hashedPass, role], (err, result) => {
         if (err) res.json({"error": err})
         if (!result) {
           return res.status(400).json({ message: "User not found" });
         }
-        res.json({ status: 200, message: 'success create data', data: userCreate })
+        const userId = result.insertId; // ambil user_id yang baru dibuat
+
+        connection.query(sqlCreateKoin, [userId, 0], (errKoin, resultKoin) => {
+          if (errKoin) return res.json({ error: errKoin });
+
+          res.json({
+            status: 200,
+            message: 'Berhasil membuat user dan koin!',
+            data: {
+              user_id: userId,
+              username,
+              email,
+              role,
+              koin: 0
+            }
+          });
+        });
       })
     } catch (error) {
       const message =
@@ -49,7 +68,7 @@ export class UsersController {
     try {
       const { username, firstName, lastName, avatar, phone } = req.body
 
-      const sqlUpdateData = 'UPDATE users set username = ?, first_name = ?, last_name = ?, avatar = ?, phone = ? WHERE id = ?';
+      const sqlUpdateData = 'UPDATE users set username = ?, first_name = ?, last_name = ?, avatar = ?, phone = ? WHERE user_id = ?';
       connection.query(sqlUpdateData, [username, firstName, lastName, avatar, phone, req.params.id], (err, result) => {
         if (err) res.json({"error": err})
         if (!result) {
@@ -66,9 +85,9 @@ export class UsersController {
 
   async deleteUsers (req, res) {
     try {
-      const sqlDeleteData = 'DELETE FROM users WHERE id = ?';
+      const sqlDeleteData = 'DELETE FROM users WHERE user_id = ?';
       connection.query(sqlDeleteData, [req.params.id], (err, result) => {
-        res.json({ status: 200, message: 'success remove user', data: user })
+        res.json({ status: 200, message: 'success remove user', data: result })
       })
       // const koin = await prisma.koin.delete({
       //   where: { user_id: parseInt(req.params.id) }

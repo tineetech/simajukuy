@@ -15,26 +15,20 @@ export class AuthRouter {
   }
 
   initializeRoutes() {
-    this.router.post(
-      "/google",
-      this.authController.googleRegister
-    );
+    // this.router.post(
+    //   "/google",
+    //   this.authController.googleRegister
+    // );
 
     this.router.post(
       "/register",
       this.authController.registerGuest
     );
 
-    // this.router.post(
-    //   "/register-admin",
-    //   this.authController.registerAdmin
-    // );
-
-    // this.router.post(
-    //   "/verification-email",
-    //   this.authMiddleware.verifyToken,
-    //   this.authController.verifyAccount
-    // );
+    this.router.post(
+      "/register-admin",
+      this.authController.registerAdmin
+    );
 
     // this.router.post(
     //   "/reset-password",
@@ -47,15 +41,15 @@ export class AuthRouter {
     //   this.authController.verifyResetPassword
     // );
 
-    // this.router.post(
-    //   "/login",
-    //   this.authController.loginAny
-    // );
+    this.router.post(
+      "/login",
+      this.authController.loginAny
+    );
 
-    // this.router.post(
-    //   "/login-admin",
-    //   this.authController.loginAdmin
-    // );
+    this.router.post(
+      "/login-admin",
+      this.authController.loginAdmin
+    );
 
     // this.router.post(
     //   "/verify-admin",
