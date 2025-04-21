@@ -6,6 +6,7 @@
 # backend
 /backend/node_modules
 /backend/migration/node_modules
+/backend/migration/user_service/node_modules
 /backend/user_service/node_modules
 /backend/post_service/node_modules
 /backend/notification_service/node_modules

@@ -15,31 +15,31 @@ export class AuthRouter {
   }
 
   initializeRoutes() {
-    // this.router.post(
-    //   "/google",
-    //   this.authController.googleRegister
-    // );
+    this.router.post(
+      "/google",
+      this.authController.googleRegister
+    );
 
     this.router.post(
       "/register",
       this.authController.registerGuest
     );
 
+    // this.router.post(
+    //   "/register-admin",
+    //   this.authController.registerAdmin
+    // );
+
     this.router.post(
-      "/register-admin",
-      this.authController.registerAdmin
+      "/reset-password",
+      this.authController.resetPassword
     );
 
-    // this.router.post(
-    //   "/reset-password",
-    //   this.authController.resetPassword
-    // );
-
-    // this.router.post(
-    //   "/verify/reset-password",
-    //   this.authMiddleware.verifyToken,
-    //   this.authController.verifyResetPassword
-    // );
+    this.router.post(
+      "/verify/reset-password",
+      this.authMiddleware.verifyToken,
+      this.authController.verifyResetPassword
+    );
 
     this.router.post(
       "/login",
@@ -50,16 +50,6 @@ export class AuthRouter {
       "/login-admin",
       this.authController.loginAdmin
     );
-
-    // this.router.post(
-    //   "/verify-admin",
-    //   this.authController.verifyAdmin
-    // );
-
-    // this.router.get(
-    //   "/check-email-token/:token",
-    //   this.authController.checkExpTokenEmailVerif
-    // );
 
     this.router.get(
       "/cek-token",
