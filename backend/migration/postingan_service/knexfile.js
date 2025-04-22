@@ -3,11 +3,11 @@ module.exports = {
   development: {
     client: 'mysql2',
     connection: {
-      host: 'trolley.proxy.rlwy.net',
+      host: 'centerbeam.proxy.rlwy.net',
       user: 'root',
-      password: 'MHsNkntVKxwRlibpvnIEoIlYIiXcUnXi',
+      password: 'CdDuUGcmxWUMrTSIbNyovUUqReCVbRDc',
       database: 'railway',
-      port: 21582,
+      port: 51401,
     },
     migrations: {
       directory: './migrations',
@@ -16,11 +16,11 @@ module.exports = {
   production: {
     client: 'mysql2',
     connection: {
-      host: 'trolley.proxy.rlwy.net',  // Ganti dengan host yang benar jika diperlukan
+      host: 'centerbeam.proxy.rlwy.net',  // Ganti dengan host yang benar jika diperlukan
       user: 'root',
-      password: 'MHsNkntVKxwRlibpvnIEoIlYIiXcUnXi',
+      password: 'CdDuUGcmxWUMrTSIbNyovUUqReCVbRDc',
       database: 'railway', // pastikan ini sesuai dengan database yang kamu pakai di production
-      port: 21582,  // pastikan port sesuai
+      port: 51401,  // pastikan port sesuai
     },
     migrations: {
       directory: './migrations',

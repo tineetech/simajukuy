@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { AuthMiddleware } from "../middleware/auth.verify.js"; // Import middleware autentikasi
-import { PostController } from "../controllers/post.controller.js"; // Import controller yang sudah dibuat
+import { AuthMiddleware } from "../middleware/auth.verify.js"; 
+import { PostController } from "../controllers/post.controller.js"; 
+import { upload } from "../middleware/multer.js";  // Import multer
 
 export class PostRouter {
   router;
@@ -31,6 +32,7 @@ export class PostRouter {
     this.router.post(
       "/image-create",
       this.authMiddleware.verifyToken, 
+      upload.single('file'), // Upload single file (gambar)
       PostController.addImageToPost
     );
 
@@ -38,6 +40,7 @@ export class PostRouter {
     this.router.post(
       "/video-create",
       this.authMiddleware.verifyToken, 
+      upload.single('file'), // Upload single file (video)
       PostController.addVideoToPost
     );
 
