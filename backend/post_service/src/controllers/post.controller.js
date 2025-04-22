@@ -1,130 +1,167 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import connection from "../services/db.js";
 
 export class PostController {
-  async getPosts (req, res) {
+
+static async createPost(req, res) {
+  try {
+    const { caption, type, status } = req.body;
+
+    const user_id = req.user?.id;
+    if (!user_id) return res.status(401).json({ message: "Unauthorized: User tidak ditemukan." });
+
+    const statusValue = status ? 1 : 0;
+    const allowedTypes = ['image', 'video', 'polling'];
+    
+    // Insert ke tabel utama postingan
+    const query = 'INSERT INTO postingan (user_id, caption, type, status) VALUES (?, ?, ?, ?)';
+    const cleanType = allowedTypes.includes(type) ? type : 'text';
+    const [result] = await connection.promise().query(query, [user_id, caption, cleanType, statusValue]);
+    const postId = result.insertId;
+
+    if (cleanType === 'image') {
+      const { url, size } = req.body;
+      if (!url || !size) return res.status(400).json({ message: "URL dan ukuran gambar harus diisi." });
+
+      const imageQuery = 'INSERT INTO postingan_image (postingan_id, url, size) VALUES (?, ?, ?)';
+      await connection.promise().query(imageQuery, [postId, url, size]);
+      return res.status(201).json({ message: "Postingan berhasil dibuat dengan gambar", postId });
+
+    } else if (cleanType === 'video') {
+      const { url, size, duration } = req.body;
+      if (!url || !size || !duration) return res.status(400).json({ message: "URL, ukuran, dan durasi video harus diisi." });
+
+      const videoQuery = 'INSERT INTO postingan_video (postingan_id, url, size, duration) VALUES (?, ?, ?, ?)';
+      await connection.promise().query(videoQuery, [postId, url, size, duration]);
+      return res.status(201).json({ message: "Postingan berhasil dibuat dengan video", postId });
+
+    } else if (cleanType === 'polling') {
+      const { question, options } = req.body;
+      if (!question || !options) return res.status(400).json({ message: "Pertanyaan dan opsi polling harus diisi." });
+
+      const pollingQuery = 'INSERT INTO postingan_polling (postingan_id, question, options) VALUES (?, ?, ?)';
+      await connection.promise().query(pollingQuery, [postId, question, JSON.stringify(options)]);
+      return res.status(201).json({ message: "Postingan berhasil dibuat dengan polling", postId });
+
+    } else {
+      // Kalau bukan type khusus, anggap sebagai postingan caption biasa.
+      return res.status(201).json({ message: "Postingan teks biasa berhasil dibuat", postId });
+    }
+
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
+
+
+  // Get all posts
+  static async getAllPosts(req, res) {
     try {
-      const dataGet = await prisma.postingan.findMany({
-        include: {
-          user: true
-        }
-      })
-
-      const sanitizedData = dataGet;
-
-      res.json({ status: 200, message: 'success get data', data: sanitizedData })
+      const query = 'SELECT * FROM postingan';
+      const [rows] = await connection.promise().query(query);
+      return res.status(200).json(rows);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      return res.status(500).json({ error: message });
+      return res.status(500).json({ message: error.message });
     }
   }
 
-  async createPost (req, res) {
+  // Get detail post by ID
+  static async getPostById(req, res) {
     try {
-      const { 
-        type,
-        userId,
-        content,
-        status,
-      } = req.body
-
-      const postCreate = await prisma.postingan.create({
-        data: {
-          type,
-          content,
-          status,
-          user: {
-            connect: { user_id: parseInt(userId) }
-          }
-        }
-      })
-      
-      if (!postCreate) {
-        return res.status(400).json({ message: "Failed create Post" });
-      }
-
-      res.json({ status: 200, message: 'success create data', data: postCreate })
+      const { id } = req.params;
+      const query = 'SELECT * FROM postingan WHERE id = ?';
+      const [rows] = await connection.promise().query(query, [id]);
+      if (rows.length === 0) return res.status(404).json({ message: "Postingan tidak ditemukan" });
+      return res.status(200).json(rows[0]);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      return res.status(500).json({ error: message });
+      return res.status(500).json({ message: error.message });
     }
   }
 
-  async createImagePost (req, res) {
+  // Update post
+  static async updatePost(req, res) {
     try {
-      const { 
-        post_id,
-        image,
-      } = req.body
+      const { id } = req.params;
+      const { caption, status } = req.body;
 
-      const postCreate = await prisma.postinganImage.create({
-        data: {
-          post: {
-            connect: { id: parseInt(post_id) }
-          },
-          image
-        }
-      })
-      
-      if (!postCreate) {
-        return res.status(400).json({ message: "Failed create Post" });
-      }
+      const statusValue = status ? 1 : 0;
+      const query = 'UPDATE postingan SET caption = ?, status = ?, updated_at = NOW() WHERE id = ?';
 
-      res.json({ status: 200, message: 'success create data', data: postCreate })
+      const [result] = await connection.promise().query(query, [caption, statusValue, id]);
+      if (result.affectedRows === 0) return res.status(404).json({ message: "Postingan tidak ditemukan" });
+      return res.status(200).json({ message: "Postingan berhasil diupdate" });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      return res.status(500).json({ error: message });
+      return res.status(500).json({ message: error.message });
     }
   }
 
-  async updatePost (req, res) {
+  // Delete post
+  static async deletePost(req, res) {
     try {
-      const {
-        type,
-        content,
-        status,
-      } = req.body
-
-      const dataUpdate = await prisma.postingan.update({
-        where: { id: parseInt(req.params.id) },
-        data: {
-          type,
-          content,
-          status,
-        }
-      })
-
-      if (!dataUpdate) {
-        return res.status(400).json({ message: "Failed Update post" });
-      }
-
-      res.json({ status: 200, message: 'success update data', data: dataUpdate })
+      const { id } = req.params;
+      const query = 'DELETE FROM postingan WHERE id = ?';
+      const [result] = await connection.promise().query(query, [id]);
+      if (result.affectedRows === 0) return res.status(404).json({ message: "Postingan tidak ditemukan" });
+      return res.status(200).json({ message: "Postingan berhasil dihapus" });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      return res.status(500).json({ error: message });
+      return res.status(500).json({ message: error.message });
     }
   }
 
-  async deletePost (req, res) {
+  // Validasi Posting Sebelum Insert Data Tambahan
+  static async checkPostinganExists(postingan_id) {
+    const checkQuery = 'SELECT * FROM postingan WHERE id = ?';
+    const [rows] = await connection.promise().query(checkQuery, [postingan_id]);
+    if (rows.length === 0) throw new Error("Postingan tidak ditemukan");
+  }
+
+  // Tambah Image ke Postingan
+  static async addImageToPost(req, res) {
     try {
-      const post = await prisma.postingan.delete({
-        where: { id: parseInt(req.params.id) }
-      })
+      const { postingan_id, url, size } = req.body;
+      if (!postingan_id || !url || !size) return res.status(400).json({ message: "Data tidak lengkap" });
 
-      if (!post) {
-        return res.status(400).json({ message: "Failed Delete post" });
-      }
+      await this.checkPostinganExists(postingan_id);
 
-      res.json({ status: 200, message: 'success remove data', data: post })
+      const query = 'INSERT INTO postingan_image (postingan_id, url, size) VALUES (?, ?, ?)';
+      const [result] = await connection.promise().query(query, [postingan_id, url, size]);
+      return res.status(201).json({ message: "Image berhasil ditambahkan", id: result.insertId });
+
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      return res.status(500).json({ error: message });
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
+  // Tambah Video ke Postingan
+  static async addVideoToPost(req, res) {
+    try {
+      const { postingan_id, url, size, duration } = req.body;
+      if (!postingan_id || !url || !size || !duration) return res.status(400).json({ message: "Data tidak lengkap" });
+
+      await this.checkPostinganExists(postingan_id);
+
+      const query = 'INSERT INTO postingan_video (postingan_id, url, size, duration) VALUES (?, ?, ?, ?)';
+      const [result] = await connection.promise().query(query, [postingan_id, url, size, duration]);
+      return res.status(201).json({ message: "Video berhasil ditambahkan", id: result.insertId });
+
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
+  // Tambah Polling ke Postingan
+  static async addPollingToPost(req, res) {
+    try {
+      const { postingan_id, question, options } = req.body;
+      if (!postingan_id || !question || !options) return res.status(400).json({ message: "Data tidak lengkap" });
+
+      await this.checkPostinganExists(postingan_id);
+
+      const query = 'INSERT INTO postingan_polling (postingan_id, question, options) VALUES (?, ?, ?)';
+      const [result] = await connection.promise().query(query, [postingan_id, question, JSON.stringify(options)]);
+      return res.status(201).json({ message: "Polling berhasil ditambahkan", id: result.insertId });
+
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
     }
   }
 }

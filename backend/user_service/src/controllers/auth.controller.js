@@ -85,9 +85,10 @@ export class AuthController {
         const match = await bcrypt.compare(password, results[0].password);
         if (!match) return res.status(400).json({ message: "Invalid credentials" });
         const token = tokenService.createLoginToken({
-          id: results.user_id,
-          role: results.role,
+          id: results[0].user_id,
+          role: results[0].role,
         });
+        
         res.status(200).json({ message: 'success login', token, results });
       })
     } catch (err) {
@@ -112,9 +113,10 @@ export class AuthController {
         const match = await bcrypt.compare(password, results[0].password);
         if (!match) return res.status(400).json({ message: "Invalid credentials" });
         const token = tokenService.createLoginToken({
-          id: results.user_id,
-          role: results.role,
+          id: results[0].user_id,
+          role: results[0].role,
         });
+        
         res.status(200).json({ message: 'success login', token, results });
       })
     } catch (err) {
