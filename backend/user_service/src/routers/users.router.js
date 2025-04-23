@@ -21,6 +21,12 @@ export class UsersRouter {
       this.authMiddleware.verifyToken
     );
 
+    this.router.get(
+      "/:id",
+      this.usersController.getUserById,
+      this.authMiddleware.verifyToken
+    );
+
     this.router.post(
       "/create",
       this.usersController.createUsers,

@@ -2,55 +2,55 @@ import connection from "../services/db.js";
 
 export class PostController {
 
-static async createPost(req, res) {
-  try {
-    const { caption, type, status } = req.body;
+  static async createPost(req, res) {
+    try {
+      const { caption, type, status } = req.body;
 
-    const user_id = req.user?.id;
-    if (!user_id) return res.status(401).json({ message: "Unauthorized: User tidak ditemukan." });
+      const user_id = req.user?.id;
+      if (!user_id) return res.status(401).json({ message: "Unauthorized: User tidak ditemukan." });
 
-    const statusValue = status ? 1 : 0;
-    const allowedTypes = ['image', 'video', 'polling'];
-    
-    // Insert ke tabel utama postingan
-    const query = 'INSERT INTO postingan (user_id, caption, type, status) VALUES (?, ?, ?, ?)';
-    const cleanType = allowedTypes.includes(type) ? type : 'text';
-    const [result] = await connection.promise().query(query, [user_id, caption, cleanType, statusValue]);
-    const postId = result.insertId;
+      const statusValue = status ? 1 : 0;
+      const allowedTypes = ['image', 'video', 'polling'];
+      
+      // Insert ke tabel utama postingan
+      const query = 'INSERT INTO postingan (user_id, caption, type, status) VALUES (?, ?, ?, ?)';
+      const cleanType = allowedTypes.includes(type) ? type : 'text';
+      const [result] = await connection.promise().query(query, [user_id, caption, cleanType, statusValue]);
+      const postId = result.insertId;
 
-    if (cleanType === 'image') {
-      const { url, size } = req.body;
-      if (!url || !size) return res.status(400).json({ message: "URL dan ukuran gambar harus diisi." });
+      if (cleanType === 'image') {
+        const { url, size } = req.body;
+        if (!url || !size) return res.status(400).json({ message: "URL dan ukuran gambar harus diisi." });
 
-      const imageQuery = 'INSERT INTO postingan_image (postingan_id, url, size) VALUES (?, ?, ?)';
-      await connection.promise().query(imageQuery, [postId, url, size]);
-      return res.status(201).json({ message: "Postingan berhasil dibuat dengan gambar", postId });
+        const imageQuery = 'INSERT INTO postingan_image (postingan_id, url, size) VALUES (?, ?, ?)';
+        await connection.promise().query(imageQuery,  [postId, url, size]);
+        return res.status(201).json({ message: "Postingan berhasil dibuat dengan gambar", postId });
 
-    } else if (cleanType === 'video') {
-      const { url, size, duration } = req.body;
-      if (!url || !size || !duration) return res.status(400).json({ message: "URL, ukuran, dan durasi video harus diisi." });
+      } else if (cleanType === 'video') {
+        const { url, size, duration } = req.body;
+        if (!url || !size || !duration) return res.status(400).json({ message: "URL, ukuran, dan durasi video harus diisi." });
 
-      const videoQuery = 'INSERT INTO postingan_video (postingan_id, url, size, duration) VALUES (?, ?, ?, ?)';
-      await connection.promise().query(videoQuery, [postId, url, size, duration]);
-      return res.status(201).json({ message: "Postingan berhasil dibuat dengan video", postId });
+        const videoQuery = 'INSERT INTO postingan_video (postingan_id, url, size, duration) VALUES (?, ?, ?, ?)';
+        await connection.promise().query(videoQuery, [postId, url, size, duration]);
+        return res.status(201).json({ message: "Postingan berhasil dibuat dengan video", postId });
 
-    } else if (cleanType === 'polling') {
-      const { question, options } = req.body;
-      if (!question || !options) return res.status(400).json({ message: "Pertanyaan dan opsi polling harus diisi." });
+      } else if (cleanType === 'polling') {
+        const { question, options } = req.body;
+        if (!question || !options) return res.status(400).json({ message: "Pertanyaan dan opsi polling harus diisi." });
 
-      const pollingQuery = 'INSERT INTO postingan_polling (postingan_id, question, options) VALUES (?, ?, ?)';
-      await connection.promise().query(pollingQuery, [postId, question, JSON.stringify(options)]);
-      return res.status(201).json({ message: "Postingan berhasil dibuat dengan polling", postId });
+        const pollingQuery = 'INSERT INTO postingan_polling (postingan_id, question, options) VALUES (?, ?, ?)';
+        await connection.promise().query(pollingQuery, [postId, question, JSON.stringify(options)]);
+        return res.status(201).json({ message: "Postingan berhasil dibuat dengan polling", postId });
 
-    } else {
-      // Kalau bukan type khusus, anggap sebagai postingan caption biasa.
-      return res.status(201).json({ message: "Postingan teks biasa berhasil dibuat", postId });
+      } else {
+        // Kalau bukan type khusus, anggap sebagai postingan caption biasa.
+        return res.status(201).json({ message: "Postingan teks biasa berhasil dibuat", postId });
+      }
+
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
     }
-
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
   }
-}
 
 
   // Get all posts
