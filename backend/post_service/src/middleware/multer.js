@@ -1,15 +1,40 @@
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Fungsi untuk memastikan folder tujuan ada, jika tidak maka dibuat
+const ensureFolderExists = async (folderPath) => {
+  try {
+    if (!fs.existsSync(folderPath)) {
+      await fs.promises.mkdir(folderPath, { recursive: true });
+    }
+  } catch (error) {
+    throw new Error(`Gagal membuat folder: ${folderPath}`);
+  }
+};
 
 // Konfigurasi storage dengan folder yang berbeda untuk image dan video
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: async (req, file, cb) => {
+    let folderPath = '';
+
     if (file.mimetype.startsWith('image')) {
-      cb(null, '../../public/images/'); // Folder khusus untuk gambar
+      folderPath = path.join(__dirname, '../../storage/images'); // Folder khusus untuk gambar
     } else if (file.mimetype.startsWith('video')) {
-      cb(null, '../../public/videos/'); // Folder khusus untuk video
+      folderPath = path.join(__dirname, '../../storage/videos'); // Folder khusus untuk video
     } else {
-      cb(new Error('File harus berupa gambar atau video!'));
+      return cb(new Error('File harus berupa gambar atau video!'), false);
+    }
+
+    try {
+      await ensureFolderExists(folderPath); // Pastikan folder ready (async)
+      cb(null, folderPath); // Tentukan folder tujuan
+    } catch (err) {
+      cb(err);
     }
   },
   filename: (req, file, cb) => {
@@ -27,12 +52,12 @@ const fileFilter = (req, file, cb) => {
   if (extname && mimetype) {
     return cb(null, true);
   } else {
-    cb(new Error('File harus berupa gambar (jpeg, jpg, png, gif) atau video (mp4, avi, mkv)!'));
+    return cb(new Error('File harus berupa gambar (jpeg, jpg, png, gif) atau video (mp4, avi, mkv)!'), false);
   }
 };
 
 export const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // max 10MB per file
+  limits: { fileSize: 10 * 1024 * 1024 }, // Maksimal 10MB per file
   fileFilter: fileFilter
 });

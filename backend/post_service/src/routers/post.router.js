@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { AuthMiddleware } from "../middleware/auth.verify.js"; 
-import { PostController } from "../controllers/post.controller.js"; 
-import { upload } from "../middleware/multer.js";  // Import multer
+import { AuthMiddleware } from "../middleware/auth.verify.js";
+import { PostController } from "../controllers/post.controller.js";
+import { upload } from "../middleware/multer.js";
 
 export class PostRouter {
   router;
@@ -14,59 +14,34 @@ export class PostRouter {
   }
 
   initializeRoutes() {
-    // Mendapatkan semua postingan
-    this.router.get(
-      "/", 
-      this.authMiddleware.verifyToken, 
-      PostController.getAllPosts
-    );
+    this.router.get("/", this.authMiddleware.verifyToken, PostController.getAllPosts);
 
-    // Membuat postingan baru
-    this.router.post(
-      "/create",
-      this.authMiddleware.verifyToken, 
-      PostController.createPost
-    );
+    this.router.post("/create", this.authMiddleware.verifyToken, upload.any(), PostController.createPost);
 
-    // Menambahkan gambar ke postingan
     this.router.post(
       "/image-create",
-      this.authMiddleware.verifyToken, 
-      upload.single('file'), // Upload single file (gambar)
+      this.authMiddleware.verifyToken,
+      upload.single("file"),
+      (req, res, next) => {
+        if (req.fileValidationError) {
+          return res.status(400).send({ message: req.fileValidationError });
+        }
+        next();
+      },
       PostController.addImageToPost
     );
 
-    // Menambahkan video ke postingan
-    this.router.post(
-      "/video-create",
-      this.authMiddleware.verifyToken, 
-      upload.single('file'), // Upload single file (video)
-      PostController.addVideoToPost
-    );
+    this.router.post("/video-create", this.authMiddleware.verifyToken, upload.single("file"), PostController.addVideoToPost);
 
-    // Menambahkan polling ke postingan
-    this.router.post(
-      "/polling-create",
-      this.authMiddleware.verifyToken, 
-      PostController.addPollingToPost
-    );
+    this.router.post("/polling-create", this.authMiddleware.verifyToken, PostController.addPollingToPost);
 
-    // Mengupdate postingan berdasarkan ID
-    this.router.put(
-      "/update/:id",
-      this.authMiddleware.verifyToken, 
-      PostController.updatePost
-    );
+    this.router.put("/update/:id", this.authMiddleware.verifyToken, PostController.updatePost);
 
-    // Menghapus postingan berdasarkan ID, hanya untuk admin
-    this.router.delete(
-      "/delete/:id",
-      this.authMiddleware.checkRole('admin'), 
-      PostController.deletePost
-    );
+    this.router.delete("/delete/:id", this.authMiddleware.verifyToken, PostController.deletePost);
+
+    this.router.post("/:post_id/like", this.authMiddleware.verifyToken, PostController.toggleLikePost);
   }
 
-  // Mengembalikan router yang sudah di-setup
   getRouter() {
     return this.router;
   }
