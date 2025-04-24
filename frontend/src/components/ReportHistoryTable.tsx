@@ -55,14 +55,14 @@ export default function ReportHistoryTable() {
             {reports.map((report) => (
                 <motion.div
                     key={report.id}
-                    className="relative rounded-xl p-4 bg-background shadow hover:shadow-md transition cursor-pointer"
+                    className="relative rounded-xl p-4 bg-background dark:bg-backgroundDark shadow hover:shadow-md transition cursor-pointer"
                     onMouseEnter={() => setHoveredId(report.id)}
                     onMouseLeave={() => setHoveredId(null)}
                 >
                     <div className="flex items-start justify-between">
                         <div>
                             <div className="font-semibold text-sm">{report.title}</div>
-                            <div className="text-xs text-textBody">{report.date}</div>
+                            <div className="text-xs text-textBody dark:text-textBodyDark">{report.date}</div>
                         </div>
                         <div>{statusIcon[report.status]}</div>
                     </div>
@@ -72,7 +72,7 @@ export default function ReportHistoryTable() {
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
-                                className="mt-2 text-xs text-textBody overflow-hidden"
+                                className="mt-2 text-xs text-textBody dark:text-textBodyDark overflow-hidden"
                             >
                                 {report.description}
                             </motion.div>

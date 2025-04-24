@@ -32,7 +32,7 @@ export default function DashboardHeader() {
                             setShowNotif(!showNotif);
                             setShowProfile(false);
                         }}
-                        className="text-text"
+                        className="text-text dark:text-textDark"
                     >
                         <Bell size={24} />
                     </button>
@@ -41,10 +41,10 @@ export default function DashboardHeader() {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-tertiary rounded-xl shadow-lg p-4 z-10 custom-scrollbar"
+                            className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-tertiary dark:bg-tertiaryDark rounded-xl shadow-lg p-4 z-10 custom-scrollbar"
                         >
-                            <h2 className="text-text font-semibold mb-3">Notifikasi</h2>
-                            <ul className="space-y-2 text-sm text-text">
+                            <h2 className="text-text dark:text-textDark font-semibold mb-3">Notifikasi</h2>
+                            <ul className="space-y-2 text-sm text-text dark:text-textDark">
                                 {dummyNotifications.map(notif => (
                                     <li
                                         key={notif.id}
@@ -59,7 +59,7 @@ export default function DashboardHeader() {
                                                     initial={{ opacity: 0, height: 0 }}
                                                     animate={{ opacity: 1, height: "auto" }}
                                                     exit={{ opacity: 0, height: 0 }}
-                                                    className="mt-2 text-xs text-textBody overflow-hidden"
+                                                    className="mt-2 text-xs text-textBody dark:text-textBodyDark overflow-hidden"
                                                 >
                                                     {notif.detail}
                                                 </motion.div>
@@ -79,7 +79,7 @@ export default function DashboardHeader() {
                             setShowProfile(!showProfile);
                             setShowNotif(false);
                         }}
-                        className="rounded-full overflow-hidden w-10 h-10 border-2 border-white"
+                        className="rounded-full overflow-hidden w-10 h-10"
                     >
                         <img
                             src="/images/profile.jpg"
@@ -93,7 +93,7 @@ export default function DashboardHeader() {
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                className="absolute right-0 mt-2 w-64 bg-tertiary rounded-xl shadow-lg p-4 z-10 text-text"
+                                className="absolute right-0 mt-2 w-64 bg-tertiary dark:bg-tertiaryDark rounded-xl shadow-lg p-4 z-10 text-text dark:text-textDark"
                             >
                                 <div className="flex flex-col items-center">
                                     <img
@@ -103,13 +103,13 @@ export default function DashboardHeader() {
                                     />
                                     <div className="text-center">
                                         <p className="font-semibold">John Doe</p>
-                                        <p className="text-sm text-textBody">john@example.com</p>
+                                        <p className="text-sm text-textBody dark:text-textBodyDark">john@example.com</p>
                                     </div>
                                 </div>
                                 <div className="mt-4 space-y-2">
                                     <a
                                         href="/profile"
-                                        className="flex items-center gap-2 px-3 py-2 hover:bg-accent rounded-lg transition"
+                                        className="flex items-center gap-2 px-3 py-2 hover:bg-accent dark:hover:bg-accentDark rounded-lg transition"
                                     >
                                         <User size={16} /> Profile
                                     </a>
