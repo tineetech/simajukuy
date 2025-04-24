@@ -10,7 +10,7 @@ export default function SortFilter({ sortBy, setSortBy }: SortFilterProps) {
                 <button
                     key={type}
                     onClick={() => setSortBy(type)}
-                    className={`capitalize px-3 py-1 rounded-full transition ${sortBy === type ? "bg-accent text-white" : "bg-tertiary text-gray-400 hover:text-white"
+                    className={`capitalize px-3 py-1 rounded-full transition ${sortBy === type ? "bg-accent text-textDark dark:bg-accentDark" : "bg-tertiary text-textBody dark:bg-tertiaryDark dark:text-textBodyDark"
                         }`}
                 >
                     {type}

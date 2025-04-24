@@ -6,7 +6,7 @@ import Contact from "../components/HomeSections/Contact";
 export default function HeroSection() {
 
 	return (
-		<div className=" bg-background text-text">
+		<div className=" bg-background text-text dark:bg-backgroundDark dark:text-textDark">
 			<Hero />
 			<div className="container mx-auto">
 				<About />
