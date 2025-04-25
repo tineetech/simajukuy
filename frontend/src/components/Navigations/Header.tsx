@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Menu, X, Home, Users, FileText, AlertCircle, User, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import DarkModeToggle from "../DarkmodeToggle";
 
 export default function Header() {
     const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +32,7 @@ export default function Header() {
 
     return (
         <header
-            className={`fixed top-0 left-0 right-0 z-50 transition-all text-text duration-300 ${scrolled ? "bg-secondary shadow-md" : "bg-transparent"
+            className={`fixed top-0 left-0 right-0 z-50 transition-all text-text dark:text-textDark duration-300 ${scrolled ? "bg-tertiary dark:bg-tertiaryDark shadow-md" : "bg-transparent"
                 }`}
         >
             <div className="container mx-auto w-full px-6 md:px-20 py-4 flex items-center justify-between">
@@ -52,7 +53,7 @@ export default function Header() {
                             <Link
                                 key={link.path}
                                 to={link.path}
-                                className={`px-4 py-2 space-x-2 transition ${isActive ? "bg-accent rounded-3xl" : "hover:text-accent"
+                                className={`px-4 py-2 space-x-2 transition ${isActive ? "bg-accent text-textDark dark:bg-accent rounded-3xl" : "hover:text-accent"
                                     }`}
                             >
                                 {link.name}
@@ -61,32 +62,36 @@ export default function Header() {
                     })}
                 </nav>
 
-                {/* Profile (Desktop) */}
-                <div className="relative hidden md:block">
-                    <button onClick={() => setProfileOpen(!profileOpen)}>
-                        <img
-                            src="/images/profile.jpg"
-                            alt="Profile"
-                            className="w-10 h-10 rounded-full"
-                        />
-                    </button>
-                    {profileOpen && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="absolute right-0 mt-2 w-40 bg-secondary shadow-md rounded-lg overflow-hidden"
-                        >
-                            <Link to="/profile" className="flex items-center px-4 py-2 hover:bg-accent transition-all ease-in-out">
-                                <User size={18} className="mr-2" /> Profile
-                            </Link>
-                            <button className="flex items-center w-full px-4 py-2 hover:bg-accent transition-all ease-in-out">
-                                <LogOut size={18} className="mr-2" /> Logout
-                            </button>
-                        </motion.div>
-                    )}
-                </div>
+                <div className="flex items-center gap-8">
+                    <DarkModeToggle />
 
+                    {/* Profile (Desktop) */}
+                    <div className="relative hidden md:block">
+                        <button onClick={() => setProfileOpen(!profileOpen)}>
+                            <img
+                                src="/images/profile.jpg"
+                                alt="Profile"
+                                className="w-10 h-10 rounded-full"
+                            />
+                        </button>
+                        {profileOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="absolute right-0 mt-2 w-40 bg-secondary shadow-md rounded-lg overflow-hidden"
+                            >
+                                <Link to="/profile" className="flex items-center px-4 py-2 hover:bg-accent transition-all ease-in-out">
+                                    <User size={18} className="mr-2" /> Profile
+                                </Link>
+                                <button className="flex items-center w-full px-4 py-2 hover:bg-accent transition-all ease-in-out">
+                                    <LogOut size={18} className="mr-2" /> Logout
+                                </button>
+                            </motion.div>
+                        )}
+                    </div>
+                    
+                </div>
                 {/* Hamburger (Mobile) */}
                 <button onClick={() => setIsOpen(!isOpen)} className="md:hidden">
                     {isOpen ? <X size={28} /> : <Menu size={28} />}

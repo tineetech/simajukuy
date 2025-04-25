@@ -111,43 +111,92 @@ export class PostController {
       return res.status(500).json({ message: error.message });
     }
   }
-
   // Like post
   // Toggle Like / Unlike Post (kayak TikTok)
-static async toggleLikePost(req, res) {
-  try {
-    const user_id = req.user?.id;
-    const { post_id } = req.params;
+  static async toggleLikePost(req, res) {
+    try {
+      const user_id = req.user?.id;
+      const { post_id } = req.params;
 
-    if (!user_id) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+      if (!user_id) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
 
-    // Cek apakah user udah nge-like
-    const [check] = await connection.promise().query(
-      "SELECT * FROM postingan_likes WHERE post_id = ? AND user_id = ?",
-      [post_id, user_id]
-    );
-
-    if (check.length > 0) {
-      // Kalau udah like, maka unlike
-      await connection.promise().query(
-        "DELETE FROM postingan_likes WHERE post_id = ? AND user_id = ?",
+      // Cek apakah user udah nge-like
+      const [check] = await connection.promise().query(
+        "SELECT * FROM postingan_likes WHERE post_id = ? AND user_id = ?",
         [post_id, user_id]
       );
-      return res.status(200).json({ message: "Unliked" });
-    } else {
-      // Kalau belum like, maka like
-      await connection.promise().query(
-        "INSERT INTO postingan_likes (post_id, user_id) VALUES (?, ?)",
-        [post_id, user_id]
-      );
-      return res.status(200).json({ message: "Liked" });
+
+      if (check.length > 0) {
+        // Kalau udah like, maka unlike
+        await connection.promise().query(
+          "DELETE FROM postingan_likes WHERE post_id = ? AND user_id = ?",
+          [post_id, user_id]
+        );
+        return res.status(200).json({ message: "Unliked" });
+      } else {
+        // Kalau belum like, maka like
+        await connection.promise().query(
+          "INSERT INTO postingan_likes (post_id, user_id) VALUES (?, ?)",
+          [post_id, user_id]
+        );
+        return res.status(200).json({ message: "Liked" });
+      }
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
     }
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
   }
-}
+  
+  static async createPost(req, res) {
+    try {
+      const { caption, type, status } = req.body;
+
+      const user_id = req.user?.id;
+      if (!user_id) return res.status(401).json({ message: "Unauthorized: User tidak ditemukan." });
+
+      const statusValue = status ? 1 : 0;
+      const allowedTypes = ['image', 'video', 'polling'];
+      
+      // Insert ke tabel utama postingan
+      const query = 'INSERT INTO postingan (user_id, caption, type, status) VALUES (?, ?, ?, ?)';
+      const cleanType = allowedTypes.includes(type) ? type : 'text';
+      const [result] = await connection.promise().query(query, [user_id, caption, cleanType, statusValue]);
+      const postId = result.insertId;
+
+      if (cleanType === 'image') {
+        const { url, size } = req.body;
+        if (!url || !size) return res.status(400).json({ message: "URL dan ukuran gambar harus diisi." });
+
+        const imageQuery = 'INSERT INTO postingan_image (postingan_id, url, size) VALUES (?, ?, ?)';
+        await connection.promise().query(imageQuery,  [postId, url, size]);
+        return res.status(201).json({ message: "Postingan berhasil dibuat dengan gambar", postId });
+
+      } else if (cleanType === 'video') {
+        const { url, size, duration } = req.body;
+        if (!url || !size || !duration) return res.status(400).json({ message: "URL, ukuran, dan durasi video harus diisi." });
+
+        const videoQuery = 'INSERT INTO postingan_video (postingan_id, url, size, duration) VALUES (?, ?, ?, ?)';
+        await connection.promise().query(videoQuery, [postId, url, size, duration]);
+        return res.status(201).json({ message: "Postingan berhasil dibuat dengan video", postId });
+
+      } else if (cleanType === 'polling') {
+        const { question, options } = req.body;
+        if (!question || !options) return res.status(400).json({ message: "Pertanyaan dan opsi polling harus diisi." });
+
+        const pollingQuery = 'INSERT INTO postingan_polling (postingan_id, question, options) VALUES (?, ?, ?)';
+        await connection.promise().query(pollingQuery, [postId, question, JSON.stringify(options)]);
+        return res.status(201).json({ message: "Postingan berhasil dibuat dengan polling", postId });
+
+      } else {
+        // Kalau bukan type khusus, anggap sebagai postingan caption biasa.
+        return res.status(201).json({ message: "Postingan teks biasa berhasil dibuat", postId });
+      }
+
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  }
 
 
   // Get all posts (with like count)

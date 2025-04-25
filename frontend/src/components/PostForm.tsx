@@ -46,7 +46,7 @@ export default function PostForm() {
         <motion.div
             animate={{ scale: isFocused ? 1.01 : 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className="bg-secondary p-4 rounded-lg mb-6 overflow-hidden"
+            className="bg-tertiary dark:bg-tertiaryDark p-4 rounded-lg mb-6 overflow-hidden"
         >
             <div
                 ref={wrapperRef}
@@ -80,7 +80,7 @@ export default function PostForm() {
                 <textarea
                     value={postContent}
                     onChange={(e) => setPostContent(e.target.value)}
-                    className="w-full bg-tertiary text-white p-3 rounded-lg resize-none outline-none"
+                    className="w-full bg-tertiary dark:bg-tertiaryDark text-textBody dark:text-textBodyDark p-3 rounded-lg resize-none outline-none"
                     rows={isFocused ? 4 : 3}
                     placeholder="Apa yang ingin kamu bagikan hari ini?"
                 />
