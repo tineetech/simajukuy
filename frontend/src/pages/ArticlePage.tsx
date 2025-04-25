@@ -34,7 +34,7 @@ const articleDetails: ArticleInterface[] = [
     },
 ];
 
-export default function Artikel() {
+export default function ArticlePage() {
     const [searchTerm, setSearchTerm] = useState("");
 
     const filteredArticles = articleDetails.filter((article) =>

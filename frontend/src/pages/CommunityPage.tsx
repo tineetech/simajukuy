@@ -26,7 +26,7 @@ const dummyPosts: PostInterface[] = [
     },
 ];
 
-export default function Community() {
+export default function CommunityPage() {
     const [sortBy, setSortBy] = useState("terbaru");
 
     const sortedPosts = [...dummyPosts].sort((a, b) => {

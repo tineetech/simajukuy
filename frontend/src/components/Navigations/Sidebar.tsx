@@ -4,9 +4,9 @@ import { Link} from "react-router-dom";
 
 const sidebarItems = [
     { icon: <LayoutDashboard />, label: "Dashboard", path: "/admin" },
-    { icon: <Megaphone />, label: "Laporan", path: "/laporan" },
-    { icon: <History />, label: "Documents", path: "/documents" },
-    { icon: <Settings />, label: "Settings", path: "/settings" },
+    { icon: <Megaphone />, label: "Laporan", path: "/admin/laporan" },
+    { icon: <History />, label: "Documents", path: "/admin/riwayat" },
+    { icon: <Settings />, label: "Settings", path: "/admin/settings" },
 ];
 
 export default function Sidebar() {

@@ -33,7 +33,7 @@ Investasi dalam transportasi hijau sangat penting untuk masa depan.`,
     },
 ];
 
-export default function ArticleDetail() {
+export default function ArticleDetailPage() {
     const { id } = useParams();
     const article = articleDetails.find((a) => a.id === Number(id));
 

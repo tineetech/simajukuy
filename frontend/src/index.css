@@ -18,7 +18,6 @@
     --color-accentDark: #345B93;
     --color-textDark: #f9fafb;
     --color-textBodyDark: #B9BBBC,
-
 }
 
 @custom-variant dark (&:where(.dark, .dark *));

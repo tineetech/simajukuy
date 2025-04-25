@@ -8,10 +8,10 @@ type StatsCardProps = {
     value: string;
 };
 
-export function StatsCard({ bgColor, icon, title, value }: StatsCardProps) {
+export default function StatsCard({ bgColor, icon, title, value }: StatsCardProps) {
     return (
         <div className="bg-background dark:bg-backgroundDark shadow-md rounded-md p-2 flex gap-4 items-center">
-            <div className={`${bgColor} p-2.5 rounded-md flex items-center`}>
+            <div className={`${bgColor} p-2.5 rounded-md flex items-center text-text`}>
                 {icon}
             </div>
             <div className="flex w-full justify-between items-center">
