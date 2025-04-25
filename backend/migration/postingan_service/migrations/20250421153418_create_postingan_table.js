@@ -5,63 +5,63 @@
 exports.up = async function (knex) {
   // Tabel utama: postingan
   await knex.schema.createTable("postingan", (table) => {
-    table.increments("id").primary();
-    table.integer("user_id").notNullable();
-    table.text("caption").nullable();
-    table.enu("type", ["image", "video", "polling", "text"]).notNullable();
-    table.boolean("status").defaultTo(true);
-    table.integer("like").notNullable().defaultTo(0); // Kolom like ditambahkan di sini
-    table.timestamp("created_at").defaultTo(knex.fn.now());
-    table.timestamp("updated_at").defaultTo(knex.fn.now());
+    table.increments("id").primary(); // id sebagai primary key
+    table.integer("user_id").notNullable(); // user_id sebagai foreign key
+    table.enum("type", ["text", "image", "video", "polling", "map"]).notNullable().defaultTo("text"); // type sebagai enum
+    table.text("content").notNullable(); // content sebagai teks postingan
+    table.enum("status", ["active", "draft"]).notNullable().defaultTo("active"); // status sebagai enum active/draft
+    table.timestamp("created_at").defaultTo(knex.fn.now()); // timestamp created_at
+    table.timestamp("updated_at").defaultTo(knex.fn.now()); // timestamp updated_at
   });
 
   // Tabel khusus: postingan_image
   await knex.schema.createTable("postingan_image", (table) => {
-    table.increments("id").primary();
+    table.increments("id").primary(); // id sebagai primary key
     table
-      .integer("postingan_id")
+      .integer("post_id")
       .unsigned()
       .notNullable()
       .references("id")
       .inTable("postingan")
       .onDelete("CASCADE")
-      .onUpdate("CASCADE");
-    table.text("url").notNullable();
-    table.integer("size").notNullable(); // byte
-    table.timestamp("created_at").defaultTo(knex.fn.now());
+      .onUpdate("CASCADE"); // foreign key ke tabel postingan
+    table.text("image").notNullable(); // kolom URL gambar
+    table.timestamp("created_at").defaultTo(knex.fn.now()); // timestamp created_at
+    table.timestamp("updated_at").defaultTo(knex.fn.now()); // timestamp updated_at
   });
 
   // Tabel khusus: postingan_video
   await knex.schema.createTable("postingan_video", (table) => {
-    table.increments("id").primary();
+    table.increments("id").primary(); // id sebagai primary key
     table
-      .integer("postingan_id")
+      .integer("post_id")
       .unsigned()
       .notNullable()
       .references("id")
       .inTable("postingan")
       .onDelete("CASCADE")
-      .onUpdate("CASCADE");
-    table.text("url").notNullable();
-    table.integer("duration").notNullable(); // dalam detik
-    table.integer("size").notNullable(); // byte
-    table.timestamp("created_at").defaultTo(knex.fn.now());
+      .onUpdate("CASCADE"); // foreign key ke tabel postingan
+    table.text("url_video").notNullable(); // kolom URL video
+    table.timestamp("created_at").defaultTo(knex.fn.now()); // timestamp created_at
+    table.timestamp("updated_at").defaultTo(knex.fn.now()); // timestamp updated_at
   });
 
   // Tabel khusus: postingan_polling
   await knex.schema.createTable("postingan_polling", (table) => {
-    table.increments("id").primary();
+    table.increments("id").primary(); // id sebagai primary key
     table
-      .integer("postingan_id")
+      .integer("post_id")
       .unsigned()
       .notNullable()
       .references("id")
       .inTable("postingan")
       .onDelete("CASCADE")
-      .onUpdate("CASCADE");
-    table.string("question").notNullable();
-    table.json("options").notNullable(); // array JSON untuk pilihan
-    table.timestamp("created_at").defaultTo(knex.fn.now());
+      .onUpdate("CASCADE"); // foreign key ke tabel postingan
+    table.text("content").notNullable(); // kolom untuk isi polling
+    table.integer("select_percentage").notNullable().defaultTo(0); // persentase pemilih polling
+    table.integer("select_user_id").unsigned(); // user yang memilih polling
+    table.timestamp("created_at").defaultTo(knex.fn.now()); // timestamp created_at
+    table.timestamp("updated_at").defaultTo(knex.fn.now()); // timestamp updated_at
   });
 };
 
