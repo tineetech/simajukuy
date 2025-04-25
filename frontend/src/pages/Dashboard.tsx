@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Newspaper, Megaphone, Users } from 'lucide-react';
+import { Newspaper, Megaphone, Users, ArrowRight } from 'lucide-react';
+import { Report } from "../types";
 import MonthlyReportChart from "../components/charts/MonthlyReportChart";
 import ReportCategoryChart from "../components/charts/ReportCategoryChart";
-import DashboardHeader from "../components/DashboardHeader";
 import ReportCard from "../components/cards/ReportCard";
-import { Report } from "../types";
-import { StatsCard } from "../components/cards/StatsCard";
+import StatsCard from "../components/cards/StatsCard";
 import ReportModal from "../components/ReportModal"
 import ReportHistoryTable from "../components/ReportHistoryTable";
 
@@ -68,9 +67,7 @@ export default function Dashboard() {
     ];
 
     return (
-        <div className="mx-auto container p-8">
-            <DashboardHeader />
-
+        <>
             {/* Content */}
             <div className="grid grid-cols-12 gap-8">
 
@@ -81,7 +78,7 @@ export default function Dashboard() {
                     <div className="bg-tertiary dark:bg-tertiaryDark flex gap-16 p-8 shadow-md rounded-md">
                         <div className="flex-col">
                             <h1 className="font-semibold text-2xl mb-4">Hi John Doe</h1>
-                            <p className="text-textBody text-sm mb-8">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ipsa tempora vero est rem dolorum impedit, ratione error repellendus unde eos quis ad quia blanditiis natus itaque</p>
+                            <p className="text-textBody dark:text-textBodyDark text-sm mb-8">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ipsa tempora vero est rem dolorum impedit, ratione error repellendus unde eos quis ad quia blanditiis natus itaque</p>
                             <Link to='/lapor' className="bg-tertiaryDark dark:bg-tertiary text-textDark dark:text-text   px-6 py-3 rounded-md text-sm">
                                 Lihat Selengkapnya
                             </Link>
@@ -90,8 +87,8 @@ export default function Dashboard() {
                     </div>
 
                     {/* Monthly Chart */}
-                    <div className="flex flex-col">
-                        <h1 className="text-lg font-semibold px-8 mb-4">Laporan Bulanan</h1>
+                    <div className="flex flex-col bg-tertiary dark:bg-tertiaryDark p-8 rounded-md shadow-md">
+                        <h1 className="text-lg font-semibold mb-8">Laporan Bulanan</h1>
                         <MonthlyReportChart />
                     </div>
 
@@ -101,6 +98,7 @@ export default function Dashboard() {
                             <h1 className="text-lg font-semibold mb-4">Laporan Terbaru</h1>
                             <Link to={'/laporan'} className="font-light">
                                 Lihat Semua
+
                             </Link>
                         </div>
                         <div className="grid grid-cols-12 gap-4">
@@ -133,7 +131,7 @@ export default function Dashboard() {
                     </div>
 
                     {/* Category Chart */}
-                    <div className="flex flex-col px-8">
+                    <div className="flex flex-col p-8">
                         <h1 className="text-lg font-semibold mb-6">Kategori Laporan</h1>
                         <ReportCategoryChart />
                     </div>
@@ -142,8 +140,9 @@ export default function Dashboard() {
                     <div className="my-8 px-8">
                         <h1 className="text-lg font-semibold mb-6">Riwayat Laporan</h1>
                         <ReportHistoryTable />
-                        <Link to={'/laporan'} className="flex font-light justify-end mt-4">
+                        <Link to={'/laporan'} className="flex font-light justify-end mt-4 gap-1 items-center">
                             Lainnya
+                            <ArrowRight size={16} />
                         </Link>
                     </div>
                 </div>
@@ -156,6 +155,6 @@ export default function Dashboard() {
                 onVerify={() => alert("Laporan telah diverifikasi!")}
             />
 
-        </div>
+        </>
     );
 }

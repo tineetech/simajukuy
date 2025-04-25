@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X, Home, Users, FileText, AlertCircle, User, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import DarkModeToggle from "../DarkmodeToggle";
@@ -75,22 +75,40 @@ export default function Header() {
                             />
                         </button>
                         {profileOpen && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3 }}
-                                className="absolute right-0 mt-2 w-40 bg-secondary shadow-md rounded-lg overflow-hidden"
-                            >
-                                <Link to="/profile" className="flex items-center px-4 py-2 hover:bg-accent transition-all ease-in-out">
-                                    <User size={18} className="mr-2" /> Profile
-                                </Link>
-                                <button className="flex items-center w-full px-4 py-2 hover:bg-accent transition-all ease-in-out">
-                                    <LogOut size={18} className="mr-2" /> Logout
-                                </button>
-                            </motion.div>
+                            <AnimatePresence>
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        className="absolute right-0 mt-2 w-64 bg-tertiary dark:bg-tertiaryDark rounded-xl shadow-lg p-4 z-10 text-text dark:text-textDark"
+                                    >
+                                        <div className="flex flex-col items-center">
+                                            <img
+                                                src="/images/profile.jpg"
+                                                alt="Profile"
+                                                className="w-16 h-16 rounded-full mb-2"
+                                            />
+                                            <div className="text-center">
+                                                <p className="font-semibold">John Doe</p>
+                                                <p className="text-sm text-textBody dark:text-textBodyDark">john@example.com</p>
+                                            </div>
+                                        </div>
+                                        <div className="mt-4 space-y-2">
+                                            <a
+                                                href="/profile"
+                                                className="flex items-center gap-2 px-3 py-2 hover:bg-accent dark:hover:bg-accentDark rounded-lg transition"
+                                            >
+                                                <User size={16} /> Profile
+                                            </a>
+                                            <button className="flex items-center gap-2 px-3 py-2 hover:bg-red-600 rounded-lg transition w-full">
+                                                <LogOut size={16} /> Logout
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                            </AnimatePresence>
                         )}
                     </div>
-                    
+
                 </div>
                 {/* Hamburger (Mobile) */}
                 <button onClick={() => setIsOpen(!isOpen)} className="md:hidden">

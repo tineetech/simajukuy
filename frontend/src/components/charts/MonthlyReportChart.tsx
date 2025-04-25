@@ -1,3 +1,4 @@
+import { useContext } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -9,6 +10,7 @@ import {
     Tooltip,
     Legend
 } from 'chart.js';
+import { DarkModeContext } from "../../contexts/DarkModeContext";
 
 ChartJS.register(
     CategoryScale,
@@ -21,21 +23,26 @@ ChartJS.register(
 );
 
 export default function MonthlyReportChart() {
+    const { darkMode } = useContext(DarkModeContext) ?? { darkMode: false };
+
+    const textColor = darkMode ? '#E5E7EB' : '#4B5563';
+    const bgColor = darkMode ? '#1F2937' : '#F9FAFB'; 
+    const tooltipTitle = darkMode ? '#F9FAFB' : '#111827';
+
     const data = {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
         datasets: [
             {
                 label: 'Jumlah Laporan',
                 data: [30, 45, 50, 40, 60, 75],
-                // muted slate line with a soft accent point
-                borderColor: '#04d9ff',        // slate-500
-                pointBackgroundColor: '#04d9ff', // gray-400
+                borderColor: '#04d9ff',
+                pointBackgroundColor: '#04d9ff',
                 pointBorderColor: '#04d9ff',
-                backgroundColor: '#04d9ff', // light slate fill
-                fill: true,
+                backgroundColor: '#04d9ff',
                 tension: 0.3,
                 pointRadius: 4,
                 pointHoverRadius: 6,
+                fill: false
             },
         ],
     };
@@ -47,9 +54,9 @@ export default function MonthlyReportChart() {
                 display: false,
             },
             tooltip: {
-                bodyColor: '#111827',     // gray-900
-                backgroundColor: '#F9FAFB', // gray-50
-                titleColor: '#111827',
+                bodyColor: textColor,
+                backgroundColor: bgColor,
+                titleColor: tooltipTitle,
                 borderColor: '#04d9ff',
                 borderWidth: 1,
             },
@@ -57,10 +64,8 @@ export default function MonthlyReportChart() {
         scales: {
             x: {
                 ticks: {
-                    color: '#4B5563', // gray-600
-                    font: {
-                        weight: 300,
-                    },
+                    color: textColor,
+                    font: { weight: 300 },
                 },
                 grid: {
                     display: false,
@@ -68,19 +73,19 @@ export default function MonthlyReportChart() {
             },
             y: {
                 ticks: {
-                    color: '#4B5563', // gray-600
+                    color: textColor,
                     font: {
                         family: 'Poppins',
                         weight: 300,
                     },
                 },
                 grid: {
-                    color: '#4b5563', // gray-200
+                    color: darkMode ? '#374151' : '#D1D5DB',
                     borderDash: [4, 4],
                 },
             },
         },
     };
 
-    return <Line data={data} options={options} />;
+    return <Line key={darkMode ? 'dark' : 'light'} data={data} options={options} />;
 }

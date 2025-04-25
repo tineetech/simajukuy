@@ -1,5 +1,6 @@
-import { Bell, LogOut, User } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Bell, LogOut, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import DarkModeToggle from "./DarkmodeToggle";
 
@@ -13,13 +14,24 @@ const dummyNotifications = [
 ];
 
 export default function DashboardHeader() {
+    const location = useLocation();
     const [showNotif, setShowNotif] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
     const [hoveredNotifId, setHoveredNotifId] = useState<number | null>(null);
 
+    const pageTitles: Record<string, string> = {    
+        "/admin": "Admin Dashboard",
+        "/admin/laporan": "Laporan",
+        "/admin/riwayat": "Riwayat Laporan",
+        "/admin/setting": "Setingan",
+    };
+
+    const currentPath = location.pathname;
+    const pageTitle = pageTitles[currentPath] || "Admin Panel";
+
     return (
         <div className="flex justify-between items-center relative mb-4">
-            <h1 className="text-3xl font-semibold text-text dark:text-textDark">Admin Dashboard</h1>
+            <h1 className="text-3xl font-semibold text-text dark:text-textDark">{pageTitle}</h1>
 
             <div className="flex items-center gap-4">
                 <div className="">

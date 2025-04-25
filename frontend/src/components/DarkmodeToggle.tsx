@@ -1,28 +1,13 @@
-import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { SunIcon, MoonIcon } from "lucide-react";
+import { MoonIcon, SunIcon } from "lucide-react";
+import { useDarkMode } from "../contexts/DarkModeContext";
 
 export default function DarkModeToggle() {
-    const [darkMode, setDarkMode] = useState(() => {
-        return localStorage.getItem("theme") === "dark";
-    });
-
-    useEffect(() => {
-        const root = window.document.documentElement;
-        if (darkMode) {
-            root.classList.add("dark");
-            localStorage.setItem("theme", "dark");
-        } else {
-            root.classList.remove("dark");
-            localStorage.setItem("theme", "light");
-        }
-    }, [darkMode]);
-
-    const handleToggle = () => setDarkMode((prev) => !prev);
+    const { darkMode, toggleDarkMode } = useDarkMode();
 
     return (
         <motion.button
-            onClick={handleToggle}
+            onClick={toggleDarkMode}
             className="relative w-14 h-7 rounded-full focus:outline-none"
             initial={false}
             animate={{ backgroundColor: darkMode ? "#4B5563" : "#E5E7EB" }}
@@ -32,9 +17,7 @@ export default function DarkModeToggle() {
                 className="absolute top-0.5 left-0.5 w-6 h-6 rounded-full shadow-md flex items-center justify-center"
                 layout
                 transition={{
-                    // this sets up a spring for layout changes
                     layout: { type: "spring", bounce: 0.25, duration: 0.4 },
-                    // if you wanted, you can still animate other props here
                     default: { duration: 0.4 },
                 }}
                 animate={{
