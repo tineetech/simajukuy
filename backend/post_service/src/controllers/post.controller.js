@@ -1,36 +1,31 @@
 import connection from "../services/db.js";
 
 export class PostController {
-  // Create post with image, video, or polling
   static async createPost(req, res) {
     try {
-      const {
-        content,
-        type,
-        status,
-        url_video,
-        select_percentage,
-        select_user_id,
-      } = req.body;
+      const { content, type, status, polling_options, postingan_comments } =
+        req.body;
+
       const user_id = req.user?.id;
-      if (!user_id)
-        return res
-          .status(401)
-          .json({ message: "Unauthorized: User tidak ditemukan." });
+      if (!user_id) return res.status(401).json({ message: "Unauthorized" });
 
       const statusValue = status ? "active" : "draft";
-      const allowedTypes = ["text", "image", "video", "polling", "map"];
+      const allowedTypes = ["text", "image", "video", "polling"];
       const cleanType = allowedTypes.includes(type) ? type : "text";
 
-      const query =
-        "INSERT INTO postingan (user_id, type, content, status) VALUES (?, ?, ?, ?)";
+      // Insert post utama
       const [result] = await connection
         .promise()
-        .query(query, [user_id, cleanType, content, statusValue]);
-      const postId = result.insertId;
+        .query(
+          "INSERT INTO postingan (user_id, type, content, status) VALUES (?, ?, ?, ?)",
+          [user_id, cleanType, content, statusValue]
+        );
 
+      const postId = result.insertId;
+      const file = req.files?.[0];
+
+      // Handle image
       if (cleanType === "image") {
-        const file = req.files?.[0];
         if (!file)
           return res
             .status(400)
@@ -49,15 +44,19 @@ export class PostController {
         }
 
         const imageUrl = "/storage/images/" + file.filename;
-        const imageQuery =
-          "INSERT INTO postingan_image (post_id, image) VALUES (?, ?)";
-        await connection.promise().query(imageQuery, [postId, imageUrl]);
-
+        await connection
+          .promise()
+          .query("INSERT INTO postingan_image (post_id, image) VALUES (?, ?)", [
+            postId,
+            imageUrl,
+          ]);
         return res
           .status(201)
           .json({ message: "Postingan berhasil dibuat dengan gambar", postId });
-      } else if (cleanType === "video") {
-        const file = req.files?.[0];
+      }
+
+      // Handle video
+      if (cleanType === "video") {
         if (!file)
           return res
             .status(400)
@@ -71,101 +70,188 @@ export class PostController {
         }
 
         const videoUrl = "/storage/videos/" + file.filename;
-        const videoQuery =
-          "INSERT INTO postingan_video (post_id, url_video) VALUES (?, ?)";
-        await connection.promise().query(videoQuery, [postId, videoUrl]);
-
+        await connection
+          .promise()
+          .query(
+            "INSERT INTO postingan_video (post_id, url_video) VALUES (?, ?)",
+            [postId, videoUrl]
+          );
         return res
           .status(201)
           .json({ message: "Postingan berhasil dibuat dengan video", postId });
-      } else if (cleanType === "polling") {
+      }
+
+      // Handle polling
+
+      if (cleanType === "polling") {
         if (
-          !content ||
-          select_percentage === undefined ||
-          select_user_id === undefined
+          !polling_options ||
+          !Array.isArray(polling_options) ||
+          polling_options.length < 2
         ) {
-          return res.status(400).json({
-            message: "Konten polling, persentase, dan user ID harus diisi.",
-          });
+          return res
+            .status(400)
+            .json({ message: "Polling harus memiliki minimal dua pilihan." });
         }
-        const pollingQuery =
-          "INSERT INTO postingan_polling (post_id, content, select_percentage, select_user_id) VALUES (?, ?, ?, ?)";
-        await connection
-          .promise()
-          .query(pollingQuery, [
-            postId,
-            content,
-            select_percentage,
-            select_user_id,
-          ]);
-        return res.status(201).json({
-          message: "Postingan berhasil dibuat dengan polling",
-          postId,
-        });
-      } else {
+
+        for (const optionContent of polling_options) {
+          await connection
+            .promise()
+            .query(
+              "INSERT INTO postingan_polling_options (post_id, content) VALUES (?, ?)",
+              [postId, optionContent]
+            );
+        }
+
         return res
           .status(201)
-          .json({ message: "Postingan teks biasa berhasil dibuat", postId });
+          .json({ message: "Postingan polling berhasil dibuat", postId });
       }
+
+      if (postingan_comments?.length > 0) {
+        for (const comment of postingan_comments) {
+          await connection
+            .promise()
+            .query(
+              "INSERT INTO postingan_comments (post_id, user_id, content) VALUES (?, ?, ?)",
+              [postId, user_id, comment]
+            );
+        }
+      }
+
+      return res.status(201).json({
+        message: "Postingan berhasil dibuat",
+        postId,
+        type: cleanType,
+      });
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }
   }
 
-  // Like post
-  // Toggle Like / Unlike Post (kayak TikTok)
-static async toggleLikePost(req, res) {
-  try {
-    const user_id = req.user?.id;
-    const { post_id } = req.params;
+  static async votePoll(req, res) {
+    try {
+      const user_id = req.user?.id;
+      const { option_id } = req.params; // ambil dari params
 
-    if (!user_id) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+      // Validasi opsi
+      const [option] = await connection
+        .promise()
+        .query("SELECT post_id FROM postingan_polling_options WHERE id = ?", [
+          option_id,
+        ]);
 
-    // Cek apakah user udah nge-like
-    const [check] = await connection.promise().query(
-      "SELECT * FROM postingan_likes WHERE post_id = ? AND user_id = ?",
-      [post_id, user_id]
-    );
+      if (option.length === 0) {
+        return res.status(404).json({ message: "Opsi tidak valid" });
+      }
 
-    if (check.length > 0) {
-      // Kalau udah like, maka unlike
-      await connection.promise().query(
-        "DELETE FROM postingan_likes WHERE post_id = ? AND user_id = ?",
-        [post_id, user_id]
+      // Cek apakah sudah vote
+      const [existingVote] = await connection.promise().query(
+        `SELECT * FROM postingan_polling_votes
+         WHERE user_id = ? AND option_id IN (
+           SELECT id FROM postingan_polling_options 
+           WHERE post_id = ?
+         )`,
+        [user_id, option[0].post_id]
       );
-      return res.status(200).json({ message: "Unliked" });
-    } else {
-      // Kalau belum like, maka like
-      await connection.promise().query(
-        "INSERT INTO postingan_likes (post_id, user_id) VALUES (?, ?)",
-        [post_id, user_id]
-      );
-      return res.status(200).json({ message: "Liked" });
+
+      if (existingVote.length > 0) {
+        return res.status(400).json({ message: "Anda sudah melakukan vote" });
+      }
+
+      // Insert vote
+      await connection
+        .promise()
+        .query(
+          "INSERT INTO postingan_polling_votes (option_id, user_id) VALUES (?, ?)",
+          [option_id, user_id]
+        );
+
+      return res.status(201).json({ message: "Vote berhasil dicatat" });
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
     }
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
   }
-}
 
-
-  // Get all posts (with like count)
   static async getAllPosts(req, res) {
     try {
       const query = `
-        SELECT p.*, 
-               pi.image, 
-               pv.url_video,
-               pp.content AS polling_content, pp.select_percentage, pp.select_user_id,
-               (SELECT COUNT(*) FROM postingan_likes pl WHERE pl.post_id = p.id) AS like_count
+        SELECT 
+          p.*,
+          pi.image,
+          pv.url_video,
+          (SELECT COUNT(*) FROM postingan_likes WHERE post_id = p.id) AS like_count,
+          (SELECT COUNT(*) FROM postingan_comments WHERE post_id = p.id) AS comment_count,
+          COALESCE(
+            (SELECT JSON_ARRAYAGG(
+              JSON_OBJECT(
+                'id', po.id,
+                'content', po.content,
+                'votes', (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id),
+                'percentage', ROUND(
+                  (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id) / 
+                  GREATEST(
+                    (SELECT COUNT(DISTINCT user_id) 
+                     FROM postingan_polling_votes 
+                     WHERE option_id IN (
+                       SELECT id FROM postingan_polling_options 
+                       WHERE post_id = p.id
+                     )),
+                    1
+                  ) * 100,
+                  1
+                )
+              )
+            )
+            FROM postingan_polling_options po 
+            WHERE po.post_id = p.id),
+            JSON_ARRAY()
+          ) AS polling_options
         FROM postingan p
         LEFT JOIN postingan_image pi ON p.id = pi.post_id
         LEFT JOIN postingan_video pv ON p.id = pv.post_id
-        LEFT JOIN postingan_polling pp ON p.id = pp.post_id
-      `;
+        ORDER BY p.created_at DESC`;
+
       const [rows] = await connection.promise().query(query);
+
+      // Format polling options
+
       return res.status(200).json(rows);
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
+  static async toggleLikePost(req, res) {
+    try {
+      const user_id = req.user?.id;
+      const { post_id } = req.params;
+      if (!user_id) return res.status(401).json({ message: "Unauthorized" });
+
+      const [check] = await connection
+        .promise()
+        .query(
+          "SELECT * FROM postingan_likes WHERE post_id = ? AND user_id = ?",
+          [post_id, user_id]
+        );
+
+      if (check.length > 0) {
+        await connection
+          .promise()
+          .query(
+            "DELETE FROM postingan_likes WHERE post_id = ? AND user_id = ?",
+            [post_id, user_id]
+          );
+        return res.status(200).json({ message: "Unliked" });
+      } else {
+        await connection
+          .promise()
+          .query(
+            "INSERT INTO postingan_likes (post_id, user_id) VALUES (?, ?)",
+            [post_id, user_id]
+          );
+        return res.status(200).json({ message: "Liked" });
+      }
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }
@@ -174,28 +260,102 @@ static async toggleLikePost(req, res) {
   static async getPostById(req, res) {
     try {
       const { id } = req.params;
-      const query = "SELECT * FROM postingan WHERE id = ?";
-      const [rows] = await connection.promise().query(query, [id]);
-      if (rows.length === 0)
+  
+      const query = `
+        SELECT 
+          p.*,
+          pi.image,
+          pv.url_video,
+          (SELECT COUNT(*) FROM postingan_likes WHERE post_id = p.id) AS like_count,
+          (SELECT COUNT(*) FROM postingan_comments WHERE post_id = p.id) AS comment_count,
+          COALESCE(
+            (SELECT JSON_ARRAYAGG(
+              JSON_OBJECT(
+                'id', po.id,
+                'content', po.content,
+                'votes', (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id),
+                'percentage', ROUND(
+                  (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id) / 
+                  GREATEST(
+                    (SELECT COUNT(DISTINCT user_id) 
+                     FROM postingan_polling_votes 
+                     WHERE option_id IN (
+                       SELECT id FROM postingan_polling_options 
+                       WHERE post_id = p.id
+                     )),
+                    1
+                  ) * 100,
+                  1
+                )
+              )
+            )
+            FROM postingan_polling_options po 
+            WHERE po.post_id = p.id),
+            JSON_ARRAY()
+          ) AS polling_options
+        FROM postingan p
+        LEFT JOIN postingan_image pi ON p.id = pi.post_id
+        LEFT JOIN postingan_video pv ON p.id = pv.post_id
+        WHERE p.id = ?
+        LIMIT 1;
+      `;
+  
+      const [postRows] = await connection.promise().query(query, [id]);
+  
+      if (postRows.length === 0) {
         return res.status(404).json({ message: "Postingan tidak ditemukan" });
-      return res.status(200).json(rows[0]);
+      }
+  
+      const post = postRows[0];
+  
+      // Get comments
+      const [commentRows] = await connection
+        .promise()
+        .query(
+          "SELECT * FROM postingan_comments WHERE post_id = ? ORDER BY created_at ASC",
+          [id]
+        );
+  
+      return res.status(200).json({
+        post,
+        comments: commentRows,
+      });
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }
   }
+  
+
+  // ... (method lainnya tetap sama)
 
   static async updatePost(req, res) {
     try {
       const { id } = req.params;
-      const { content, status } = req.body;
+      const { content, status, postingan_comments } = req.body;
       const statusValue = status ? "active" : "draft";
-      const query =
-        "UPDATE postingan SET content = ?, status = ?, updated_at = NOW() WHERE id = ?";
+
+      const query = `
+        UPDATE postingan SET content = ?, status = ?, updated_at = NOW()
+        WHERE id = ?`;
       const [result] = await connection
         .promise()
         .query(query, [content, statusValue, id]);
+
       if (result.affectedRows === 0)
         return res.status(404).json({ message: "Postingan tidak ditemukan" });
+
+      // Update komentar jika ada
+      if (postingan_comments && postingan_comments.length > 0) {
+        for (let comment of postingan_comments) {
+          await connection
+            .promise()
+            .query(
+              "INSERT INTO postingan_comments (post_id, user_id, content) VALUES (?, ?, ?)",
+              [id, req.user.id, comment]
+            );
+        }
+      }
+
       return res.status(200).json({ message: "Postingan berhasil diupdate" });
     } catch (error) {
       return res.status(500).json({ message: error.message });
@@ -207,108 +367,92 @@ static async toggleLikePost(req, res) {
       const { id } = req.params;
       const user_id = req.user?.id;
       const user_role = req.user?.role;
-  
-      // Ambil postingan berdasarkan ID
-      const [rows] = await connection.promise().query(
-        "SELECT user_id FROM postingan WHERE id = ?",
-        [id]
-      );
-  
-      if (rows.length === 0) {
+
+      const [rows] = await connection
+        .promise()
+        .query("SELECT user_id FROM postingan WHERE id = ?", [id]);
+
+      if (rows.length === 0)
         return res.status(404).json({ message: "Postingan tidak ditemukan" });
-      }
-  
+
       const postOwnerId = rows[0].user_id;
-  
-      // Kalau bukan admin dan bukan pemilik postingan, tolak akses
-      if (user_role !== "admin" && postOwnerId !== user_id) {
-        return res
-          .status(403)
-          .json({ message: "Forbidden: Kamu tidak boleh menghapus postingan ini" });
-      }
-  
-      // Lanjut hapus postingan
-      const [result] = await connection.promise().query(
-        "DELETE FROM postingan WHERE id = ?",
-        [id]
-      );
-  
+      if (user_role !== "admin" && postOwnerId !== user_id)
+        return res.status(403).json({
+          message: "Forbidden: Kamu tidak boleh menghapus postingan ini",
+        });
+
+      await connection
+        .promise()
+        .query("DELETE FROM postingan WHERE id = ?", [id]);
       return res.status(200).json({ message: "Postingan berhasil dihapus" });
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }
   }
-  
 
   static async checkPostinganExists(postingan_id) {
-    const checkQuery = "SELECT * FROM postingan WHERE id = ?";
-    const [rows] = await connection.promise().query(checkQuery, [postingan_id]);
+    const [rows] = await connection
+      .promise()
+      .query("SELECT * FROM postingan WHERE id = ?", [postingan_id]);
     if (rows.length === 0) throw new Error("Postingan tidak ditemukan");
   }
 
-  static async addImageToPost(req, res) {
+  static async addComment(req, res) {
     try {
-      const { postingan_id, image } = req.body;
-      if (!postingan_id || !image)
-        return res.status(400).json({ message: "Data tidak lengkap" });
-      await this.checkPostinganExists(postingan_id);
-      const query =
-        "INSERT INTO postingan_image (post_id, image) VALUES (?, ?)";
-      const [result] = await connection
+      const { post_id } = req.params;
+      const user_id = req.user?.id;
+      const { content } = req.body;
+
+      console.log("BODY:", req.body);
+      console.log("Headers:", req.headers);
+
+      if (!content) {
+        return res
+          .status(400)
+          .json({ message: "Komentar tidak boleh kosong." });
+      }
+
+      await connection
         .promise()
-        .query(query, [postingan_id, image]);
+        .query(
+          "INSERT INTO postingan_comments (post_id, user_id, content) VALUES (?, ?, ?)",
+          [post_id, user_id, content]
+        );
+
       return res
         .status(201)
-        .json({ message: "Image berhasil ditambahkan", id: result.insertId });
+        .json({ message: "Komentar berhasil ditambahkan." });
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }
   }
 
-  static async addVideoToPost(req, res) {
+  static async deleteComment(req, res) {
     try {
-      const { postingan_id, url_video } = req.body;
-      if (!postingan_id || !url_video)
-        return res.status(400).json({ message: "Data tidak lengkap" });
-      await this.checkPostinganExists(postingan_id);
-      const query =
-        "INSERT INTO postingan_video (post_id, url_video) VALUES (?, ?)";
-      const [result] = await connection
-        .promise()
-        .query(query, [postingan_id, url_video]);
-      return res
-        .status(201)
-        .json({ message: "Video berhasil ditambahkan", id: result.insertId });
-    } catch (error) {
-      return res.status(500).json({ message: error.message });
-    }
-  }
+      const { id } = req.params; // id komentar
+      const user_id = req.user?.id;
+      const user_role = req.user?.role;
 
-  static async addPollingToPost(req, res) {
-    try {
-      const { postingan_id, content, select_percentage, select_user_id } =
-        req.body;
-      if (
-        !postingan_id ||
-        !content ||
-        select_percentage === undefined ||
-        select_user_id === undefined
-      )
-        return res.status(400).json({ message: "Data tidak lengkap" });
-      await this.checkPostinganExists(postingan_id);
-      const query =
-        "INSERT INTO postingan_polling (post_id, content, select_percentage, select_user_id) VALUES (?, ?, ?, ?)";
-      const [result] = await connection
+      const [rows] = await connection
         .promise()
-        .query(query, [
-          postingan_id,
-          content,
-          select_percentage,
-          select_user_id,
-        ]);
-      return res
-        .status(201)
-        .json({ message: "Polling berhasil ditambahkan", id: result.insertId });
+        .query("SELECT user_id FROM postingan_comments WHERE id = ?", [id]);
+
+      if (rows.length === 0)
+        return res.status(404).json({ message: "Komentar tidak ditemukan" });
+
+      const commentOwner = rows[0].user_id;
+
+      if (user_id !== commentOwner && user_role !== "admin") {
+        return res.status(403).json({
+          message: "Forbidden: Tidak bisa menghapus komentar orang lain",
+        });
+      }
+
+      await connection
+        .promise()
+        .query("DELETE FROM postingan_comments WHERE id = ?", [id]);
+
+      return res.status(200).json({ message: "Komentar berhasil dihapus" });
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }
