@@ -23,3 +23,10 @@ export interface ArticleInterface {
     description: string;
     content: string;
 }
+
+export interface Report {
+    title: string;
+    submittedAt: string;
+    description: string;
+    image: string;
+};

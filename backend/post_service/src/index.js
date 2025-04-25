@@ -2,6 +2,12 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { PostRouter } from "./routers/post.router.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 dotenv.config();
 
@@ -23,7 +29,8 @@ app.use(express.urlencoded({ extended: true }));
 const postinganRouter = new PostRouter().getRouter();
 
 app.use("/api/postingan", postinganRouter);
-
+app.use("/storage/images", express.static(path.join(__dirname, "../storage/images")));
+app.use("/storage/videos", express.static(path.join(__dirname, "../storage/videos")));
 
 // Route home
 app.get("/", (req, res) => {
