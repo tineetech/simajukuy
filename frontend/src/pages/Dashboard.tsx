@@ -6,7 +6,7 @@ import MonthlyReportChart from "../components/charts/MonthlyReportChart";
 import ReportCategoryChart from "../components/charts/ReportCategoryChart";
 import ReportCard from "../components/cards/ReportCard";
 import StatsCard from "../components/cards/StatsCard";
-import ReportModal from "../components/ReportModal"
+import ReportModal from "../components/modals/ReportModal"
 import ReportHistoryTable from "../components/ReportHistoryTable";
 
 export default function Dashboard() {
@@ -39,30 +39,35 @@ export default function Dashboard() {
             submittedAt: "10 April 2025",
             description: "Jalan rusak menyebabkan kendaraan sulit lewat, terutama saat hujan.",
             image: "/images/about.jpg",
+            status: "Tertunda"
         },
         {
             title: "Tumpukan sampah di TPS ilegal",
             submittedAt: "9 April 2025",
             description: "Bau menyengat dan tidak diangkut lebih dari seminggu.",
             image: "/images/about.jpg",
+            status: "Tertunda"
         },
         {
             title: "Pohon tumbang menutup jalan",
             submittedAt: "8 April 2025",
             description: "Pohon besar tumbang saat hujan, akses jalan tertutup total.",
             image: "/images/about.jpg",
+            status: "Tertunda"
         },
         {
             title: "Lampu jalan pahlawan mati total",
             submittedAt: "7 April 2025",
             description: "Area jadi sangat gelap di malam hari, rawan kejahatan.",
             image: "/images/about.jpg",
+            status: "Tertunda"
         },
         {
             title: "Banjir di pemukiman warga",
             submittedAt: "6 April 2025",
             description: "Air menggenangi rumah warga hingga 30 cm.",
             image: "/images/about.jpg",
+            status: "Tertunda"
         },
     ];
 
@@ -108,6 +113,7 @@ export default function Dashboard() {
                                     index={index}
                                     item={report}
                                     onViewDetail={setSelectedReport}
+                                    colSpan="col-span-4"
                                 />
                             ))}
                         </div>

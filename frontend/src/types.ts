@@ -29,4 +29,5 @@ export interface Report {
     submittedAt: string;
     description: string;
     image: string;
+    status: "Tertunda" | "Diterima" | "Diproses" | "Selesai"
 };

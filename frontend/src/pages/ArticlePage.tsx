@@ -1,5 +1,5 @@
 import { useState } from "react";
-import SearchBar from "../components/SearchBar";
+import SearchBar from "../components/widgets/SearchBar";
 import ArticleCard from "../components/cards/ArticleCard";
 import { ArticleInterface } from "../types";
 
@@ -96,7 +96,10 @@ export default function ArticlePage() {
                     </div>
                 </div>
 
-                <SearchBar value={searchTerm} onChange={setSearchTerm} />
+                <div className="mb-8">
+                <h2 className="text-3xl font-semibold mb-4">Mulai perjalanan literasimu hari ini!</h2>
+                    <SearchBar value={searchTerm} onChange={setSearchTerm} placeHolder="Cari artikel..." />
+                </div>
 
                 {/* Article Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pb-20">

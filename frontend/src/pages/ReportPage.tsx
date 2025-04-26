@@ -1,4 +1,4 @@
-import ReportForm from "../components/ReportForm";
+import ReportForm from "../components/forms/ReportForm";
 
 export default function ReportPage() {
     return (
