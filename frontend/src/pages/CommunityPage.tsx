@@ -1,7 +1,7 @@
 import { useState } from "react";
-import PostForm from "../components/PostForm";
+import PostForm from "../components/forms/PostForm";
 import PostItem from "../components/PostItem";
-import SortFilter from "../components/SortFilter";
+import SortFilter from "../components/widgets/SortFilter";
 import TrendingTopics from "../components/TrendingTopics";
 import { PostInterface } from "../types";
 
