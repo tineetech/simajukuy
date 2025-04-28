@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X, Home, Users, FileText, AlertCircle, User, LogOut } from "lucide-react";
+import { Menu, X, Home, Users, FileText, AlertCircle, User, LogOut, LogIn } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import DarkModeToggle from "../widgets/DarkmodeToggle";
 import NotificationWidget from "../widgets/NotificationWidget";
 import ProfileWidget from "../widgets/ProfileWidget";
+import checkIsLogin from "../../services/checkIsLogin";
 
 export default function Header() {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const location = useLocation();
-
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const navLinks = [
         { name: "Home", path: "/", icon: <Home size={20} /> },
         { name: "Komunitas", path: "/komunitas", icon: <Users size={20} /> },
@@ -19,6 +20,13 @@ export default function Header() {
     ];
 
     useEffect(() => {
+        const verifyLogin = async () => {
+          const loggedIn = await checkIsLogin();
+          setIsLoggedIn(loggedIn);
+          console.log("Status Login dari useEffect:", loggedIn);
+        };
+    
+        verifyLogin();
         const handleScroll = () => {
             if (window.scrollY > 50) {
                 setScrolled(true);
@@ -33,13 +41,13 @@ export default function Header() {
 
     return (
         <header
-            className={`fixed top-0 left-0 right-0 z-50 transition-all text-text dark:text-textDark duration-300 ${scrolled ? "bg-tertiary dark:bg-tertiaryDark shadow-md" : "bg-transparent"
+            className={`fixed top-0 left-0 right-0 z-50 transition-all text-text w-full conainer mx-auto px-5 dark:text-white duration-300 ${scrolled ? "bg-transparent dark:bg-transparent" : "bg-transparent"
                 }`}
         >
-            <div className="container mx-auto w-full px-6 md:px-20 py-4 flex items-center justify-between">
+            <div className={`container bg-gray-200 shadow dark:bg-gray-700 mt-5 mx-auto w-full px-10 rounded-4xl md:px-10 py-4 flex items-center filter justify-between ${scrolled ? 'backdrop-blur-sm bg-opacity-25' : ''}`}>
 
                 {/* Logo */}
-                <Link to="/" className="text-2xl font-bold">
+                <Link to="/" className="text-xl m-0 font-bold bg-">
                     Simajukuy
                 </Link>
 
@@ -68,7 +76,15 @@ export default function Header() {
                         <DarkModeToggle />
                     </div>
                     <NotificationWidget />
-                    <ProfileWidget />
+                    {
+                        isLoggedIn ? (
+                            <ProfileWidget />
+                        ) : (
+                            <div onClick={() => window.location.href = '/login'} className="cursor-pointer">
+                                <LogIn />
+                            </div>
+                        )
+                    }
                 </div>
 
                 {/* Mobile */}
@@ -88,7 +104,7 @@ export default function Header() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{ duration: 0.25 }}
-                                className="absolute top-full left-0 w-full bg-tertiary dark:bg-tertiaryDark shadow-md flex flex-col items-start py-4 space-y-4 md:hidden px-6 z-50"
+                                className="absolute top-full left-0 w-full bg-slate-300 dark:bg-tertiaryDark shadow-md flex flex-col items-start py-4 space-y-4 md:hidden px-6 z-50"
                             >
                                 {/* Profile Section */}
                                 <div className="flex items-center space-x-3 w-full">

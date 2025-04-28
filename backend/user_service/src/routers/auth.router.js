@@ -37,7 +37,7 @@ export class AuthRouter {
 
     this.router.post(
       "/verify/reset-password",
-      this.authMiddleware.verifyToken,
+      // this.authMiddleware.verifyToken,
       this.authController.verifyResetPassword
     );
 
@@ -50,10 +50,11 @@ export class AuthRouter {
       "/login-admin",
       this.authController.loginAdmin
     );
-
+    
     this.router.get(
-      "/cek-token",
-      this.authMiddleware.verifyExpiredToken
+      "/me",
+      this.authMiddleware.verifyToken,
+      this.authController.me
     );
   }
 

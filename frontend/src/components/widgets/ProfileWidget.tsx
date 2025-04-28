@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { LogOut, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Logout from "../../services/logout";
+import DataUser from "../../services/dataUser";
 
 export default function ProfileWidget() {
     const [showProfile, setShowProfile] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
-
+    const datas = DataUser()
+    console.log(datas)
+    
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
@@ -18,6 +22,10 @@ export default function ProfileWidget() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+
+    const handleLogout = () => {
+      Logout();
+    };
 
     return (
         <div className="relative hidden md:block" ref={profileRef}>
@@ -48,18 +56,18 @@ export default function ProfileWidget() {
                                 className="w-16 h-16 rounded-full mb-2"
                             />
                             <div className="text-center">
-                                <p className="font-semibold">John Doe</p>
-                                <p className="text-sm text-textBody dark:text-textBodyDark">john@example.com</p>
+                                <p className="font-semibold">{datas?.data?.username ?? ''}</p>
+                                <p className="text-sm text-textBody dark:text-textBodyDark">{datas?.data?.email ?? ''}</p>
                             </div>
                         </div>
                         <div className="mt-4 space-y-2">
                             <a
                                 href="/profile"
-                                className="flex items-center gap-2 px-3 py-2 hover:bg-accent dark:hover:bg-accentDark rounded-lg transition"
+                                className="flex items-center gap-2 px-3 py-2 hover:bg-accent hover:text-white dark:hover:bg-accentDark rounded-lg transition"
                             >
                                 <User size={16} /> Profile
                             </a>
-                            <button className="flex items-center gap-2 px-3 py-2 hover:bg-red-600 rounded-lg transition w-full">
+                            <button className="flex items-center gap-2 px-3 py-2 hover:bg-red-500 hover:text-white rounded-lg transition w-full" onClick={() => handleLogout()}>
                                 <LogOut size={16} /> Logout
                             </button>
                         </div>

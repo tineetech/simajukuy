@@ -52,8 +52,9 @@ export class UsersController {
       const sqlCreateData = 'INSERT INTO users (username, first_name, last_name, email, phone, password, role) VALUES (?, ?, ?, ?, ?, ?, ?)';
       const sqlCreateKoin = 'INSERT INTO koin (user_id, amount) VALUES (?, ?)';
       const hashedPass = await hashPass(password)
+      console.log(req.body)
       connection.query(sqlCreateData, [username, first_name, last_name, email, phone, hashedPass, role], (err, result) => {
-        if (err) res.json({"error": err})
+        if (err) res.status(500).json({"error": err})
         if (!result) {
           return res.status(400).json({ message: "User not found" });
         }

@@ -74,7 +74,7 @@ export class AuthController {
     try {
       connection.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
         if (err) {
-          console.error("DB Error:", err);
+          console.error("DB Error:", err); 
           return res.status(500).json({ message: "Internal server error" });
         }
     
@@ -160,13 +160,10 @@ export class AuthController {
   async verifyResetPassword(req, res) {
     const { oldPassword, password, confirmPassword } = req.body;
     const token = req.headers.authorization?.replace("Bearer ", "")
+    const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
     try {
       if (!token) {
         return res.status(401).json({ message: "Unauthorized, where youre reset token ?" });
-      }
-
-      if (!req.user) {
-        return res.status(401).json({ message: "Unauthorized" });
       }
 
       // Validasi kesesuaian password baru
@@ -178,7 +175,7 @@ export class AuthController {
         return res.status(400).json({ message: "Both old and new passwords are required" });
       }
 
-      const userId = req.user.id;
+      const userId = decodedToken.id;
 
       connection.query("SELECT * FROM users WHERE user_id = ? AND password_reset_token = ?", [userId, token], async (err, results) => {
         if (results.length < 1) return res.status(400).json({ message: "Invalid credentials", data: results });
@@ -270,7 +267,10 @@ export class AuthController {
   
   async me(req, res) {
     try {
-      connection.query("SELECT * FROM users WHERE user_id = ?", [req.user.userId], (err, results) => {
+      if (!req.user.id) {
+        return res.status(500).json({ message: "Unauthorization" });
+      }
+      connection.query("SELECT * FROM users WHERE user_id = ?", [req.user.id], (err, results) => {
         if (err) {
           console.error("DB Error:", err);
           return res.status(500).json({ message: "Internal server error" });
