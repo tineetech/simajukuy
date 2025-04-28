@@ -49,3 +49,10 @@
 .custom-scrollbar:hover {
     scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
 }
+.banner1 {
+    width: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 30%, transparent 100%), url('/images/banner1.jpg') center center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+    overflow: hidden;
+}

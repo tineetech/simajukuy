@@ -10,7 +10,7 @@ export default function DarkModeToggle() {
             onClick={toggleDarkMode}
             className="relative w-14 h-7 rounded-full focus:outline-none"
             initial={false}
-            animate={{ backgroundColor: darkMode ? "#4B5563" : "#E5E7EB" }}
+            animate={{ backgroundColor: darkMode ? "#4B5563" : "rgba(0, 0, 0, .1)" }}
             transition={{ duration: 0.2 }}
         >
             <motion.div

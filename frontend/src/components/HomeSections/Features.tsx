@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Megaphone, Users, Bot, Coins } from "lucide-react"; // Import ikon dari Lucide React
+import { Megaphone, Users, Bot, Coins, ArrowRight } from "lucide-react"; // Import ikon dari Lucide React
 import { JSX } from "react/jsx-runtime";
 
 interface Feature {
@@ -40,22 +40,31 @@ export default function Features() {
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     return (
-        <section className="px-6 md:px-16 lg:px-32 my-40">
-            <h1 className="text-2xl md:text-4xl font-bold mb-6">Fitur Utama <span className="text-accent">SiMajuKuy</span>!</h1>
+        <section className="px-6 my-40">
+            <h1 className="text-2xl md:text-4xl font-bold mb-6">Fitur Utama <span className="text-accent">SiMajuKuy</span></h1>
             <div className="flex flex-col md:flex-row gap-8">
                 <div className="w-full md:w-1/2 flex flex-col space-y-4">
                     {features.map((feature, index) => (
                         <button
                             key={index}
                             onClick={() => setSelectedIndex(index)}
-                            className={`flex items-center px-6 py-4 rounded-lg font-semibold md:text-lg transition-all duration-300 ${
+                            className={`flex items-center px-6 justify-between py-4 rounded-lg font-semibold md:text-lg transition-all duration-300 ${
                                 selectedIndex === index
-                                    ? "bg-primary dark:bg-primaryDark shadow-lg scale-105"
-                                    : "bg-secondary dark:bg-secondaryDark dark:hover:bg-primaryDark hover:bg-primary"
+                                    ? "bg-primary dark:bg-primaryDark shadow-lg w-[100%] text-white"
+                                    : "bg-tertiary border-1 border-gray-300 text-black dark:text-gray-200 dark:border-0 hover:text-white dark:bg-slate-700 w-[90%] dark:hover:bg-primaryDark hover:w-[100%] hover:bg-primary"
                             }`}
                         >
-                            {feature.icon}
-                            {feature.title}
+                            <div className="flex">
+                                {feature.icon}
+                                {feature.title}
+                            </div>
+                            {
+                                selectedIndex === index ? (
+                                    <div className="bg-white p-1.5 rounded-full">
+                                        <ArrowRight size={18} color="#345B93" />
+                                    </div>
+                                ) : ''
+                            }
                         </button>
                     ))}
                 </div>
@@ -65,7 +74,7 @@ export default function Features() {
                     initial={{ opacity: 0, x: 50 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, ease: "easeInOut" }}
-                    className="w-full md:w-1/2 bg-secondary shadow-lg rounded-lg p-8 flex flex-col"
+                    className="w-full md:w-1/2 bg-white border-2 border-gray-200 rounded-lg p-8 flex dark:bg-slate-700 dark:border-0 flex-col"
                 >
                     <h2 className="text-xl md:text-2xl font-bold mb-4">{features[selectedIndex].title}</h2>
                     <p className="md:text-lg leading-relaxed">{features[selectedIndex].description}</p>

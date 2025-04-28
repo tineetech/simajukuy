@@ -1,10 +1,10 @@
 export default function Footer() {
   return (
-    <footer className="bg-tertiary text-text dark:bg-tertiaryDark dark:text-textDark">
-      <div className="container mx-auto py-10 px-6 md:px-16 lg:px-32">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <footer className="bg-slate-200 text-text dark:bg-tertiaryDark dark:text-textDark">
+      <div className="container mx-auto py-10 px-6">
+        <div className="justify-between flex flex-wrap gap-8">
           {/* Logo & Deskripsi */}
-          <div>
+          <div className="w-100">
             <h2 className="text-2xl font-bold mb-3">Simajukuy</h2>
             <p className="text-sm leading-relaxed">
               Platform AI & komunitas untuk membantu masyarakat melaporkan masalah kota dan berbagi solusi demi lingkungan yang lebih baik.
@@ -37,7 +37,7 @@ export default function Footer() {
         </div>
 
         {/* Garis & Copyright */}
-        <div className="border-t border-white/30 mt-10 pt-6 text-center text-sm text-gray-300">
+        <div className="border-t border-gray-300 mt-10 pt-6 text-center text-sm text-gray-400">
           &copy; {new Date().getFullYear()} Simajukuy. Semua hak dilindungi.
         </div>
       </div>

@@ -17,9 +17,9 @@ export default function About() {
     }, [images.length]);
 
     return (
-        <section className="relative z-10 my-20 px-6 md:px-16 lg:px-32 flex flex-col md:flex-row items-center gap-12">
+        <section className="relative z-10 my-20 px-6 justify-between w-full flex flex-col md:flex-row items-center gap-12">
             {/* Gambar Carousel Persegi */}
-            <div className="relative w-[300px] h-[300px] md:w-[380px] md:h-[380px] overflow-hidden rounded-xl shadow-xl flex-shrink-0">
+            <div className="relative w-[250px] h-[200px] md:w-[500px] md:h-[300px] overflow-hidden rounded-xl shadow-xl flex-shrink-0">
                 {images.map((img, index) => (
                     <motion.img
                         key={index}
@@ -58,8 +58,13 @@ export default function About() {
                     transition={{ duration: 0.5, delay: 0.4 }}
                 >
                     <Link to="/about" className="flex justify-center md:justify-start">
-                        <button className="px-4 py-2 bg-accent hover:bg-indigo-700 text-white transition-colors ease-in-out flex items-center gap-2 rounded-lg text-sm md:text-base">
-                            Pelajari Lebih Lanjut <ArrowUpRight size={18} />
+                        <button className="px-2 py-2 bg-primary hover:bg-indigo-700 text-white transition-colors ease-in-out flex items-center gap-2 rounded-full text-sm md:text-base">
+                            <span className="mx-2">
+                                Pelajari Lebih Lanjut 
+                            </span>
+                            <div className="bg-white p-1.5 rounded-full">
+                                <ArrowUpRight size={18} color="#345B93" />
+                            </div>
                         </button>
                     </Link>
                 </motion.div>
