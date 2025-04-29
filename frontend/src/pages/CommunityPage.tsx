@@ -35,7 +35,7 @@ export default function CommunityPage() {
     });
 
     return (
-        <section className="bg-background text-text dark:bg-backgroundDark dark:text-textDark h-full">
+        <section className="bg-background text-text dark:bg-backgroundDark py-10 dark:text-textDark h-full">
             <div className="container mx-auto max-w-4xl py-12 pt-24 px-6">
                 <h1 className="text-3xl font-bold mb-6">Komunitas</h1>
                 <PostForm />

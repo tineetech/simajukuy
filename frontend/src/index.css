@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "flyonui/src/vendor/flatpickr.css";
 
 @theme {
     /* Light Mode */
@@ -55,4 +56,9 @@
     background-repeat: no-repeat !important;
     background-size: cover !important;
     overflow: hidden;
+}
+.bg-lapor {
+    background: url('/images/banner1.jpg') center center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
 }

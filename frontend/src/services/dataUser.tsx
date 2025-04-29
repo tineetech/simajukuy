@@ -4,6 +4,8 @@ import Swal from "sweetalert2";
 export interface UserData {
     username?: string;
     email?: string;
+    user_id?: number;
+    id?: number;
     // properti lain
   }
 
@@ -32,12 +34,13 @@ const DataUser = () => {
 
         if (!response.ok) {
           const errorMessage = await response.json() || `Gagal mendapatkan data: Status ${response.status}`;
-        //   setError(errorMessage);
-          Swal.fire({
-            title: "Gagal Mendapatkan Data",
-            text: errorMessage,
-            icon: "error",
-          });
+          // setError(errorMessage);
+          // Swal.fire({
+          //   title: "Gagal Mendapatkan Data",
+          //   text: errorMessage,
+          //   icon: "error",
+          // });
+          console.log(errorMessage)
         } else {
           const resData = await response.json();
           setData(resData.results ? resData.results[0] : resData); // Menangani jika 'results' tidak ada

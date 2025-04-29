@@ -1,6 +1,11 @@
 import express from "express";
 import cors from "cors";
 
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -23,6 +28,8 @@ app.use(express.urlencoded({ extended: true }));
 
 const laporRouter = new LaporRouter().getRouter();
 app.use("/api/lapor", laporRouter);
+app.use("/storage/images", express.static(path.join(__dirname, "../storage/images")));
+app.use("/storage/videos", express.static(path.join(__dirname, "../storage/videos")));
 
 // Route home
 app.get("/", (req, res) => {

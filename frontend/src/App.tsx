@@ -27,7 +27,7 @@ export default function App() {
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="reset-password" element={<ResetPassPage />} />
-          <Route path="verification/reset-password/:token" element={<VerifyResetPassPage />} />
+          <Route path="verification/reset-password/:tokenReset" element={<VerifyResetPassPage />} />
         </Route>
 
         <Route path="/admin" element={<AdminLayout />}>
