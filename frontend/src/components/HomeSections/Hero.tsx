@@ -1,17 +1,17 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { MessageSquareWarningIcon } from 'lucide-react';
+import { Megaphone } from 'lucide-react';
 
 export default function Hero() {
     return (
-        <div className="bg-secondary overflow-hidden">
+        <div className="bg-tertiary dark:bg-tertiaryDark overflow-hidden">
             <section className="relative flex flex-col md:flex-row items-center justify-between md:px-20 pt-14 container mx-auto">
                 <div className="max-w-lg text-center md:text-left relative z-10 pt-12 md:pt-0 px-8 md:px-0">
                     <h1 className="text-2xl font-bold md:text-5xl">Solusi Cerdas untuk Kota yang Lebih Baik</h1>
-                    <p className="mt-4 text-sm md:text-lg">Laporkan masalah di sekitar Anda dan temukan solusi bersama komunitas.</p>
+                    <p className="mt-4 font-light text-sm md:text-lg text-textBody dark:text-textBodyDark">Laporkan masalah di sekitar Anda dan temukan solusi bersama komunitas.</p>
                     <Link to="/lapor" className="flex justify-center md:justify-start">
-                        <button className="px-4 py-1.5 mt-4 bg-accent hover:bg-indigo-700 transition-colors ease-in-out flex items-center gap-2 rounded-lg">
-                            Lapor Sekarang <MessageSquareWarningIcon size={18} />
+                        <button className="px-4 py-1.5 mt-4 bg-accent text-textDark dark:bg-accentDark hover:bg-indigo-700 transition-colors ease-in-out flex items-center gap-2 rounded-lg">
+                            Lapor Sekarang <Megaphone size={18} />
                         </button>
                     </Link>
                 </div>
@@ -21,7 +21,7 @@ export default function Hero() {
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1.2, opacity: 1 }}
                         transition={{ duration: 1.5, ease: "easeOut" }}
-                        className="absolute w-60 h-60 md:w-[25rem] md:h-[25rem] bg-primary opacity-30 blur-[100px] z-[-1]"
+                        className="absolute w-60 h-60 md:w-[25rem] md:h-[25rem] bg-primary dark:bg-primaryDark opacity-30 blur-[100px] z-[-1]"
                     />
 
                     <img src="/images/hero.png" alt="Gedung" className="w-80 md:w-[28rem] object-cover z-1" />

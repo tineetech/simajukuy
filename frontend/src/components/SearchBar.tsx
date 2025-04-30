@@ -14,11 +14,11 @@ export default function SearchBar({ value, onChange }: SearchBarProps) {
                 <input
                     type="text"
                     placeholder="Cari artikel..."
-                    className="w-full px-4 py-3 pr-12 rounded-xl bg-secondary text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="w-full px-4 py-3 pr-12 rounded-xl bg-tertiary placeholder-textBody dark:bg-tertiaryDark dark:placeholder-textBodyDark focus:outline-none focus:ring-2 focus:ring-accent"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                 />
-                <Search className="absolute right-4 top-3 text-gray-400" size={20} />
+                <Search className="absolute right-4 top-3 text-textBody dark:text-textBodyDark" size={20} />
             </div>
         </div>
     );

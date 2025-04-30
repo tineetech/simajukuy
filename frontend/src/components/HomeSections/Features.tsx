@@ -50,8 +50,8 @@ export default function Features() {
                             onClick={() => setSelectedIndex(index)}
                             className={`flex items-center px-6 py-4 rounded-lg font-semibold md:text-lg transition-all duration-300 ${
                                 selectedIndex === index
-                                    ? "bg-primary shadow-lg scale-105"
-                                    : "bg-secondary hover:bg-primary"
+                                    ? "bg-primary dark:bg-primaryDark shadow-lg scale-105"
+                                    : "bg-secondary dark:bg-secondaryDark dark:hover:bg-primaryDark hover:bg-primary"
                             }`}
                         >
                             {feature.icon}

@@ -8,7 +8,7 @@ export default function TrendingTopics() {
                 {dummyTrends.map((trend) => (
                     <span
                         key={trend}
-                        className="text-sm bg-tertiary text-gray-300 px-3 py-1 rounded-full"
+                        className="text-sm bg-tertiary dark:bg-tertiaryDark px-3 py-1 rounded-full"
                     >
                         {trend}
                     </span>

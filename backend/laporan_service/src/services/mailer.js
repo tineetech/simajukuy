@@ -2,9 +2,14 @@ import nodemailer from "nodemailer";
 import fs from "fs";
 import path from "path";
 import handlebars from "handlebars";
-// require("dotenv").config();
 import dotenv from "dotenv";
 dotenv.config();
+
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -19,9 +24,7 @@ const transporter = nodemailer.createTransport({
 
 export const sendVerificationEmail = async (email, token) => {
   try {
-    const templatePath = path.join(
-      "../backend/src/templates/verify.hbs"
-    );
+    const templatePath = path.resolve(__dirname, "../templates/verify.hbs");
     const source = fs.readFileSync(templatePath, "utf-8");
     const template = handlebars.compile(source);
 
@@ -36,8 +39,8 @@ export const sendVerificationEmail = async (email, token) => {
       html,
       attachments: [
         {
-          filename: "/LIT.png",
-          path: path.join("../backend/public/LIT.png"),
+          filename: "LIT.png",
+          path: path.resolve(__dirname, "../../public/LIT.png"),
           cid: "logo",
         },
       ],
@@ -58,9 +61,10 @@ transporter.verify((error) => {
 
 export const sendResetPassEmail = async (email, token) => {
   try {
-    const templatePath = path.join("../backend/src/templates", "resetpass.hbs");
+    const templatePath = path.resolve(__dirname, "../templates/resetpass.hbs");
     const templateSource = fs.readFileSync(templatePath, "utf-8");
     const compiledTemplate = handlebars.compile(templateSource);
+
     const html = compiledTemplate({
       link: `${process.env.BASE_URL_FE}/verification/reset-password/${token}`,
     });
@@ -72,8 +76,8 @@ export const sendResetPassEmail = async (email, token) => {
       html,
       attachments: [
         {
-          filename: "/LIT.png",
-          path: path.join("../backend/public/LIT.png"),
+          filename: "LIT.png",
+          path: path.resolve(__dirname, "../../public/LIT.png"),
           cid: "logo",
         },
       ],
@@ -85,11 +89,7 @@ export const sendResetPassEmail = async (email, token) => {
 
 export const sendReverificationEmail = async (email, token) => {
   try {
-    const templatePath = path.join(
-      __dirname,
-      "../templates",
-      "reverification.hbs"
-    );
+    const templatePath = path.resolve(__dirname, "../templates/reverification.hbs");
     const templateSource = fs.readFileSync(templatePath, "utf-8");
     const compiledTemplate = handlebars.compile(templateSource);
     const html = compiledTemplate({

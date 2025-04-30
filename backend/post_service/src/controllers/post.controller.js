@@ -9,11 +9,12 @@ export class PostController {
       const user_id = req.user?.id;
       if (!user_id) return res.status(401).json({ message: "Unauthorized" });
 
-      const statusValue = status ? "active" : "draft";
+      const statusValue = status || "active";
+
       const allowedTypes = ["text", "image", "video", "polling"];
+
       const cleanType = allowedTypes.includes(type) ? type : "text";
 
-      // Insert post utama
       const [result] = await connection
         .promise()
         .query(
@@ -24,7 +25,6 @@ export class PostController {
       const postId = result.insertId;
       const file = req.files?.[0];
 
-      // Handle image
       if (cleanType === "image") {
         if (!file)
           return res
@@ -55,7 +55,6 @@ export class PostController {
           .json({ message: "Postingan berhasil dibuat dengan gambar", postId });
       }
 
-      // Handle video
       if (cleanType === "video") {
         if (!file)
           return res
@@ -80,8 +79,6 @@ export class PostController {
           .status(201)
           .json({ message: "Postingan berhasil dibuat dengan video", postId });
       }
-
-      // Handle polling
 
       if (cleanType === "polling") {
         if (
@@ -124,50 +121,6 @@ export class PostController {
         postId,
         type: cleanType,
       });
-    } catch (error) {
-      return res.status(500).json({ message: error.message });
-    }
-  }
-
-  static async votePoll(req, res) {
-    try {
-      const user_id = req.user?.id;
-      const { option_id } = req.params; // ambil dari params
-
-      // Validasi opsi
-      const [option] = await connection
-        .promise()
-        .query("SELECT post_id FROM postingan_polling_options WHERE id = ?", [
-          option_id,
-        ]);
-
-      if (option.length === 0) {
-        return res.status(404).json({ message: "Opsi tidak valid" });
-      }
-
-      // Cek apakah sudah vote
-      const [existingVote] = await connection.promise().query(
-        `SELECT * FROM postingan_polling_votes
-         WHERE user_id = ? AND option_id IN (
-           SELECT id FROM postingan_polling_options 
-           WHERE post_id = ?
-         )`,
-        [user_id, option[0].post_id]
-      );
-
-      if (existingVote.length > 0) {
-        return res.status(400).json({ message: "Anda sudah melakukan vote" });
-      }
-
-      // Insert vote
-      await connection
-        .promise()
-        .query(
-          "INSERT INTO postingan_polling_votes (option_id, user_id) VALUES (?, ?)",
-          [option_id, user_id]
-        );
-
-      return res.status(201).json({ message: "Vote berhasil dicatat" });
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }
@@ -222,45 +175,10 @@ export class PostController {
     }
   }
 
-  static async toggleLikePost(req, res) {
-    try {
-      const user_id = req.user?.id;
-      const { post_id } = req.params;
-      if (!user_id) return res.status(401).json({ message: "Unauthorized" });
-
-      const [check] = await connection
-        .promise()
-        .query(
-          "SELECT * FROM postingan_likes WHERE post_id = ? AND user_id = ?",
-          [post_id, user_id]
-        );
-
-      if (check.length > 0) {
-        await connection
-          .promise()
-          .query(
-            "DELETE FROM postingan_likes WHERE post_id = ? AND user_id = ?",
-            [post_id, user_id]
-          );
-        return res.status(200).json({ message: "Unliked" });
-      } else {
-        await connection
-          .promise()
-          .query(
-            "INSERT INTO postingan_likes (post_id, user_id) VALUES (?, ?)",
-            [post_id, user_id]
-          );
-        return res.status(200).json({ message: "Liked" });
-      }
-    } catch (error) {
-      return res.status(500).json({ message: error.message });
-    }
-  }
-
   static async getPostById(req, res) {
     try {
       const { id } = req.params;
-  
+
       const query = `
         SELECT 
           p.*,
@@ -299,15 +217,15 @@ export class PostController {
         WHERE p.id = ?
         LIMIT 1;
       `;
-  
+
       const [postRows] = await connection.promise().query(query, [id]);
-  
+
       if (postRows.length === 0) {
         return res.status(404).json({ message: "Postingan tidak ditemukan" });
       }
-  
+
       const post = postRows[0];
-  
+
       // Get comments
       const [commentRows] = await connection
         .promise()
@@ -315,7 +233,7 @@ export class PostController {
           "SELECT * FROM postingan_comments WHERE post_id = ? ORDER BY created_at ASC",
           [id]
         );
-  
+
       return res.status(200).json({
         post,
         comments: commentRows,
@@ -324,7 +242,6 @@ export class PostController {
       return res.status(500).json({ message: error.message });
     }
   }
-  
 
   // ... (method lainnya tetap sama)
 
@@ -397,62 +314,57 @@ export class PostController {
     if (rows.length === 0) throw new Error("Postingan tidak ditemukan");
   }
 
-  static async addComment(req, res) {
+  static async votePoll(req, res) {
     try {
-      const { post_id } = req.params;
       const user_id = req.user?.id;
-      const { content } = req.body;
+      const { post_id, option_id } = req.params;
 
-      console.log("BODY:", req.body);
-      console.log("Headers:", req.headers);
+      // Validasi opsi polling berdasarkan option_id
+      const [option] = await connection
+        .promise()
+        .query("SELECT post_id FROM postingan_polling_options WHERE id = ?", [
+          option_id,
+        ]);
 
-      if (!content) {
-        return res
-          .status(400)
-          .json({ message: "Komentar tidak boleh kosong." });
+      if (option.length === 0) {
+        return res.status(404).json({ message: "Opsi tidak valid" });
       }
 
+      // Pastikan post_id yang diberikan sesuai dengan post_id opsi yang dipilih
+      if (option[0].post_id !== parseInt(post_id)) {
+        return res
+          .status(400)
+          .json({ message: "Post ID tidak sesuai dengan opsi" });
+      }
+
+      // Cek apakah user sudah memberikan vote pada post_id tersebut
+
+      console.log(req.message);
+
+      const [existingVote] = await connection.promise().query(
+        `SELECT * FROM postingan_polling_votes 
+         WHERE user_id = ? 
+         AND option_id IN (
+           SELECT id FROM postingan_polling_options WHERE post_id = ?
+         )`,
+        [user_id, post_id]
+      );
+
+      if (existingVote.length > 0) {
+        return res
+          .status(400)
+          .json({ message: "Anda sudah melakukan vote pada post ini" });
+      }
+
+      // Insert vote
       await connection
         .promise()
         .query(
-          "INSERT INTO postingan_comments (post_id, user_id, content) VALUES (?, ?, ?)",
-          [post_id, user_id, content]
+          "INSERT INTO postingan_polling_votes (option_id, user_id) VALUES (?, ?)",
+          [option_id, user_id]
         );
 
-      return res
-        .status(201)
-        .json({ message: "Komentar berhasil ditambahkan." });
-    } catch (error) {
-      return res.status(500).json({ message: error.message });
-    }
-  }
-
-  static async deleteComment(req, res) {
-    try {
-      const { id } = req.params; // id komentar
-      const user_id = req.user?.id;
-      const user_role = req.user?.role;
-
-      const [rows] = await connection
-        .promise()
-        .query("SELECT user_id FROM postingan_comments WHERE id = ?", [id]);
-
-      if (rows.length === 0)
-        return res.status(404).json({ message: "Komentar tidak ditemukan" });
-
-      const commentOwner = rows[0].user_id;
-
-      if (user_id !== commentOwner && user_role !== "admin") {
-        return res.status(403).json({
-          message: "Forbidden: Tidak bisa menghapus komentar orang lain",
-        });
-      }
-
-      await connection
-        .promise()
-        .query("DELETE FROM postingan_comments WHERE id = ?", [id]);
-
-      return res.status(200).json({ message: "Komentar berhasil dihapus" });
+      return res.status(201).json({ message: "Vote berhasil dicatat" });
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }

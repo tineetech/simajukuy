@@ -20,6 +20,24 @@ export class UsersController {
     }
   }
 
+  async getUserById (req, res) {
+    try {
+      const sqlDataGet = 'SELECT * FROM users WHERE user_id = ?';
+      connection.query(sqlDataGet, [req.params.id ?? 1], (err, result) => {
+        if (err) res.json({"error": err})
+        if (result) {
+          const sanitizedData = result.map(({ password, ...user }) => user);
+    
+          res.json({ status: 200, message: 'success get data', data: sanitizedData })
+        }
+      })
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      return res.status(500).json({ error: message });
+    }
+  }
+
   async createUsers (req, res) {
     try {
       const { 

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import SearchBar from "../components/SearchBar";
-import ArticleCard from "../components/ArticleCard";
+import ArticleCard from "../components/cards/ArticleCard";
 import { ArticleInterface } from "../types";
 
 const articleDetails: ArticleInterface[] = [
     {
         id: 1,
         title: "Cara Efektif Mengelola Sampah Rumah Tangga",
-        image: "/images/article1.jpg",
+        image: "/images/about.jpg",
         description: "Pelajari cara mudah dan efektif dalam mengelola sampah rumah tangga sehari-hari.",
         content: "...",
     },
@@ -42,7 +42,7 @@ export default function Artikel() {
     );
 
     return (
-        <section className="bg-background text-text">
+        <section className="bg-background dark:bg-backgroundDark text-text dark:text-textDark">
             <div className="container mx-auto pt-20 px-4 md:px-20">
 
                 {/* Hero Section */}
@@ -58,41 +58,41 @@ export default function Artikel() {
                         ` : undefined,
                     }}
                 >
-                    <div className="bg-secondary rounded-xl p-6 flex flex-col justify-between col-span-2 md:[grid-area:a]">
+                    <div className="bg-tertiary dark:bg-tertiaryDark rounded-xl p-6 flex flex-col justify-between col-span-2 md:[grid-area:a]">
                         <h1 className="text-3xl md:text-4xl font-bold mb-2">
                             Jelajahi Artikel Edukatif
                         </h1>
-                        <p className="text-gray-400">
+                        <p className="text-textBody dark:textBodyDark">
                             Tentang kota, lingkungan, solusi hijau, dan energi masa depan.
                         </p>
                     </div>
 
-                    <div className="bg-secondary hidden md:flex md:flex-col rounded-xl p-4 justify-between md:[grid-area:b]">
+                    <div className="bg-tertiary dark:bg-tertiaryDark hidden md:flex md:flex-col rounded-xl p-4 justify-between md:[grid-area:b]">
                         <h2 className="font-semibold text-lg mb-1">{articleDetails[0].title}</h2>
-                        <p className="text-gray-400 text-sm">{articleDetails[0].description}</p>
+                        <p className="text-textBody dark:text-textBodyDark text-sm">{articleDetails[0].description}</p>
                     </div>
 
-                    <div className="bg-secondary hidden md:flex md:flex-col rounded-xl p-4 md:[grid-area:c]">
+                    <div className="bg-tertiary dark:bg-tertiaryDark hidden md:flex md:flex-col rounded-xl p-4 md:[grid-area:c]">
                         <h2 className="font-semibold text-lg mb-1">{articleDetails[1].title}</h2>
-                        <p className="text-gray-400 text-sm">{articleDetails[1].description}</p>
+                        <p className="text-textBody dark:text-textBodyDark text-sm">{articleDetails[1].description}</p>
                     </div>
 
-                    <div className="bg-secondary hidden md:flex md:flex-col rounded-xl p-4 md:[grid-area:d]">
+                    <div className="bg-tertiary dark:bg-tertiaryDark hidden md:flex md:flex-col rounded-xl p-4 md:[grid-area:d]">
                         <h2 className="font-semibold text-lg mb-1">{articleDetails[2].title}</h2>
-                        <p className="text-gray-400 text-sm">{articleDetails[2].description}</p>
+                        <p className="text-textBody dark:text-textBodyDark text-sm">{articleDetails[2].description}</p>
                     </div>
 
-                    <div className="bg-secondary hidden md:flex md:flex-col rounded-xl p-4 md:[grid-area:e]">
+                    <div className="bg-tertiary dark:bg-tertiaryDark hidden md:flex md:flex-col rounded-xl p-4 md:[grid-area:e]">
                         <h2 className="font-semibold text-lg mb-1">{articleDetails[3].title}</h2>
-                        <p className="text-gray-400 text-sm">{articleDetails[3].description}</p>
+                        <p className="text-textBody dark:text-textBodyDark text-sm">{articleDetails[3].description}</p>
                     </div>
 
-                    <div className="bg-secondary rounded-xl p-4 flex items-center justify-center text-center md:[grid-area:g]">
-                        <span className="text-gray-400">🌱 Edukasi berkelanjutan</span>
+                    <div className="bg-tertiary dark:bg-tertiaryDark rounded-xl p-4 flex items-center justify-center text-center md:[grid-area:g]">
+                        <span className="text-textBody dark:text-textBodyDark">🌱 Edukasi berkelanjutan</span>
                     </div>
 
-                    <div className="bg-secondary rounded-xl p-4 flex items-center justify-center text-center md:[grid-area:f]">
-                        <span className="text-gray-400">Lebih banyak artikel segera hadir...</span>
+                    <div className="bg-tertiary dark:bg-tertiaryDark rounded-xl p-4 flex items-center justify-center text-center md:[grid-area:f]">
+                        <span className="text-textBody dark:text-textBodyDark">Lebih banyak artikel segera hadir...</span>
                     </div>
                 </div>
 

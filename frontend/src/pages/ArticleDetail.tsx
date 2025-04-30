@@ -49,19 +49,19 @@ export default function ArticleDetail() {
     }
 
     return (
-        <section className="bg-background text-text">
+        <section className="bg-background dark:bg-backgroundDark text-text dark:text-textDark">
             <div className="container mx-auto max-w-3xl px-4 md:px-0 py-24">
-                <div className="bg-secondary p-6 md:p-8 rounded-xl">
+                <div className="bg-tertiary dark:bg-tertiaryDark p-6 md:p-8 rounded-xl">
                     <img
                         src={article.image}
                         alt={article.title}
                         className="w-full h-48 md:h-60 object-cover rounded-lg mb-6"
                     />
                     <h1 className="text-2xl md:text-3xl font-bold mb-4">{article.title}</h1>
-                    <p className="text-gray-400 text-sm md:text-base whitespace-pre-line">{article.content}</p>
+                    <p className="text-textBody dark:text-textBodyDark text-sm md:text-base whitespace-pre-line">{article.content}</p>
                     <Link
                         to="/artikel"
-                        className="inline-flex items-center gap-2 mt-8 bg-accent px-3 py-1.5 rounded-lg text-sm md:text-base hover:bg-indigo-700 transition-all duration-200"
+                        className="inline-flex items-center gap-2 mt-8 bg-accent dark:bg-accentDark text-textDark px-3 py-1.5 rounded-lg text-sm md:text-base hover:bg-indigo-700 transition-all duration-200"
                     >
                         <ArrowLeft size={18} />
                         Kembali ke Artikel
