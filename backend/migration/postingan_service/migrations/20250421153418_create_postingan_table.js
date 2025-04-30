@@ -7,13 +7,12 @@ exports.up = async function (knex) {
   await knex.schema.createTable("postingan", (table) => {
     table.increments("id").primary();
     table.integer("user_id").notNullable();
-    table.enum("type", ["text", "image", "video", "polling"])
+    table
+      .enum("type", ["text", "image", "video", "polling"])
       .notNullable()
       .defaultTo("text");
     table.text("content").notNullable();
-    table.enum("status", ["active", "draft"])
-      .notNullable()
-      .defaultTo("active");
+    table.enum("status", ["active", "draft"]).notNullable().defaultTo("active");
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table.timestamp("updated_at").defaultTo(knex.fn.now());
   });
@@ -21,7 +20,8 @@ exports.up = async function (knex) {
   // Tabel khusus: postingan_image
   await knex.schema.createTable("postingan_image", (table) => {
     table.increments("id").primary();
-    table.integer("post_id")
+    table
+      .integer("post_id")
       .unsigned()
       .notNullable()
       .references("id")
@@ -36,7 +36,8 @@ exports.up = async function (knex) {
   // Tabel khusus: postingan_video
   await knex.schema.createTable("postingan_video", (table) => {
     table.increments("id").primary();
-    table.integer("post_id")
+    table
+      .integer("post_id")
       .unsigned()
       .notNullable()
       .references("id")
@@ -51,7 +52,8 @@ exports.up = async function (knex) {
   // Tabel polling baru
   await knex.schema.createTable("postingan_polling_options", (table) => {
     table.increments("id").primary();
-    table.integer("post_id")
+    table
+      .integer("post_id")
       .unsigned()
       .notNullable()
       .references("id")
@@ -63,7 +65,8 @@ exports.up = async function (knex) {
 
   await knex.schema.createTable("postingan_polling_votes", (table) => {
     table.increments("id").primary();
-    table.integer("option_id")
+    table
+      .integer("option_id")
       .unsigned()
       .notNullable()
       .references("id")
@@ -77,7 +80,8 @@ exports.up = async function (knex) {
   // Tabel tambahan: postingan_likes
   await knex.schema.createTable("postingan_likes", (table) => {
     table.increments("id").primary();
-    table.integer("post_id")
+    table
+      .integer("post_id")
       .unsigned()
       .notNullable()
       .references("id")
@@ -89,10 +93,29 @@ exports.up = async function (knex) {
     table.unique(["post_id", "user_id"]);
   });
 
+  await knex.schema.createTable("postingan_reports", (table) => {
+    table.increments("id").primary();
+    table
+      .integer("post_id")
+      .unsigned()
+      .notNullable()
+      .references("id")
+      .inTable("postingan")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
+    table.integer("user_id").unsigned().notNullable(); // User yang melaporkan
+    table.text("reason").notNullable(); // Alasan laporan
+    table
+      .enum("status", ["pending", "resolved", "rejected"])
+      .defaultTo("pending");
+    table.timestamp("created_at").defaultTo(knex.fn.now());
+  });
+
   // Tabel untuk komentar
   await knex.schema.createTable("postingan_comments", (table) => {
     table.increments("id").primary();
-    table.integer("post_id")
+    table
+      .integer("post_id")
       .unsigned()
       .notNullable()
       .references("id")
@@ -103,7 +126,7 @@ exports.up = async function (knex) {
     table.text("content").notNullable();
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table.timestamp("updated_at").defaultTo(knex.fn.now());
-    
+
     // Index untuk optimasi query
     table.index(["post_id"], "idx_comment_post");
     table.index(["user_id"], "idx_comment_user");
@@ -116,6 +139,7 @@ exports.up = async function (knex) {
  */
 exports.down = async function (knex) {
   // Urutkan penghapusan dari yang punya foreign key terlebih dahulu
+  await knex.schema.dropTableIfExists("postingan_reports");
   await knex.schema.dropTableIfExists("postingan_comments");
   await knex.schema.dropTableIfExists("postingan_likes");
   await knex.schema.dropTableIfExists("postingan_polling_votes");
