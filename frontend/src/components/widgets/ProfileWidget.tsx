@@ -8,7 +8,7 @@ export default function ProfileWidget() {
     const [showProfile, setShowProfile] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
     const datas = DataUser()
-    
+
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
@@ -35,7 +35,7 @@ export default function ProfileWidget() {
                 className="rounded-full overflow-hidden w-10 h-10"
             >
                 <img
-                    src="/images/profile.jpg"
+                    src={datas?.data?.avatar ?? ''}
                     alt="Profile"
                     className="object-cover w-full h-full"
                 />

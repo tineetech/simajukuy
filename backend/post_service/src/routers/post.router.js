@@ -18,18 +18,18 @@ export class PostRouter {
   initializeRoutes() {
     this.router.get(
       "/",
-      this.authMiddleware.verifyToken,
+      // this.authMiddleware.verifyToken,
       PostController.getAllPosts
     );
 
     this.router.get(
       "/:id",
-      this.authMiddleware.verifyToken,
+      // this.authMiddleware.verifyToken,
       PostController.getPostById
     );
 
     this.router.post(
-      "/",
+      "/create",
       this.authMiddleware.verifyToken,
       upload.any(),
       this.validateFileUpload,
@@ -65,7 +65,7 @@ export class PostRouter {
       this.authMiddleware.verifyToken,
       PostController.votePoll
     );
-
+    
     // ======================
     // COMMENT ROUTES
     // ======================

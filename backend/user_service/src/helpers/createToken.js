@@ -25,7 +25,7 @@ class TokenService {
   }
 
   createLoginToken(payload) {
-    return this.createTokenWithExpiry(payload, 86400); // 24 hours in seconds
+    return this.createTokenWithExpiry(payload, 604800); // 24 hours in seconds
   }
 
   createOAuthToken(payload) {

@@ -3,8 +3,11 @@ export interface PostInterface {
     username: string;
     avatar: string;
     content: string;
+    users: object;
     timestamp: string;
     likes: number;
+    comment_count: number;
+    like_count: number;
     comments: number;
 }
 

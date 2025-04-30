@@ -4,6 +4,8 @@
 /frontend/.env
 
 # backend
+/backend/laporan_service/storage
+/backend/post_service/storage
 /backend/node_modules
 /backend/migration/node_modules
 /backend/migration/laporan_service/node_modules

@@ -7,7 +7,7 @@ interface CommentProps{
 
 export default function Comment({ comment }: CommentProps) {
     return (
-        <div className="flex items-start gap-3 py-2 border-t border-white/10">
+        <div className="flex items-center gap-3 py-2 border-t border-white/10">
             <img src={comment.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover mt-1" />
             <div className="flex-1">
                 <div className="flex items-center gap-2 text-sm text-gray-300 font-medium">

@@ -42,8 +42,8 @@ export class BridgeController {
       const user_id = req.user?.id;
       const { content } = req.body;
 
-      console.log("BODY:", req.body);
-      console.log("Headers:", req.headers);
+      // console.log(req);
+      console.log("Body:", req.body);
 
       if (!content) {
         return res

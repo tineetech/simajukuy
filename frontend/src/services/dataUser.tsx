@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
 
 export interface UserData {
     username?: string;
     email?: string;
     user_id?: number;
     id?: number;
+    avatar?: string;
     // properti lain
   }
 
@@ -34,6 +34,7 @@ const DataUser = () => {
 
         if (!response.ok) {
           const errorMessage = await response.json() || `Gagal mendapatkan data: Status ${response.status}`;
+          
           // setError(errorMessage);
           // Swal.fire({
           //   title: "Gagal Mendapatkan Data",
@@ -48,11 +49,11 @@ const DataUser = () => {
       } catch (e) {
         console.error("Error fetching user data:", e);
         // setError("Terjadi kesalahan saat menghubungi server.");
-        Swal.fire({
-          title: "Gagal Mendapatkan Data",
-          text: "Terjadi kesalahan saat menghubungi server.",
-          icon: "error",
-        });
+        // Swal.fire({
+        //   title: "Gagal Mendapatkan Data",
+        //   text: "Terjadi kesalahan saat menghubungi server.",
+        //   icon: "error",
+        // });
       } finally {
         setLoading(false);
       }

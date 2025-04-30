@@ -3,16 +3,17 @@ module.exports = {
   development: {
     client: 'mysql2',
     connection: {
-      host: 'shinkansen.proxy.rlwy.net',
+      host: 'turntable.proxy.rlwy.net',
       user: 'root',
-      password: 'tDDTcDlfOKVkCRhKnHlvvFNkBraNqxSQ',
+      password: 'ciXFaQEspTttnKcKDyNOPonpVGpXzaWI',
       database: 'railway',
-      port: 29117,
+      port: 45766,
     },
     migrations: {
       directory: './migrations',
     },
   },
+  // mysql -h turntable.proxy.rlwy.net -u root -p ciXFaQEspTttnKcKDyNOPonpVGpXzaWI --port 45766 --protocol=TCP railway
   production: {
     client: 'mysql2',
     connection: {

@@ -1,7 +1,7 @@
-const checkIsLogin = async () => {
+const checkIsLogin = async (): Promise<boolean> => {
   const token = localStorage.getItem('authToken') ?? '';
-  if (token === '') {
-    console.log('mana tokennya');
+  if (!token) {
+    console.warn('Token tidak ditemukan di localStorage');
     return false;
   }
 
@@ -13,11 +13,40 @@ const checkIsLogin = async () => {
     });
 
     if (!response.ok) {
-      console.log('Token tidak valid atau error dari backend');
-      return false; // Atau throw error sesuai kebutuhan
+      // Handle different HTTP status codes for more specific error handling
+      if (response.status === 401) {
+        console.warn('Token tidak valid atau telah kedaluwarsa');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('resetToken');
+        window.location.href = "/login"; // Redirect ke halaman login
+        return false;
+      } else if (response.status === 404) {
+        console.warn('Endpoint /api/auth/me tidak ditemukan');
+        return false;
+      } else {
+        console.error(`Error dari backend (Status: ${response.status}): ${response.statusText}`);
+        return false; // Hindari redirect untuk error server lainnya.
+      }
     }
-    return true; // Asumsikan backend mengembalikan sesuatu yang truthy jika token valid
+
+    const data = await response.json();
+
+    if (data && data.results.length > 0) {
+      return true; // Token valid, dan backend mengembalikan success:true
+    }
+     else {
+        console.warn('Token tidak valid: ', data);
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('resetToken');
+        window.location.href = "/login";
+        return false;
+     }
+
   } catch (error) {
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        console.error("Error koneksi ke server:", error);
+        return false; //fetch error
+    }
     console.error("Error saat memeriksa token:", error);
     return false;
   }

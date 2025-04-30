@@ -100,7 +100,10 @@ export default function ReportForm() {
             const resAi = await analyzeAi()
             setProgress(70)
             setMessage('Menganalisa kesimpulan..')
-            console.log(resAi)
+
+            if (!resAi) {
+                console.log("gagal analisis tidak ada hasil :", resAi)
+            }
             
             if (resAi.includes('YA')) {
                 setProgress(100)
