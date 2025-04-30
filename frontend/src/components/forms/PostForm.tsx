@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Image, Camera, MapPin, Smile, X } from "lucide-react";
+import { Image, Smile, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function PostForm() {
@@ -42,11 +42,14 @@ export default function PostForm() {
         setPostContent((prev) => prev + emoji);
     };
 
+    const post = () => {
+        // const res = fetch(`${import.meta.env.VITE_POST_SERVICE}/api/post/create`)
+    }
     return (
         <motion.div
             animate={{ scale: isFocused ? 1.01 : 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className="bg-tertiary dark:bg-tertiaryDark p-4 rounded-lg mb-6 overflow-hidden"
+            className="bg-gray-100 dark:bg-tertiaryDark p-4 rounded-lg mb-6 overflow-hidden"
         >
             <div
                 ref={wrapperRef}
@@ -67,10 +70,10 @@ export default function PostForm() {
                         >
                             <img src={selectedImage} alt="preview" className="rounded-lg max-h-60 object-cover" />
                             <button
-                                className="absolute top-2 right-2 bg-black/60 p-1 rounded-full hover:bg-black/80"
+                                className="absolute top-2 right-2 bg-gray-500 p-1 rounded-full hover:bg-black/80"
                                 onClick={() => setSelectedImage(null)}
                             >
-                                <X size={18} />
+                                <X size={18} color="white" />
                             </button>
                         </motion.div>
                     )}
@@ -80,7 +83,7 @@ export default function PostForm() {
                 <textarea
                     value={postContent}
                     onChange={(e) => setPostContent(e.target.value)}
-                    className="w-full bg-tertiary dark:bg-tertiaryDark text-textBody dark:text-textBodyDark p-3 rounded-lg resize-none outline-none"
+                    className="w-full bg-gray-100 dark:bg-tertiaryDark text-textBody dark:text-textBodyDark p-3 rounded-lg resize-none outline-none"
                     rows={isFocused ? 4 : 3}
                     placeholder="Apa yang ingin kamu bagikan hari ini?"
                 />
@@ -105,12 +108,6 @@ export default function PostForm() {
                                     >
                                         <Image size={20} />
                                     </button>
-                                    <button type="button" className="hover:text-accent" title="Kamera">
-                                        <Camera size={20} />
-                                    </button>
-                                    <button type="button" className="hover:text-accent" title="Lokasi">
-                                        <MapPin size={20} />
-                                    </button>
                                     <button
                                         type="button"
                                         className="hover:text-accent"
@@ -120,7 +117,7 @@ export default function PostForm() {
                                         <Smile size={20} />
                                     </button>
                                 </div>
-                                <button className="bg-accent text-white px-4 py-1.5 rounded-lg hover:opacity-90 transition">
+                                <button className="bg-primary text-white px-4 py-1.5 rounded-lg hover:opacity-90 transition" onClick={() => post()}>
                                     Posting
                                 </button>
                             </div>

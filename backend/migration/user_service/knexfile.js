@@ -3,14 +3,15 @@ module.exports = {
   development: {
     client: 'mysql2',
     connection: {
-      host: 'yamanote.proxy.rlwy.net',
+      host: 'nozomi.proxy.rlwy.net',
       user: 'root',
-      password: 'PMcoWXdYMTwKhSlgzctVwfWqXggDVXXf',
+      password: 'BoKvzwOmSrEwAGEgWNnzsZcgBqpCMtRG',
       database: 'railway',
-      port: 14246,
+      port: 50887,
     },
     migrations: {
       directory: './migrations',
     },
   },
 };
+//mysql -h nozomi.proxy.rlwy.net -u root -p BoKvzwOmSrEwAGEgWNnzsZcgBqpCMtRG --port 50887 --protocol=TCP railway

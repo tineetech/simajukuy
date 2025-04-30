@@ -36,6 +36,11 @@ export class AuthRouter {
     );
 
     this.router.post(
+      "/cek-reset-token",
+      this.authController.cekResetToken
+    );
+
+    this.router.post(
       "/verify/reset-password",
       // this.authMiddleware.verifyToken,
       this.authController.verifyResetPassword

@@ -8,7 +8,6 @@ export default function ProfileWidget() {
     const [showProfile, setShowProfile] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
     const datas = DataUser()
-    console.log(datas)
     
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
