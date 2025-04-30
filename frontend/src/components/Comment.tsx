@@ -1,6 +1,7 @@
 import { ArrowRight, Trash } from "lucide-react";
 import { CommentInterface } from "../types";
 import { jwtDecode } from "jwt-decode";
+import Swal from "sweetalert2";
 
 interface CommentProps{
     comment: CommentInterface
@@ -11,7 +12,42 @@ export default function Comment({ comment, postingan }: CommentProps) {
     const token = localStorage.getItem('authToken') ?? '';
     const decodedToken = jwtDecode(token);
 
-    const deleteKomen = () => {
+    const deleteKomen = async (id: number) => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_POST_SERVICE}/api/postingan/comments/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+            })
+
+            if (!res?.ok) {
+                console.error(res)
+                Swal.fire({
+                    title: "Gagal Menghapus Komentar",
+                    text: "Terjadi kesalahan saat menghubungi server.",
+                    icon: "error",
+                });
+                return
+            }
+            
+            const data = await res.json()
+            console.log(data)
+
+            Swal.fire({
+                title: "Berhasil Menghapus Komentar",
+                text: data.message,
+                icon: "success",
+            }).then(res => {
+                if (res.isConfirmed) {
+                    location.reload()
+                }
+            })
+                
+            return
+        } catch (e) {
+            console.error(e)
+        }
 
     }
     return (
@@ -33,7 +69,7 @@ export default function Comment({ comment, postingan }: CommentProps) {
                 <div>
                     {
                         comment.user_id == decodedToken.id && postingan.comment_count > 0 ? (
-                            <button className="bg-red-500 p-2 rounded-md text-white" onClick={() => deleteKomen()}>
+                            <button className="bg-red-500 p-2 rounded-md text-white" onClick={() => deleteKomen(comment.id)}>
                                 <Trash />
                             </button>
                         ) : ''
