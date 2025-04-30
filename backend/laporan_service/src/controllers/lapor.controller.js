@@ -58,7 +58,7 @@ export class LaporController {
         .status(400)
         .json({ message: "File gambar harus diupload." });
     }
-  
+
     const allowedImageTypes = [
       "image/jpeg",
       "image/png",
@@ -74,17 +74,15 @@ export class LaporController {
     try {
       const imageData = fs.readFileSync(imagePath);
       const base64Image = Buffer.from(imageData).toString('base64');
-  
-      // Daftar API Keys dan URLs
+
+      // Daftar API Keys
       const apiKeys = [
         'AIzaSyBct01Zunl6XInJJBK-xCLGgfw-Xt2_1Nw',
-        'AIzaSyDbrS6duawth989Aoxzg4WcjEJatG',
-        'AIzaSyD-pvTU4Vgyf96HGEpDGy820ZsIowdHa6I',
-        'AIzaSyCIefnt4OGJffDbfCLbrAObpDeh-IgC7Nc',
+        'AIzaSyAhWg020Pz3Qs5k01kJicBZZd7RQ-E3P8M',
+        'AIzaSyBXfLrI8nbCKH_mkC2rD9vL2atwo751nPM',
         // Tambahkan API key lainnya sesuai kebutuhan
       ];
-      const apiUrls = apiKeys.map(key => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`);
-  
+
       const requestBody = {
         "contents": [
           {
@@ -96,14 +94,15 @@ export class LaporController {
                 }
               },
               {
-                "text": "Analisislah gambar ini. Apakah gambar tersebut merupakan bencana alam atau kerusakan jalan, sampah menumpuk? Jelaskan temuanmu secara ringkas dan berikan kata awalan YA jika terindikasi dan TIDAK jika tidak terindikasi setelah itu penjelasannya."
+                "text": "Apakah gambar tersebut merupakan bencana alam atau kerusakan jalan, sampah menumpuk? Jelaskan temuanmu secara ringkas dan berikan kata awalan YA jika terindikasi dan TIDAK jika tidak terindikasi setelah itu penjelasannya."
               }
             ]
           }
         ]
       };
-  
-      const fetchData = async (apiUrl) => {
+
+      const fetchData = async (apiKey) => {
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
@@ -111,50 +110,54 @@ export class LaporController {
           },
           body: JSON.stringify(requestBody)
         });
-  
+
         if (!response.ok) {
           const errorData = await response.json();
-          console.error("Error from Gemini API:", errorData);
+          console.error(`Error from Gemini API with key ending in ${apiKey.slice(-5)}:`, errorData);
           throw {
             status: response.status,
-            message: "Gagal menghubungi Gemini API",
+            message: `Gagal menghubungi Gemini API dengan key ending in ${apiKey.slice(-5)}`,
             error: errorData
           };
         }
         const result = await response.json();
         return result;
       }
-  
+
       let responseData;
       let attempts = 0;
-      while (attempts < apiUrls.length) {
-        try {
-          responseData = await fetchData(apiUrls[attempts]);
-          break; // Jika berhasil, keluar dari loop
-        } catch (error) {
-          if (error.status === 429 || error.status === 500) {
-            console.log(`API Key ${attempts + 1} gagal, mencoba API Key ${attempts + 2}...`);
-            attempts++; // Mencoba API key berikutnya
-          } else {
-            // Jika error bukan karena overload, langsung kirim error
-            return res.status(error.status).json({ message: "Gagal menghubungi Gemini API.", error: error.error });
+      
+      try {
+        while (attempts < apiKeys.length) {
+          try {
+            responseData = await fetchData(apiKeys[attempts]);
+            break; // Jika berhasil, keluar dari loop
+          } catch (error) {
+            if (error.status === 429 || error.status >= 500) {
+              console.log(`API Key ${attempts + 1} (ending in ${apiKeys[attempts].slice(-5)}) gagal, mencoba API Key ${attempts + 2}...`);
+              attempts++; // Mencoba API key berikutnya
+            } else {
+              // Jika error bukan karena rate limit atau server error, langsung kirim error
+              return res.status(error.status).json({ message: "Gagal menghubungi Gemini API.", error: error.error });
+            }
           }
         }
+  
+        if (attempts === apiKeys.length) {
+          // Jika semua API key gagal
+          const errorMessage = "Semua API Key gagal menghubungi Gemini API.";
+          console.error(errorMessage);
+          return res.status(500).json({
+            message: errorMessage,
+            error: { message: "Semua API Key tidak dapat digunakan." } // Provide a more specific error
+          });
+        }
+        console.log("Respon dari Gemini API:", responseData);
+        return res.status(200).json({ data: responseData });
+      } catch (error) {
+        console.error("Error:", error);
+        return res.status(500).json({ message: "Terjadi kesalahan internal.", error: error.message });
       }
-  
-      if (attempts === apiUrls.length) {
-        // Jika semua API key gagal
-        const errorMessage = "Semua API Key gagal menghubungi Gemini API.";
-        console.error(errorMessage);
-        return res.status(500).json({
-          message: errorMessage,
-          error: { message: "Semua API Key tidak dapat digunakan." } // Provide a more specific error
-        });
-      }
-  
-      console.log("Respon dari Gemini API:", responseData);
-      return res.status(200).json({ data: responseData });
-  
     } catch (error) {
       console.error("Error:", error);
       return res.status(500).json({ message: "Terjadi kesalahan internal.", error: error.message });
@@ -223,11 +226,10 @@ export class LaporController {
 
       const sqlCreateData = 'INSERT INTO laporan (user_id, image, description, type_verification, status, notes, location_latitude, location_longitude, event_date, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
       connection.query(sqlCreateData, [parseInt(user_id), imageUrl, description, type_verification, status ?? "pending", notes, location_lat, location_long, event_date, category], (err, result) => {
-        if (err) res.status(400).json({"error": err})
-
-        if (!result) {
-          return res.status(400).json({ message: "Gagal buat laporan" });
-        }
+        if (err) {
+          console.error(err)
+          return res.status(400).json({"error": err})
+        } 
 
         res.status(200).json({
           status: 200,

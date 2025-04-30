@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ThumbsUp, MessageCircle, Share2, Send, Eye, X } from "lucide-react";
 import Comment from "./Comment";
+import { jwtDecode } from 'jwt-decode'; // Atau 'jsonwebtoken'
 import { PostInterface } from "../types";
 import Swal from "sweetalert2";
 
@@ -73,11 +74,13 @@ export default function PostItem({ post }: { post: PostInterface }) {
       console.error(e);
     }
   };
+  
+  const decodedToken = jwtDecode(token);
 
   return (
     <>
       <div
-        className="bg-tertiary dark:bg-tertiaryDark p-4 rounded-lg"
+        className="bg-gray-100 border border-gray-300 dark:border-gray-600 dark:bg-tertiaryDark p-4 rounded-lg"
       >
         <div className="flex items-center gap-3 mb-2">
           <img
@@ -97,7 +100,7 @@ export default function PostItem({ post }: { post: PostInterface }) {
             }
         <p className="text-sm md:text-base mb-3">{post.content}</p>
         <div className="flex gap-6 text-textBody dark:text-textBodyDark text-sm" style={{ zIndex: 1000 }}> {/* Increased z-index */}
-          <button className="flex items-center gap-1 hover:text-accent hover:cursor-pointer" onClick={() => handleLike(post.id)}>
+          <button className={`flex items-center gap-1 hover:text-accent hover:cursor-pointer ${post.user_id == decodedToken.id && post.like_count > 0 ? "text-red-400" : ""}`} onClick={() => handleLike(post.id)}>
             <ThumbsUp size={18} /> {post.like_count}
           </button>
           <button
@@ -124,23 +127,23 @@ export default function PostItem({ post }: { post: PostInterface }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="mt-4"
+              className="mt-4 bg-gray-200 dark:bg-gray-800 rounded-xl p-5 gap-2 flex flex-col"
             >
-              {post.comments.map((comment) => (
-                <Comment key={comment.user_id} comment={comment} />
+              {post.comments.map((comment: any) => (
+                <Comment key={comment.user_id} postingan={post} comment={comment} />
               ))}
               <div className="flex gap-2 items-center mt-3">
                 <input
                   type="text"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full bg-gray-400 dark:bg-gray-800 p-3 rounded-md"
+                  className="w-full bg-gray-300 dark:bg-gray-700 p-3 rounded-md"
                   placeholder="Tulis komentarmu disini.."
                   name="commentContent"
                   id="commentContent"
                 />
                 <div className="">
-                  <button type="button" onClick={() => handleComment(post.id)} className="bg-primary mb-0 p-4 flex items-center justify-center rounded-2xl">
+                  <button type="button" onClick={() => handleComment(post.id)} className="bg-primary mb-0 p-4 text-white flex items-center justify-center rounded-2xl">
                     <Send size={15} />
                   </button>
                 </div>

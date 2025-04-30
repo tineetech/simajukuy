@@ -1,14 +1,20 @@
 export interface PostInterface {
     id: number;
+    user_id: number;
     username: string;
     avatar: string;
+    image: string;
     content: string;
-    users: object;
+    type: string;
+    users: {
+        user_id: number
+        username: string
+    };
     timestamp: string;
     likes: number;
     comment_count: number;
     like_count: number;
-    comments: number;
+    comments: object;
 }
 
 export interface CommentInterface {

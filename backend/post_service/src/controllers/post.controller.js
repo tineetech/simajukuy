@@ -131,41 +131,52 @@ export class PostController {
   static async getAllPosts(req, res) {
     try {
       const query = `
-        SELECT 
-          p.*,
-          pi.image,
-          pv.url_video,
-          (SELECT COUNT(*) FROM postingan_likes WHERE post_id = p.id) AS like_count,
-          (SELECT COUNT(*) FROM postingan_comments WHERE post_id = p.id) AS comment_count,
-          COALESCE(
+        SELECT
+        p.*,
+        pi.image,
+        pv.url_video,
+        (SELECT COUNT(*) FROM postingan_likes WHERE post_id = p.id) AS like_count,
+        (SELECT COUNT(*) FROM postingan_comments WHERE post_id = p.id) AS comment_count,
+        COALESCE(
             (SELECT JSON_ARRAYAGG(
-              JSON_OBJECT(
-                'id', po.id,
-                'content', po.content,
-                'votes', (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id),
-                'percentage', ROUND(
-                  (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id) / 
-                  GREATEST(
-                    (SELECT COUNT(DISTINCT user_id) 
-                     FROM postingan_polling_votes 
-                     WHERE option_id IN (
-                      SELECT id FROM postingan_polling_options 
-                      WHERE post_id = p.id
-                     )),
-                    1
-                  ) * 100,
-                  1
+                JSON_OBJECT(
+                    'id', po.id,
+                    'content', po.content,
+                    'votes', (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id),
+                    'percentage', ROUND(
+                        (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id) /
+                        GREATEST(
+                            (SELECT COUNT(DISTINCT user_id)
+                            FROM postingan_polling_votes
+                            WHERE option_id IN (
+                                SELECT id FROM postingan_polling_options
+                                WHERE post_id = p.id
+                            )),
+                            1
+                        ) * 100,
+                        1
+                    )
                 )
-              )
             )
-            FROM postingan_polling_options po 
+            FROM postingan_polling_options po
             WHERE po.post_id = p.id),
             JSON_ARRAY()
-          ) AS polling_options
-        FROM postingan p
-        LEFT JOIN postingan_image pi ON p.id = pi.post_id
-        LEFT JOIN postingan_video pv ON p.id = pv.post_id
-        ORDER BY p.created_at DESC`;
+        ) AS polling_options,
+        (SELECT JSON_ARRAYAGG(
+            JSON_OBJECT(
+                'id', pc.id,  -- ID komentar
+                'user_id', pc.user_id,
+                'content', pc.content,
+                'created_at', pc.created_at
+            )
+        )
+        FROM postingan_comments pc
+        WHERE pc.post_id = p.id) AS comments -- Mengambil detail komentar
+    FROM postingan p
+    LEFT JOIN postingan_image pi ON p.id = pi.post_id
+    LEFT JOIN postingan_video pv ON p.id = pv.post_id
+    ORDER BY p.created_at DESC;
+    `;
   
       const fetchUser = async (id) => {
         try {
@@ -302,8 +313,6 @@ export class PostController {
       return res.status(500).json({ message: error.message });
     }
   }
-
-  // ... (method lainnya tetap sama)
 
   static async updatePost(req, res) {
     try {

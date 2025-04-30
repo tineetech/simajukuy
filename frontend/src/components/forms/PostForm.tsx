@@ -132,7 +132,7 @@ export default function PostForm() {
                             transition={{ duration: 0.3 }}
                             className="relative mb-4"
                         >
-                            <img src={imageRaw} alt="preview" className="rounded-lg max-h-60 object-cover" />
+                            <img src={imageRaw ?? ""} alt="preview" className="rounded-lg max-h-60 object-cover" />
                             <button
                                 className="absolute top-2 right-2 bg-gray-500 p-1 rounded-full hover:bg-black/80"
                                 onClick={() => setSelectedImage(null)}
