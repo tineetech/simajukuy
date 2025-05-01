@@ -77,7 +77,7 @@ export class PostRouter {
 
 
     this.router.delete(
-      "/comments/:id",
+      "/:post_id/comments/:id",
       this.authMiddleware.verifyToken,
       BridgeController.deleteComment
     );

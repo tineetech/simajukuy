@@ -68,32 +68,48 @@ export class BridgeController {
 
   static async deleteComment(req, res) {
     try {
-      const { id } = req.params;
+      const { id } = req.params; // ID dari komentar
+      const { post_id } = req.body; // post_id dari frontend
       const user_id = req.user?.id;
       const user_role = req.user?.role;
 
+      // Cek apakah komentar dengan ID itu ada dan milik post yang benar
       const [rows] = await connection
         .promise()
-        .query("SELECT user_id FROM postingan_comments WHERE id = ?", [id]);
+        .query("SELECT user_id, post_id FROM postingan_comments WHERE id = ?", [
+          id,
+        ]);
 
-      if (rows.length === 0)
+      if (rows.length === 0) {
         return res.status(404).json({ message: "Komentar tidak ditemukan" });
+      }
 
-      const commentOwner = rows[0].user_id;
+      const comment = rows[0];
 
-      if (user_id !== commentOwner && user_role !== "admin") {
+      if (comment.post_id !== parseInt(post_id)) {
+        return res
+          .status(400)
+          .json({ message: "Komentar tidak sesuai dengan post_id" });
+      }
+
+      // Validasi user
+      if (user_id !== comment.user_id && user_role !== "admin") {
         return res.status(403).json({
           message: "Forbidden: Tidak bisa menghapus komentar orang lain",
         });
       }
 
+      // Hapus komentar
       await connection
         .promise()
         .query("DELETE FROM postingan_comments WHERE id = ?", [id]);
 
       return res.status(200).json({ message: "Komentar berhasil dihapus" });
     } catch (error) {
-      return res.status(500).json({ message: error.message });
+      console.error("Error deleting comment:", error);
+      return res
+        .status(500)
+        .json({ message: "Terjadi kesalahan saat menghapus komentar" });
     }
   }
 }

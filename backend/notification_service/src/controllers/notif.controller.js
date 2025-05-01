@@ -1,109 +1,92 @@
-import { PrismaClient } from "@prisma/client";
+import connection from "../services/db.js";
+import { promisify } from "util";
 
-const prisma = new PrismaClient();
+const query = promisify(connection.query).bind(connection);
 
 export class NotifController {
-  async getNotifs (req, res) {
+  async getNotifs(req, res) {
     try {
-      const dataGet = await prisma.notification.findMany({
-        include: {
-          user: true
-        }
-      })
-
-      const sanitizedData = dataGet;
-
-      res.json({ status: 200, message: 'success get data', data: sanitizedData })
+      const sql = `SELECT * FROM notifikasi`;
+      const results = await query(sql);
+      res.json({ status: 200, message: 'Success get data', data: results });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
+      const message = error instanceof Error ? error.message : "Unknown error occurred";
       return res.status(500).json({ error: message });
     }
   }
 
-  async createNotifs (req, res) {
+  async createNotifs(req, res) {
     try {
-      const { 
-        target,
-        target_user_id,
+      const {
+        user_id,
+        laporan_id,
         title,
-        description,
-        content,
-        status_notification
-      } = req.body
+        message
+      } = req.body;
 
-      const notifCreate = await prisma.notification.create({
-        data: {
-          target,
-          target_user_id: target_user_id ?? null,
-          title,
-          description: description ?? null,
-          content,
-          status_notification: status_notification ?? 'normal'
-        }
-      })
-      
-      if (!notifCreate) {
-        return res.status(400).json({ message: "Failed create Notif" });
-      }
+      const sql = `
+        INSERT INTO notifikasi (user_id, laporan_id, title, message)
+        VALUES (?, ?, ?, ?)
+      `;
 
-      res.json({ status: 200, message: 'success create data', data: notifCreate })
+      const values = [user_id, laporan_id, title, message];
+      const result = await query(sql, values);
+
+      res.json({
+        status: 200,
+        message: 'Success create data',
+        data: { id: result.insertId, ...req.body }
+      });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
+      const message = error instanceof Error ? error.message : "Unknown error occurred";
       return res.status(500).json({ error: message });
     }
   }
 
-  async updateNotif (req, res) {
+  async updateNotif(req, res) {
     try {
-      const { 
-        target,
-        target_user_id,
+      const {
+        user_id,
+        laporan_id,
         title,
-        description,
-        content,
-        status_notification
-       } = req.body
+        message,
+        is_read
+      } = req.body;
 
-      const dataUpdate = await prisma.notification.update({
-        where: { id: parseInt(req.params.id) },
-        data: {
-          target,
-          target_user_id: target_user_id ?? null,
-          title,
-          description: description ?? null,
-          content,
-          status_notification: status_notification ?? 'normal'
-        }
-      })
+      const sql = `
+        UPDATE notifikasi
+        SET user_id = ?, laporan_id = ?, title = ?, message = ?, is_read = ?, updated_at = NOW()
+        WHERE id = ?
+      `;
 
-      if (!dataUpdate) {
-        return res.status(400).json({ message: "Failed Update notif" });
-      }
+      const values = [
+        user_id,
+        laporan_id,
+        title,
+        message,
+        is_read ?? false,
+        parseInt(req.params.id)
+      ];
 
-      res.json({ status: 200, message: 'success update data', data: dataUpdate })
+      const result = await query(sql, values);
+
+      res.json({ status: 200, message: 'Success update data', data: result });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
+      const message = error instanceof Error ? error.message : "Unknown error occurred";
       return res.status(500).json({ error: message });
     }
   }
 
-  async deleteNotif (req, res) {
+  async deleteNotif(req, res) {
     try {
-      const notif = await prisma.notification.delete({
-        where: { id: parseInt(req.params.id) }
-      })
+      const id = parseInt(req.params.id);
+      const sql = `DELETE FROM notifikasi WHERE id = ?`;
 
-      if (!notif) {
-        return res.status(400).json({ message: "Failed Delete notif" });
-      }
+      const result = await query(sql, [id]);
 
-      res.json({ status: 200, message: 'success remove data', data: notif })
+      res.json({ status: 200, message: 'Success remove data', data: result });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
+      const message = error instanceof Error ? error.message : "Unknown error occurred";
       return res.status(500).json({ error: message });
     }
   }

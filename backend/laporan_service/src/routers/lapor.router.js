@@ -20,7 +20,7 @@ export class LaporRouter {
       "/analisis-ai",
       this.authMiddleware.verifyToken,
       upload.single("file"),
-      this.laporController.analisisWithAi,
+      this.laporController.analisisWithAi
     );
 
     this.router.get(
@@ -28,7 +28,7 @@ export class LaporRouter {
       this.laporController.getLapor,
       this.authMiddleware.verifyToken
     );
-    
+
     this.router.post(
       "/create",
       this.authMiddleware.verifyToken,
@@ -45,7 +45,13 @@ export class LaporRouter {
     this.router.post(
       "/delete/:id",
       this.laporController.deleteLapor,
-      this.authMiddleware.checkRole('admin')
+      this.authMiddleware.checkRole("admin")
+    );
+
+    this.router.post(
+      "/status/:id",
+      this.laporController.updateStatusLaporan,
+      this.authMiddleware.verifyToken
     );
   }
 
@@ -53,4 +59,3 @@ export class LaporRouter {
     return this.router;
   }
 }
-

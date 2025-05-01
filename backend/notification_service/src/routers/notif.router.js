@@ -17,26 +17,26 @@ export class NotifRouter {
   initializeRoutes() {
     this.router.get(
       "/",
-      this.notifController.getNotifs,
-      this.authMiddleware.verifyToken
-    );
+      this.authMiddleware.verifyToken,
+      this.notifController.getNotifs
+    );  
 
     this.router.post(
       "/create",
-      this.notifController.createNotifs,
-      this.authMiddleware.checkRole('admin')
+      this.authMiddleware.checkRole("admin"),
+      this.notifController.createNotifs
     );
 
     this.router.post(
       "/update/:id",
-      this.notifController.updateNotif,
-      this.authMiddleware.verifyToken
+      this.authMiddleware.verifyToken,
+      this.notifController.updateNotif
     );
 
     this.router.post(
       "/delete/:id",
-      this.notifController.deleteNotif,
-      this.authMiddleware.checkRole('admin')
+      this.authMiddleware.checkRole("admin"),
+      this.notifController.deleteNotif
     );
   }
 
@@ -44,4 +44,3 @@ export class NotifRouter {
     return this.router;
   }
 }
-

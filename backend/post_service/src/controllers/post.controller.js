@@ -177,20 +177,22 @@ export class PostController {
     LEFT JOIN postingan_video pv ON p.id = pv.post_id
     ORDER BY p.created_at DESC;
     `;
-  
+
       const fetchUser = async (id) => {
         try {
-          const res = await fetch(`${process.env.USER_SERVICE}/api/users/${id}`);
+          const res = await fetch(
+            `${process.env.USER_SERVICE}/api/users/${id}`
+          );
           const data = await res.json();
           return data;
         } catch (e) {
           console.error(e);
-          throw e; // Re-throw the error to be caught in getAllPosts
+          throw e;
         }
       };
-  
+
       const [rows] = await connection.promise().query(query);
-  
+
       const promisesUsers = rows.map(async (item) => {
         try {
           const datas = await fetchUser(item.user_id);
@@ -206,46 +208,49 @@ export class PostController {
           return { ...item, error: e.message };
         }
       });
-  
+
       const updatedRows1 = await Promise.all(promisesUsers);
-  
+
       const promisesComments = updatedRows1.map(async (item) => {
-          try {
-              const [comments] = await connection.promise().query('SELECT * FROM postingan_comments WHERE post_id = ?', [item.id]);
-              
-              
-              // Format the comments data as needed.  Handle multiple comments.
-              const formattedComments = await Promise.all(
-                comments.map(async (comment) => {
-                  const user = await fetchUser(comment.user_id);
-                  return {
-                    user_id: comment.user_id,
-                    content: comment.content,
-                    username: user?.data[0].username || null, // Get username, handle null
-                    avatar: user?.data[0].avatar || null,
-                  };
-                })
-              );
-  
+        try {
+          const [comments] = await connection
+            .promise()
+            .query("SELECT * FROM postingan_comments WHERE post_id = ?", [
+              item.id,
+            ]);
+
+          const formattedComments = await Promise.all(
+            comments.map(async (comment) => {
+              const user = await fetchUser(comment.user_id);
               return {
-                  ...item,
-                  comments: formattedComments, 
+                id: comment.id,
+                user_id: comment.user_id,
+                content: comment.content,
+                username: user?.data[0].username || null,
+                avatar: user?.data[0].avatar || null,
               };
-          } catch (error) {
-              console.error("Error fetching comments:", error);
-              return { ...item, comments: [], error: error.message }; // Ensure comments is always an array
-          }
+            })
+          );
+
+          return {
+            ...item,
+            comments: formattedComments,
+          };
+        } catch (error) {
+          console.error("Error fetching comments:", error);
+          return { ...item, comments: [], error: error.message };
+        }
       });
-  
+
       const updatedRows2 = await Promise.all(promisesComments);
-  
+
       return res.status(200).json({ data: updatedRows2 });
     } catch (error) {
-      console.error("Error in getAllPosts:", error); // Log the error
+      console.error("Error in getAllPosts:", error);
       return res.status(500).json({ message: error.message });
     }
   }
-  
+
   static async getPostById(req, res) {
     try {
       const { id } = req.params;
@@ -297,7 +302,6 @@ export class PostController {
 
       const post = postRows[0];
 
-      // Get comments
       const [commentRows] = await connection
         .promise()
         .query(
