@@ -3,11 +3,11 @@ module.exports = {
   development: {
     client: 'mysql2',
     connection: {
-      host: 'turntable.proxy.rlwy.net',
-      user: 'root',
-      password: 'ciXFaQEspTttnKcKDyNOPonpVGpXzaWI',
-      database: 'railway',
-      port: 45766,
+      host: 'dbpplg.smkn4bogor.sch.id',
+      user: 'pplg',
+      password: 'adminpplg2025!',
+      database: 'simajukuy_post',
+      port: 6093,
     },
     migrations: {
       directory: './migrations',

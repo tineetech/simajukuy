@@ -3,11 +3,11 @@ module.exports = {
   development: {
     client: 'mysql2',
     connection: {
-      host: 'nozomi.proxy.rlwy.net',
-      user: 'root',
-      password: 'BoKvzwOmSrEwAGEgWNnzsZcgBqpCMtRG',
-      database: 'railway',
-      port: 50887,
+      host: 'dbpplg.smkn4bogor.sch.id',
+      user: 'pplg',
+      password: 'adminpplg2025!',
+      database: 'simajukuy_user',
+      port: 6093,
     },
     migrations: {
       directory: './migrations',

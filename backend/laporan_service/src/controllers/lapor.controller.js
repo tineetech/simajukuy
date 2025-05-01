@@ -77,12 +77,10 @@ export class LaporController {
       const imageData = fs.readFileSync(imagePath);
       const base64Image = Buffer.from(imageData).toString("base64");
 
-      // Daftar API Keys
       const apiKeys = [
         "AIzaSyBct01Zunl6XInJJBK-xCLGgfw-Xt2_1Nw",
         "AIzaSyAhWg020Pz3Qs5k01kJicBZZd7RQ-E3P8M",
         "AIzaSyBXfLrI8nbCKH_mkC2rD9vL2atwo751nPM",
-        // Tambahkan API key lainnya sesuai kebutuhan
       ];
 
       const requestBody = {
@@ -148,7 +146,6 @@ export class LaporController {
               );
               attempts++; // Mencoba API key berikutnya
             } else {
-              // Jika error bukan karena rate limit atau server error, langsung kirim error
               return res.status(error.status).json({
                 message: "Gagal menghubungi Gemini API.",
                 error: error.error,
@@ -158,12 +155,11 @@ export class LaporController {
         }
 
         if (attempts === apiKeys.length) {
-          // Jika semua API key gagal
           const errorMessage = "Semua API Key gagal menghubungi Gemini API.";
           console.error(errorMessage);
           return res.status(500).json({
             message: errorMessage,
-            error: { message: "Semua API Key tidak dapat digunakan." }, // Provide a more specific error
+            error: { message: "Semua API Key tidak dapat digunakan." },
           });
         }
         console.log("Respon dari Gemini API:", responseData);
@@ -198,11 +194,9 @@ export class LaporController {
       return res.status(500).json({ error: message });
     }
   }
-
   async createLapor(req, res) {
     try {
       const {
-        user_id,
         location_lat,
         location_long,
         event_date,
@@ -213,15 +207,18 @@ export class LaporController {
         notes,
       } = req.body;
 
-      // Validasi user_id sebelum mencoba mengambil data user
-      if (isNaN(parseInt(user_id))) {
-        console.log(user_id);
-        return res.status(400).json({ message: "Invalid user ID" });
+      const user_id = req.user?.id; // ambil dari JWT
+
+      if (!user_id || isNaN(parseInt(user_id))) {
+        return res
+          .status(400)
+          .json({ message: "Invalid or missing user ID from token" });
       }
 
       const file = req.file;
-      if (!file)
+      if (!file) {
         return res.status(400).json({ message: "File gambar harus diupload." });
+      }
 
       const allowedImageTypes = [
         "image/jpeg",
@@ -234,8 +231,10 @@ export class LaporController {
           message: "File harus berupa gambar (JPEG, PNG, JPG, GIF).",
         });
       }
+
       const imageUrl = "/storage/images/" + file.filename;
 
+      // Validasi user melalui service user (opsional jika JWT sudah cukup)
       const findUser = await axios.get(
         `${process.env.USER_SERVICE}/api/users/${user_id}`
       );
@@ -243,8 +242,17 @@ export class LaporController {
         return res.status(400).json({ message: "User not found" });
       }
 
+      let formattedEventDate = null;
+      if (event_date) {
+        formattedEventDate = new Date(event_date)
+          .toISOString()
+          .slice(0, 19)
+          .replace("T", " ");
+      }
+
       const sqlCreateData =
         "INSERT INTO laporan (user_id, image, description, type_verification, status, notes, location_latitude, location_longitude, event_date, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
       connection.query(
         sqlCreateData,
         [
@@ -256,7 +264,7 @@ export class LaporController {
           notes,
           location_lat,
           location_long,
-          event_date,
+          formattedEventDate,
           category,
         ],
         (err, result) => {
@@ -388,7 +396,7 @@ export class LaporController {
             try {
               const token = req.headers["authorization"]?.split(" ")[1];
 
-              console.log("tokenya harus amin:", token);
+              console.log("Token :", token);
 
               if (!token) {
                 return res

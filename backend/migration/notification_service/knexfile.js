@@ -1,19 +1,17 @@
 // knexfile.js
 module.exports = {
   development: {
-    client: 'mysql2',
+    client: "mysql2",
     connection: {
-      host: 'shuttle.proxy.rlwy.net',
-      user: 'root',
-      password: 'AkQCLNuIDsnhfxVNnbkWUfnhFgvuRRre',
-      database: 'railway',
-      port: 26922,
+      host: "dbpplg.smkn4bogor.sch.id",
+      user: "pplg",
+      password: "adminpplg2025!",
+      database: "simajukuy_notif",
+      port: 6093,
     },
     migrations: {
-      directory: './migrations',
+      directory: "./migrations",
     },
   },
 };
-
-
-
+//mysql -h nozomi.proxy.rlwy.net -u root -p BoKvzwOmSrEwAGEgWNnzsZcgBqpCMtRG --port 50887 --protocol=TCP railway
