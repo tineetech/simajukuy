@@ -1,11 +1,10 @@
 import { motion } from "framer-motion";
-import { LayoutDashboard, Settings, LogOut, Megaphone, History } from "lucide-react";
+import { LayoutDashboard, Settings, LogOut, Megaphone } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const sidebarItems = [
     { icon: <LayoutDashboard />, label: "Dashboard", path: "/admin" },
     { icon: <Megaphone />, label: "Laporan", path: "/admin/laporan" },
-    { icon: <History />, label: "Documents", path: "/admin/riwayat" },
     { icon: <Settings />, label: "Settings", path: "/admin/settings" },
 ];
 

@@ -1,66 +1,48 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useContext } from "react";
-import { Doughnut } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
-    ArcElement,
+    BarElement,
+    CategoryScale,
+    LinearScale,
     Tooltip,
     Legend,
-    Filler,
-    ChartOptions,
-    ChartData
 } from 'chart.js';
 import { DarkModeContext } from "../../contexts/DarkModeContext";
 
-// Daftarkan plugin hanya sekali (di luar komponen)
-ChartJS.register(ArcElement, Tooltip, Legend, Filler);
-
-const createCenterTextPlugin = (isDark: boolean) => ({
-    id: 'centerTextPlugin',
-    beforeDraw: (chart: any) => {
-        if (chart.config.type !== 'doughnut') return;
-        const { width, height, ctx } = chart;
-        ctx.restore();
-
-        const textColor = isDark ? '#ffffff' : '#000000';
-        const total = chart.data.datasets[0].data.reduce(
-            (acc: number, value: number) => acc + value,
-            0
-        );
-
-        const fontSize = Math.min(height, width) / 5;
-        ctx.font = `bold ${fontSize}px Montserrat, sans-serif`;
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = textColor;
-
-        const text = `${total}`;
-        const textWidth = ctx.measureText(text).width;
-        const textX = (width - textWidth) / 2;
-        const textY = height / 2;
-
-        ctx.fillText(text, textX, textY);
-        ctx.save();
-    },
-});
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 export default function StatusReportChart() {
     const { darkMode } = useContext(DarkModeContext) ?? { darkMode: false };
 
-    const data: ChartData<'doughnut', number[], string> = {
-        labels: ['Ditunda', 'Diterima', 'Diproses', 'Selesai'],
+    const data = {
+        labels: ['Januari', 'Februari', 'Maret', 'April'],
         datasets: [
             {
-                label: 'Laporan',
-                data: [46, 37, 28, 12],
-                backgroundColor: ['#8fff67', '#67fffC', '#C767FF', '#FF6769'],
-                borderWidth: 0,
+                label: 'Ditunda',
+                data: [12, 18, 9, 7],
+                backgroundColor: '#8fff67',
+            },
+            {
+                label: 'Diterima',
+                data: [20, 14, 16, 22],
+                backgroundColor: '#67fffC',
+            },
+            {
+                label: 'Diproses',
+                data: [15, 10, 12, 9],
+                backgroundColor: '#C767FF',
+            },
+            {
+                label: 'Selesai',
+                data: [8, 12, 14, 18],
+                backgroundColor: '#FF6769',
             },
         ],
     };
 
-    const options: ChartOptions<'doughnut'> = {
+    const options = {
         responsive: true,
-        cutout: '75%',
         plugins: {
             legend: {
                 display: false,
@@ -70,16 +52,33 @@ export default function StatusReportChart() {
                 titleColor: '#fff',
             },
         },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    color: darkMode ? '#ffffff' : '#000000',
+                },
+                grid: {
+                    color: darkMode ? '#444' : '#ccc',
+                },
+            },
+            x: {
+                ticks: {
+                    color: darkMode ? '#ffffff' : '#000000',
+                },
+                grid: {
+                    display: false,
+                },
+            },
+        },
     };
 
-    const plugins = [createCenterTextPlugin(darkMode)];
-
     return (
-        <Doughnut
-            key={darkMode ? 'dark' : 'light'} // 👉 trigger re-render saat tema berubah
+        <Bar
+            key={darkMode ? 'dark' : 'light'}
             data={data}
             options={options}
-            plugins={plugins}
+            style={{ width: '100%', height: '100%' }}
         />
     );
 }

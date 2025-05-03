@@ -8,7 +8,7 @@ export default function ProfileWidget() {
     const [showProfile, setShowProfile] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
     const datas = DataUser()
-    
+
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
@@ -23,7 +23,7 @@ export default function ProfileWidget() {
     }, []);
 
     const handleLogout = () => {
-      Logout();
+        Logout();
     };
 
     return (

@@ -1,4 +1,3 @@
-// src/components/widgets/SelectStatusFilter.tsx
 import { motion } from "framer-motion";
 
 interface SelectStatusFilterProps {
@@ -7,7 +6,7 @@ interface SelectStatusFilterProps {
     options: { label: string; value: string }[];
 }
 
-export default function SelectStatusFilter({ value, onChange, options }: SelectStatusFilterProps) {
+export default function SelectCategoryFilter({ value, onChange, options }: SelectStatusFilterProps) {
     return (
         <motion.select
             value={value}

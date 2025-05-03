@@ -1,10 +1,22 @@
-import { useState } from "react";
-import ReportCard from "../components/cards/ReportCard";
+import { JSX, useRef, useState } from "react";
+import {
+    Trash2,
+    TrafficCone,
+    CloudRain,
+    LightbulbOff,
+    FolderSearch,
+    AlertCircle,
+} from "lucide-react";
 import SearchBar from "../components/widgets/SearchBar";
-import SelectStatusFilter from "../components/widgets/SelectStatusFilter"; // import select modular
+import SelectCategoryFilter from "../components/widgets/SelectCategoryFilter";
 import { Report } from "../types";
-import StatusReportChart from "../components/charts/StatusReportChart";
+import ReportList from "../components/ReportList";
+import ReportStatusFilter from "../components/widgets/ReportStatusFilter";
+import { AnimatePresence } from "framer-motion";
+import ReportCard from "../components/cards/ReportCard";
 import ReportModal from "../components/modals/ReportModal";
+import StatusReportChart from "../components/charts/StatusReportChart";
+import ReportProgressList from "../components/ReportProgressList";
 
 export default function ReviewReportPage() {
     const dummyReports: Report[] = [
@@ -14,6 +26,7 @@ export default function ReviewReportPage() {
             submittedAt: "2025-04-24",
             image: "/images/about.jpg",
             status: "Tertunda",
+            category: "Lainnya",
         },
         {
             title: "Kerusakan Fasilitas",
@@ -21,6 +34,7 @@ export default function ReviewReportPage() {
             submittedAt: "2025-04-22",
             image: "/images/about.jpg",
             status: "Selesai",
+            category: "Lainnya",
         },
         {
             title: "Kebisingan Berlebihan",
@@ -28,6 +42,7 @@ export default function ReviewReportPage() {
             submittedAt: "2025-04-20",
             image: "/images/about.jpg",
             status: "Tertunda",
+            category: "Lainnya",
         },
         {
             title: "Laporan Penemuan Barang",
@@ -35,6 +50,7 @@ export default function ReviewReportPage() {
             submittedAt: "2025-04-19",
             image: "/images/about.jpg",
             status: "Tertunda",
+            category: "Lainnya",
         },
         {
             title: "Kebocoran Atap",
@@ -42,6 +58,7 @@ export default function ReviewReportPage() {
             submittedAt: "2025-04-18",
             image: "/images/about.jpg",
             status: "Diproses",
+            category: "Lainnya",
         },
         {
             title: "Pencemaran Suara",
@@ -49,6 +66,7 @@ export default function ReviewReportPage() {
             submittedAt: "2025-04-17",
             image: "/images/about.jpg",
             status: "Diterima",
+            category: "Sampah",
         },
         {
             title: "Lampu Jalan Mati",
@@ -56,148 +74,200 @@ export default function ReviewReportPage() {
             submittedAt: "2025-04-16",
             image: "/images/about.jpg",
             status: "Diproses",
+            category: "PJU mati",
         },
         {
             title: "Pohon Tumbang",
             description: "Pohon tumbang di dekat parkiran motor.",
             submittedAt: "2025-04-15",
             image: "/images/about.jpg",
-            status: "Selesai",
+            status: "Diproses",
+            category: "Jalan Rusak",
         },
         {
-            title: "Pohon Tumbang",
-            description: "Pohon tumbang di dekat parkiran motor.",
-            submittedAt: "2025-04-15",
+            title: "Banjir di Lorong",
+            description: "Air meluap di lorong bawah gedung C saat hujan.",
+            submittedAt: "2025-04-14",
             image: "/images/about.jpg",
-            status: "Selesai",
+            status: "Diproses",
+            category: "Banjir",
         },
         {
-            title: "Pohon Tumbang",
-            description: "Pohon tumbang di dekat parkiran motor.",
-            submittedAt: "2025-04-15",
+            title: "Jalan Rusak",
+            description: "Aspal rusak di belakang gedung olahraga.",
+            submittedAt: "2025-04-13",
             image: "/images/about.jpg",
-            status: "Selesai",
-        },
-        {
-            title: "Pohon Tumbang",
-            description: "Pohon tumbang di dekat parkiran motor.",
-            submittedAt: "2025-04-15",
-            image: "/images/about.jpg",
-            status: "Selesai",
-        },
-        {
-            title: "Pohon Tumbang",
-            description: "Pohon tumbang di dekat parkiran motor.",
-            submittedAt: "2025-04-15",
-            image: "/images/about.jpg",
-            status: "Selesai",
+            status: "Tertunda",
+            category: "Jalan Rusak",
         },
     ];
 
-    const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [filterStatus, setFilterStatus] = useState("Semua");
-    const [visibleCount, setVisibleCount] = useState(8);
-
-    const handleLoadMore = () => {
-        setVisibleCount((prev) => prev + 8);
+    const categoryIcons: { [key: string]: JSX.Element } = {
+        "Jalan Rusak": <TrafficCone />,
+        "Sampah": <Trash2 />,
+        "PJU mati": <LightbulbOff />,
+        "Banjir": <CloudRain />,
+        "Lainnya": <FolderSearch />,
     };
 
-    const filteredReports = dummyReports.filter((report) => {
-        const matchesSearch =
-            report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            report.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const reportListRef = useRef<HTMLDivElement | null>(null);
 
-        const matchesStatus = filterStatus === "Semua" || report.status === filterStatus;
+    const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filterCategory, setFilterCategory] = useState("Semua");
+    const [filterStatus, setFilterStatus] = useState("Semua");
+    const [currentPage, setCurrentPage] = useState(1);
+    const reportsPerPage = 5;
 
-        return matchesSearch && matchesStatus;
-    });
+    const pendingReports = dummyReports.filter(report => report.status === "Tertunda");
 
-    const visibleReports = filteredReports.slice(0, visibleCount);
+    const filteredReports = dummyReports
+        .filter(report => report.status !== "Tertunda")
+        .filter((report) => {
+            const matchSearch = report.title.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchCategory = filterCategory === "Semua" || report.category === filterCategory;
+            const matchStatus = filterStatus === "Semua" || report.status === filterStatus;
+            return matchSearch && matchCategory && matchStatus;
+        });
 
-    const totalReports = dummyReports.length;
-    const completed = dummyReports.filter(r => r.status === "Selesai").length;
-    const processing = dummyReports.filter(r => r.status === "Diproses").length;
-    const pending = dummyReports.filter(r => r.status === "Tertunda").length;
-    const verified = dummyReports.filter(r => r.status === "Diterima").length;
+    const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
+    const paginatedReports = filteredReports.slice(
+        (currentPage - 1) * reportsPerPage,
+        currentPage * reportsPerPage
+    );
+
+    const handleViewAllProgress = () => {
+        setFilterStatus("Diproses");
+        setTimeout(() => {
+            reportListRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+    };
 
     return (
-        <div className="flex flex-col gap-8">
+        <>
+            <div className="grid grid-cols-12 gap-8">
+                {/* Kiri */}
+                <div className="flex flex-col col-span-8">
 
-            {/* Progress Section */}
-            <div className="flex justify-between items-center bg-tertiary dark:bg-tertiaryDark p-8 rounded-md shadow-md">
-                <div className="flex flex-col gap-2 flex-1 justify-between h-40">
-                    <h2 className="text-2xl font-semibold">Progress Laporan</h2>
-                    <p className="text-textBody dark:text-textBodyDark">
-                        {completed + processing + pending + verified} laporan diterima, {completed} telah selesai.
-                    </p>
-                    <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
-                        <div
-                            className="bg-green-400 h-3 rounded-full transition-all duration-500"
-                            style={{ width: `${(completed / totalReports) * 100}%` }}
-                        />
+                    {/* Laporan Tertunda */}
+                    <div className="flex flex-col">
+                        <div className="flex items-center justify-between">
+                            <h1 className="text-xl font-semibold mb-4">Laporan Tertunda</h1>
+                            <p className="text-textBody dark:text-textBodyDark">{pendingReports.length} Laporan</p>
+                        </div>
+                        <div className="grid grid-cols-12 gap-4">
+                            {pendingReports.length > 0 ? (
+                                pendingReports.slice(0, 3).map((report, index) => (
+                                    <ReportCard
+                                        key={index}
+                                        index={index}
+                                        item={report}
+                                        onViewDetail={setSelectedReport}
+                                        colSpan="col-span-4"
+                                    />
+                                ))
+                            ) : (
+                                <p className="col-span-12 text-center text-textBody dark:text-textBodyDark">
+                                    Tidak ada laporan tertunda.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Filter dan Search */}
+                    <div className="flex items-center justify-between my-8">
+                        <h1 className="text-xl font-semibold">Seluruh Laporan</h1>
+                        <div className="flex gap-4">
+                            <SearchBar value={searchTerm} onChange={setSearchTerm} placeHolder="Cari laporan..." />
+                            <SelectCategoryFilter
+                                value={filterCategory}
+                                onChange={setFilterCategory}
+                                options={[
+                                    { label: "Semua", value: "Semua" },
+                                    { label: "Jalan Rusak", value: "Jalan Rusak" },
+                                    { label: "Sampah Menumpuk", value: "Sampah" },
+                                    { label: "PJU Mati", value: "PJU mati" },
+                                    { label: "Banjir", value: "Banjir" },
+                                    { label: "Lainnya", value: "Lainnya" },
+                                ]}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Filter Status */}
+                    <ReportStatusFilter filterStatus={filterStatus} setFilterStatus={setFilterStatus} />
+
+                    {/* ALL Report */}
+                    <div ref={reportListRef} className="flex flex-col gap-4">
+                        <AnimatePresence>
+                            {paginatedReports.map((report, index) => (
+                                <ReportList index={index} report={report} onViewDetail={setSelectedReport} />
+                            ))}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Pagination */}
+                    <div className="flex justify-center mt-6 gap-2">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`px-3 py-1 rounded-md ${currentPage === page ? "bg-primary text-white" : "bg-gray-200 dark:bg-gray-700"
+                                    }`}
+                            >
+                                {page}
+                            </button>
+                        ))}
                     </div>
                 </div>
-                <div className="w-40 h-40 ml-8">
-                    <StatusReportChart />
+
+                {/* Kanan */}
+                <div className="flex flex-col col-span-4">
+
+                    {/* Report Progress */}
+                    <div className="mb-4">
+                        <h1 className="text-xl font-semibold mb-4">Proses Laporan</h1>
+                        <div className="flex flex-col gap-4">
+                            {dummyReports
+                                .filter((report) => report.status === "Diproses")
+                                .slice(0, 3)
+                                .map((report, idx) => {
+                                    const icon = categoryIcons[report.category] || <AlertCircle className="text-gray-400" />;
+                                    return (
+                                        <ReportProgressList idx={idx} report={report} icon={icon} onViewDetail={setSelectedReport} />
+                                    );
+                                })}
+                            {dummyReports.filter((r) => r.status === "Diproses").length > 3 && (
+                                <div className="flex justify-end">
+                                    <p
+                                        className="text-sm font-light cursor-pointer hover:underline"
+                                        onClick={handleViewAllProgress}
+                                    >
+                                        Lihat semua
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+
+                    {/* Status Chart */}
+                    <div className="flex flex-col">
+                        <h1 className="text-xl font-semibold mb-4">Statistik Laporan</h1>
+                        <div className="bg-tertiary dark:bg-tertiaryDark rounded-md shadow-md w-full p-4">
+                            <StatusReportChart />
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Search and Filter */}
-            <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-semibold">Masukan laporan yang ingin kamu tinjau</h2>
-                <div className="flex w-full gap-4">
-                    <SearchBar
-                        value={searchTerm}
-                        onChange={setSearchTerm}
-                        placeHolder="Cari laporan..."
-                    />
-                    <SelectStatusFilter
-                        value={filterStatus}
-                        onChange={setFilterStatus}
-                        options={[
-                            { label: "Semua Status", value: "Semua" },
-                            { label: "Tertunda", value: "Tertunda" },
-                            { label: "Diproses", value: "Diproses" },
-                            { label: "Diterima", value: "Diterima" },
-                            { label: "Selesai", value: "Selesai" },
-                        ]}
-                    />
-                </div>
-            </div>
 
-            {/* Grid Laporan */}
-            <div
-                className="grid grid-cols-12 gap-4"
-            >
-                {visibleReports.map((report, index) => (
-
-                        <ReportCard
-                            index={index}
-                            item={report}
-                            onViewDetail={setSelectedReport}
-                            colSpan="col-span-3"
-                        />
-                ))}
-            </div>
-
-            {/* Tombol Load More */}
-            {visibleCount < filteredReports.length && (
-                <div className="flex justify-center">
-                    <button
-                        onClick={handleLoadMore}
-                        className="px-6 py-2 bg-primary hover:bg-primaryDark text-white rounded-lg shadow transition-all"
-                    >
-                        Muat Lebih Banyak
-                    </button>
-                </div>
-            )}
-
+            {/* Modal Laporan */}
             <ReportModal
                 report={selectedReport}
                 onClose={() => setSelectedReport(null)}
                 onVerify={() => alert("Laporan telah diverifikasi!")}
             />
-        </div>
+        </>
     );
 }
