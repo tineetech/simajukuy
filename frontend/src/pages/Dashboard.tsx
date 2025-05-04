@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Newspaper, Megaphone, Users, ArrowRight } from 'lucide-react';
-import { Report } from "../types";
+import { ClipboardPenLine, Megaphone, Users } from 'lucide-react';
+import { Report, ReportedPost } from "../types";
 import MonthlyReportChart from "../components/charts/MonthlyReportChart";
 import ReportCategoryChart from "../components/charts/ReportCategoryChart";
 import ReportCard from "../components/cards/ReportCard";
 import StatsCard from "../components/cards/StatsCard";
 import ReportModal from "../components/modals/ReportModal"
-import ReportHistoryTable from "../components/ReportHistoryTable";
+import ReportedPostCard from "../components/ReportedPostList";
+import PostDetailModal from "../components/modals/ReportedPostModal";
 
 export default function Dashboard() {
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+    const [selectedPost, setSelectedPost] = useState<ReportedPost | null>(null);
 
     const cards = [
         {
@@ -18,18 +20,21 @@ export default function Dashboard() {
             icon: <Megaphone size={16} />,
             title: "Total Laporan",
             value: "724",
+            link: "/admin/laporan"
         },
         {
             bgColor: "bg-yellow-200",
-            icon: <Newspaper size={16} />,
-            title: "Post Artikel",
+            icon: <ClipboardPenLine size={16} />,
+            title: "Postingan",
             value: "92",
+            link: "/komunitas"
         },
         {
             bgColor: "bg-blue-200",
             icon: <Users size={16} />,
             title: "User Aktif",
             value: "1.8K",
+            link: "/profile"
         },
     ];
 
@@ -69,6 +74,35 @@ export default function Dashboard() {
             image: "/images/about.jpg",
             status: "Tertunda"
         },
+    ];
+
+    const reportedPosts: ReportedPost[] = [
+        {
+            reportedBy: 'RizkyPratama',
+            date: '2025-04-28',
+            content: 'Isi postingan mengandung ujaran kebencian terhadap kelompok tertentu.',
+            reason: 'Ujaran kebencian',
+            image: 'https://source.unsplash.com/random/400x300?hate'
+        },
+        {
+            reportedBy: 'DewiAnggraini',
+            date: '2025-04-25',
+            content: 'Postingan ini menawarkan pekerjaan dengan gaji tinggi tetapi meminta uang pendaftaran.',
+            reason: 'Penipuan',
+            image: 'https://source.unsplash.com/random/400x300?fraud'
+        },
+        {
+            reportedBy: 'YusufHalim',
+            date: '2025-04-24',
+            content: 'Judul clickbait dan isi tidak sesuai dengan fakta atau sumber resmi.',
+            reason: 'Informasi menyesatkan',
+        },
+        {
+            reportedBy: 'YusufHalim',
+            date: '2025-04-24',
+            content: 'Judul clickbait dan isi tidak sesuai dengan fakta atau sumber resmi.',
+            reason: 'Informasi menyesatkan',
+        }
     ];
 
     return (
@@ -121,7 +155,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Right */}
-                <div className="flex flex-col col-span-4 bg-tertiary dark:bg-tertiaryDark rounded-sm">
+                <div className="flex flex-col col-span-4 bg-tertiary dark:bg-tertiaryDark rounded-md shadow-md">
 
                     {/* Stats */}
                     <div className="flex flex-col p-8 gap-4">
@@ -132,6 +166,7 @@ export default function Dashboard() {
                                 icon={card.icon}
                                 title={card.title}
                                 value={card.value}
+                                link={card.link}
                             />
                         ))}
                     </div>
@@ -142,25 +177,24 @@ export default function Dashboard() {
                         <ReportCategoryChart />
                     </div>
 
-                    {/* History */}
-                    <div className="my-8 px-8">
-                        <h1 className="text-lg font-semibold mb-6">Riwayat Laporan</h1>
-                        <ReportHistoryTable />
-                        <Link to={'/laporan'} className="flex font-light justify-end mt-4 gap-1 items-center">
-                            Lainnya
-                            <ArrowRight size={16} />
-                        </Link>
+                    {/* Reported Posts */}
+                    <div className="flex flex-col gap-4 p-8">
+                        <div className="flex w-full justify-between items-center">
+                            <h1 className="text-lg font-semibold mb-2">Postingan yang Dilaporkan</h1>
+                            <p className="text-sm text-textBody dark:text-textBodyDark">{reportedPosts.length} Post</p>
+                        </div>
+                        {reportedPosts.slice(0, 3).map((post, index) => (
+                            <ReportedPostCard key={index} post={post} onClick={() => setSelectedPost(post)} />
+                        ))}
                     </div>
                 </div>
-            </div>
+            </div >
 
 
-            <ReportModal
-                report={selectedReport}
-                onClose={() => setSelectedReport(null)}
-                onVerify={() => alert("Laporan telah diverifikasi!")}
+            <ReportModal report={selectedReport} onClose={() => setSelectedReport(null)}
             />
 
+            <PostDetailModal post={selectedPost} onClose={() => setSelectedPost(null)} />
         </>
     );
 }

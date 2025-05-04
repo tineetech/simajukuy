@@ -39,7 +39,7 @@ export default function ReportCard({
         >
             <div className="flex flex-col gap-2 mb-4 flex-grow">
                 <div className="flex justify-between items-start">
-                    <h1 className="text font-medium leading-snug line-clamp-2 max-w-[80%]">
+                    <h1 className="font-medium leading-snug line-clamp-2 max-w-[80%]">
                         {item.title}
                     </h1>
                     <span

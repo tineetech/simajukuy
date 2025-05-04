@@ -23,7 +23,7 @@ export default function ProfileWidget() {
     }, []);
 
     const handleLogout = () => {
-      Logout();
+        Logout();
     };
 
     return (

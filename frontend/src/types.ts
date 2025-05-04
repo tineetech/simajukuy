@@ -34,9 +34,18 @@ export interface ArticleInterface {
 }
 
 export interface Report {
+    [x: string]: string;
     title: string;
     submittedAt: string;
     description: string;
     image: string;
     status: "Tertunda" | "Diterima" | "Diproses" | "Selesai"
 };
+
+export interface ReportedPost {
+    image?: string;
+    reportedBy: string;
+    date: string;
+    content: string;
+    reason: string;
+}

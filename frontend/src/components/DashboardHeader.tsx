@@ -9,12 +9,10 @@ export default function DashboardHeader() {
     const pageTitles: Record<string, string> = {    
         "/admin": "Admin Dashboard",
         "/admin/laporan": "Laporan",
-        "/admin/riwayat": "Riwayat Laporan",
-        "/admin/setting": "Setingan",
     };
 
     const currentPath = location.pathname;
-    const pageTitle = pageTitles[currentPath] || "Admin Panel";
+    const pageTitle = pageTitles[currentPath];
 
     return (
         <div className="flex justify-between items-center relative mb-8">

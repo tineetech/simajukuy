@@ -21,11 +21,11 @@ export default function Header() {
 
     useEffect(() => {
         const verifyLogin = async () => {
-          const loggedIn = await checkIsLogin();
-          setIsLoggedIn(loggedIn);
-          console.log("Status Login dari useEffect:", loggedIn);
+            const loggedIn = await checkIsLogin();
+            setIsLoggedIn(loggedIn);
+            console.log("Status Login dari useEffect:", loggedIn);
         };
-    
+
         verifyLogin();
         const handleScroll = () => {
             if (window.scrollY > 50) {

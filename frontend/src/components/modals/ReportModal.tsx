@@ -1,10 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
+import Swal from "sweetalert2";
 import { Report } from "../../types";
 
 interface ReportModalProps {
     report: Report | null;
     onClose: () => void;
-    onVerify?: () => void;
 }
 
 const getStatusBadgeColor = (status: string) => {
@@ -22,7 +22,42 @@ const getStatusBadgeColor = (status: string) => {
     }
 };
 
-export default function ReportModal({ report, onClose, onVerify }: ReportModalProps) {
+export default function ReportModal({ report, onClose }: ReportModalProps) {
+    const handleVerification = async () => {
+        const isDark = document.documentElement.classList.contains("dark");
+
+        const result = await Swal.fire({
+            title: "Verifikasi laporan ini?",
+            text: "Pastikan laporan sudah ditinjau sebelum memverifikasi.",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Verifikasi",
+            cancelButtonText: "Batal",
+            confirmButtonColor: "#2563eb", // Tailwind blue-600
+            background: isDark ? "#1f2937" : undefined,
+            color: isDark ? "#f9fafb" : undefined,
+            customClass: {
+                popup: isDark ? "dark-swal" : "",
+            },
+        });
+
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: "Terverifikasi!",
+                text: "Laporan telah berhasil diverifikasi.",
+                icon: "success",
+                background: isDark ? "#1f2937" : undefined,
+                color: isDark ? "#f9fafb" : undefined,
+                customClass: {
+                    popup: isDark ? "dark-swal" : "",
+                },
+            });
+
+            // Tutup modal setelah verifikasi
+            onClose();
+        }
+    };
+
     return (
         <AnimatePresence>
             {report && (
@@ -48,29 +83,21 @@ export default function ReportModal({ report, onClose, onVerify }: ReportModalPr
                                 className="rounded-lg w-full max-h-56 object-cover"
                             />
 
-                            {/* Title + Badge */}
                             <div className="flex items-start justify-between">
                                 <h2 className="text-lg font-semibold text-text dark:text-textDark">{report.title}</h2>
-                                <span
-                                    className={`text-xs font-semibold px-2 py-0.5 rounded-full ${getStatusBadgeColor(
-                                        report.status
-                                    )}`}
-                                >
+                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${getStatusBadgeColor(report.status)}`}>
                                     {report.status}
                                 </span>
                             </div>
 
-                            {/* Description */}
                             <p className="text-sm text-textBody dark:text-textBodyDark leading-relaxed">
                                 {report.description}
                             </p>
 
-                            {/* Submitted At */}
                             <div className="text-xs text-textBody dark:text-textBodyDark mt-2">
                                 Dilaporkan pada: <span className="font-medium">{report.submittedAt}</span>
                             </div>
 
-                            {/* Actions */}
                             <div className="flex justify-end gap-2 mt-6">
                                 <button
                                     onClick={onClose}
@@ -79,10 +106,7 @@ export default function ReportModal({ report, onClose, onVerify }: ReportModalPr
                                     Tutup
                                 </button>
                                 <button
-                                    onClick={() => {
-                                        onVerify?.();
-                                        onClose();
-                                    }}
+                                    onClick={handleVerification}
                                     className="px-4 py-2 rounded-md text-sm font-medium bg-primary hover:bg-primary/70 text-white transition"
                                 >
                                     Verifikasi
