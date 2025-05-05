@@ -12,6 +12,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ResetPassPage from "./pages/ResetPassPage";
 import VerifyResetPassPage from "./pages/VerifyResetPassPage";
+import ProfilePage from "./pages/ProfilePage";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="lapor" element={<ReportPage />} />
           <Route path="artikel" element={<ArticlePage />} />
           <Route path="artikel/:id" element={<ArticleDetailPage />} />
+          <Route path="profile" element={<ProfilePage />} />
 
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
