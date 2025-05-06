@@ -176,7 +176,7 @@ export class LaporController {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unknown error occurred";
-      return res.status(500).json({ error: message });
+      return res.status(500).json({ error: error.message });
     }
   }
 
@@ -263,11 +263,34 @@ export class LaporController {
 
       const sqlUpdateData = 'UPDATE laporan set user_id = ?, image = ?, description = ?, type_verification = ?, status = ?, notes = ? WHERE id = ?';
       connection.query(sqlUpdateData, [user_id, image, description, type_verification, status, notes, req.params.id], (err, result) => {
-        if (err) res.json({"error": err})
-        if (!result) {
-          return res.status(400).json({ message: "Cannot update laporan" });
-        }
-        res.json({ status: 200, message: 'success update data', data: result })
+        if (err) return res.status(500).json({"error": err})
+          
+        return res.status(200).json({ status: 200, message: 'success update data', data: result })
+      })
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      return res.status(500).json({ error: message });
+    }
+  }
+  
+  async updateStatus (req, res) {
+    try {
+      const {
+        status,
+      } = req.body
+
+      const sqlGetData = 'SELECT * FROM laporan WHERE id = ?';
+      const sqlUpdateData = 'UPDATE laporan set status = ? WHERE id = ?';
+      connection.query(sqlGetData, [req.params.id], (err, result) => {
+        if (err) return res.status(500).json({"error": err})
+        if (result[0].status === 'success') return res.status(400).json({"error": 'Gagal update status, status laporan sudah success diverifikasi.'})
+        
+        connection.query(sqlUpdateData, [status, req.params.id], (err, result) => {
+          if (err) return res.status(500).json({"error": err})
+  
+          return res.status(200).json({ message: 'success update data', data: result })
+        })
       })
     } catch (error) {
       const message =
