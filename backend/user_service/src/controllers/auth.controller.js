@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.SECRET_KEY || "osdjfksdhfishd";
 
 export class AuthController {
   async registerGuest(req, res) {
-    const { email, password, username } = req.body;
+    const { email, password, username, avatar } = req.body;
   
     connection.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
       if (err) {
@@ -25,8 +25,8 @@ export class AuthController {
       const hashedPassword = await hashPass(password);
   
       connection.query(
-        "INSERT INTO users (email, password, username, role) VALUES (?, ?, ?, ?)",
-        [email, hashedPassword, username, "guest"],
+        "INSERT INTO users (email, password, username, avatar, role) VALUES (?, ?, ?, ?, ?)",
+        [email, hashedPassword, username, avatar ?? 'https://i.pinimg.com/736x/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg', "guest"],
         (insertErr, insertResult) => {
           if (insertErr) {
             console.error("Insert Error:", insertErr);

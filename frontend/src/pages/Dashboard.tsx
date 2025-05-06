@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ClipboardPenLine, Megaphone, Users } from 'lucide-react';
 import { Report, ReportedPost } from "../types";
@@ -9,72 +9,63 @@ import StatsCard from "../components/cards/StatsCard";
 import ReportModal from "../components/modals/ReportModal"
 import ReportedPostCard from "../components/ReportedPostList";
 import PostDetailModal from "../components/modals/ReportedPostModal";
+import DataUser from "../services/dataUser";
+import GetLaporanData from "../services/getLaporanData";
+import GetPostData from "../services/getPostData";
+import GetUsersData from "../services/getUsersData";
 
 export default function Dashboard() {
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
     const [selectedPost, setSelectedPost] = useState<ReportedPost | null>(null);
+    const dataLapor = GetLaporanData()
+    const dataPost = GetPostData()
+    const dataUsers = GetUsersData()
 
     const cards = [
         {
             bgColor: "bg-red-200",
             icon: <Megaphone size={16} />,
             title: "Total Laporan",
-            value: "724",
+            value: dataLapor?.data?.data?.length ?? '0',
             link: "/admin/laporan"
         },
         {
             bgColor: "bg-yellow-200",
             icon: <ClipboardPenLine size={16} />,
             title: "Postingan",
-            value: "92",
+            value: dataPost?.data?.data?.length ?? 'Loading..',
             link: "/komunitas"
         },
         {
             bgColor: "bg-blue-200",
             icon: <Users size={16} />,
-            title: "User Aktif",
-            value: "1.8K",
+            title: "Total User",
+            value: dataUsers?.data?.data?.length,
             link: "/profile"
         },
     ];
 
-    const recentUnverified: Report[] = [
-        {
-            title: "Jalan berlubang di Jl. Merdeka",
-            submittedAt: "10 April 2025",
-            description: "Jalan rusak menyebabkan kendaraan sulit lewat, terutama saat hujan.",
-            image: "/images/about.jpg",
-            status: "Tertunda"
-        },
-        {
-            title: "Tumpukan sampah di TPS ilegal",
-            submittedAt: "9 April 2025",
-            description: "Bau menyengat dan tidak diangkut lebih dari seminggu.",
-            image: "/images/about.jpg",
-            status: "Tertunda"
-        },
-        {
-            title: "Pohon tumbang menutup jalan",
-            submittedAt: "8 April 2025",
-            description: "Pohon besar tumbang saat hujan, akses jalan tertutup total.",
-            image: "/images/about.jpg",
-            status: "Tertunda"
-        },
-        {
-            title: "Lampu jalan pahlawan mati total",
-            submittedAt: "7 April 2025",
-            description: "Area jadi sangat gelap di malam hari, rawan kejahatan.",
-            image: "/images/about.jpg",
-            status: "Tertunda"
-        },
-        {
-            title: "Banjir di pemukiman warga",
-            submittedAt: "6 April 2025",
-            description: "Air menggenangi rumah warga hingga 30 cm.",
-            image: "/images/about.jpg",
-            status: "Tertunda"
-        },
-    ];
+    const [recentUnverified, setRecentUnverified]: Report[] = useState([]);
+
+    useEffect(() => {
+        if (dataLapor?.data?.data) {
+          const formattedReports = dataLapor.data.data.map((item: any) => ({
+            user_id: item.user_id || 0,
+            id: item.id || 0,
+            title: item.title || 'Laporan Warga',
+            submittedAt: new Date(item.created_at).toLocaleDateString('id-ID', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            }),
+            description: item.description || 'Tidak ada deskripsi',
+            image: item.image || '/images/default-report.jpg',
+            status: item.status || 'Tertunda'
+          }));
+          
+          setRecentUnverified(formattedReports);
+        }
+      }, [dataLapor]);
 
     const reportedPosts: ReportedPost[] = [
         {
@@ -105,6 +96,9 @@ export default function Dashboard() {
         }
     ];
 
+    
+    const datas = DataUser()
+
     return (
         <>
             {/* Content */}
@@ -116,8 +110,8 @@ export default function Dashboard() {
                     {/* Hello World */}
                     <div className="bg-tertiary dark:bg-tertiaryDark flex gap-16 p-8 shadow-md rounded-md">
                         <div className="flex-col">
-                            <h1 className="font-semibold text-2xl mb-4">Hi John Doe</h1>
-                            <p className="text-textBody dark:text-textBodyDark text-sm mb-8">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ipsa tempora vero est rem dolorum impedit, ratione error repellendus unde eos quis ad quia blanditiis natus itaque</p>
+                            <h1 className="font-semibold text-2xl mb-4">Hi { datas.data?.username?.toUpperCase() ?? '!' }</h1>
+                            <p className="text-textBody dark:text-textBodyDark text-sm mb-8">Pantau dan kelola laporan masalah dari warga dengan mudah melalui dasbor admin Simajukuy. Dapatkan visibilitas lengkap atas isu-isu yang dilaporkan, lacak status penanganan, dan koordinasikan tindakan penyelesaian secara efisien.</p>
                             <Link to='/lapor' className="bg-tertiaryDark dark:bg-tertiary text-textDark dark:text-text   px-6 py-3 rounded-md text-sm">
                                 Lihat Selengkapnya
                             </Link>

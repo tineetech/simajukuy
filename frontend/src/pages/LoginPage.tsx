@@ -20,7 +20,7 @@ export default function LoginPage() {
 		});
   
 		const data = await response.json();
-  
+
 		if (response.ok) {
 			localStorage.setItem('authToken', data.token); // Asumsi backend mengembalikan token di properti 'token'
 			Swal.fire({
@@ -29,6 +29,11 @@ export default function LoginPage() {
 			  icon: "success",
 			}).then((res) => {
 			  if (res.isConfirmed) {
+				if (data.results[0].role === 'admin') {
+					console.log('ini admin')
+					window.location.href = '/admin'
+					return
+				}
 				window.location.href = '/'
 			  }
 			});

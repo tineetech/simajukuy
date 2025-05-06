@@ -100,7 +100,10 @@ export default function ReportForm() {
             const resAi = await analyzeAi()
             setProgress(70)
             setMessage('Menganalisa kesimpulan..')
-            console.log(resAi)
+
+            if (!resAi) {
+                console.log("gagal analisis tidak ada hasil :", resAi)
+            }
             
             if (resAi.includes('YA')) {
                 setProgress(100)
@@ -343,7 +346,7 @@ export default function ReportForm() {
                                 <button
                                     type="button"
                                     onClick={(e) => handleSubmitAi(e)}
-                                    className="bg-transparent border-primary border-2 text-accentDark dark:bg-accentDark font-bold px-6 py-4 rounded-md hover:bg-primary hover:text-white hover:cursor-pointer transition"
+                                    className="bg-transparent border-primary border-2 text-primary font-bold px-6 py-4 rounded-md hover:bg-primary hover:text-white hover:cursor-pointer transition"
                                 >
                                     Verifikasi Dengan Ai
                                 </button>
@@ -367,7 +370,7 @@ export default function ReportForm() {
             {
                 isClickVerifAi && (
                     <div className='fixed flex justify-center items-center top-0 start-0 w-full h-screen' style={{background: "rgba(0,0,0,.5)", zIndex: '9999999'}}>
-                        <div className='w-[400px] px-5 text-center h-auto py-10 bg-white rounded-2xl'>
+                        <div className='w-[400px] px-5 text-center h-auto py-10 bg-white dark:bg-gray-700 rounded-2xl'>
                             <h1 className='font-semibold'>Proses Verifikasi</h1>
                             <p className='text-sm text-gray-400'>Sabar ya, SikuyAi Lagi Analisis Foto Yang Kamu Kirim.</p>
                             

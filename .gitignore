@@ -4,10 +4,13 @@
 /frontend/.env
 
 # backend
+/backend/laporan_service/storage
+/backend/post_service/storage
 /backend/node_modules
 /backend/migration/node_modules
 /backend/migration/laporan_service/node_modules
 /backend/migration/user_service/node_modules
+/backend/artikel_service/node_modules
 /backend/user_service/node_modules
 /backend/post_service/node_modules
 /backend/notification_service/node_modules

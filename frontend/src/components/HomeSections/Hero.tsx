@@ -1,8 +1,29 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Megaphone } from 'lucide-react';
+import axios from "axios";
+import { useState, useEffect } from "react";
 
 export default function Hero() {
+    const [berita, setBerita] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+  
+    useEffect(() => {
+      const fetchBerita = async () => {
+        try {
+          const response = await axios.get('http://localhost:5005/api/berita/');
+          setBerita(response.data);
+          console.log(response)
+          setLoading(false);
+        } catch (err) {
+          setError(err.message);
+          setLoading(false);
+        }
+      };
+  
+      fetchBerita();
+    }, []);
     return (
         <div className="bg-tertiary dark:bg-tertiaryDark overflow-hidden">
         <div className=" container mx-auto overflow-hidden px-5">
@@ -22,7 +43,7 @@ export default function Hero() {
                     </Link>
                 </div>
 
-                <div className="relative flex justify-center h-[600px] banner1 w-full mx-auto container mt-10 rounded-4xl items-center z-0">
+                <div className="relative flex justify-center h-auto lg:h-[600px] banner1 w-full mx-auto container mt-10 rounded-4xl items-center z-0">
                     {/* <motion.div
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1.2, opacity: 1 }}
@@ -33,13 +54,13 @@ export default function Hero() {
                     {/* <img src="/images/hero.png" alt="Gedung" className="w-80 md:w-[28rem] object-cover z-1" /> */}
 
                     {/* new code */}
-                    <div className="flex gap-3">
+                    <div className="flex flex-col lg:flex-row gap-3 py-10">
                         <div className="w-[400px] rounded-2xl h-[450px] bg-white overflow-hidden">
                             <img src="/images/banner1.jpg" className="w-full object-cover h-full" alt="" />
                         </div>
                         <div className="flex flex-col gap-3">
                             <div className="flex flex-col md:flex-row gap-3">
-                                <div className="w-[710px] rounded-2xl h-[220px] flex items-center justify-center bg-slate-700 text-white hover:bg-slate-600 ease-in-out transition-all dark:bg-gray-700">
+                                <div className="hidden w-[710px] rounded-2xl h-[220px] lg:flex items-center justify-center bg-slate-700 text-white hover:bg-slate-600 ease-in-out transition-all dark:bg-gray-700">
                                     <div className="container mx-auto w-full h-full p-5 flex justify-center text-left flex-col">
                                         <h1 className="text-2xl font-bold mb-3">✨ Pentingnya Peduli Sekitar</h1>
                                         <p className="">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quibusdam consequuntur harum ratione soluta, explicabo sapiente ipsum laborum error libero distinctio culpa dolore deleniti ipsam molestias!</p>
@@ -54,11 +75,11 @@ export default function Hero() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex flex-col md:flex-row gap-3">
-                                <div className="w-[350px] overflow-hidden rounded-2xl h-[220px] bg-white">
+                            <div className="flex flex-col items-center md:flex-row gap-3">
+                                <div className="hidden lg:flex w-[350px] overflow-hidden rounded-2xl h-[220px] bg-white">
                                     <img src="/images/banner1.jpg" className="w-full object-cover h-full" alt="" />
                                 </div>
-                                <div className="w-[350px] overflow-hidden rounded-2xl h-[220px] flex items-start relative justify-start bg-slate-700 text-white hover:bg-slate-600 ease-in-out transition-all dark:bg-gray-700">
+                                <div className="w-[400px] lg:w-[350px] overflow-hidden rounded-2xl h-[220px] flex items-start relative justify-start bg-slate-700 text-white hover:bg-slate-600 ease-in-out transition-all dark:bg-gray-700">
                                     <div className="p-5 w-[230px]">
                                         <h1 className="font-bold mb-2">Lapor Bijak Untuk Kita !</h1>
                                         <p className="text-sm">Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quibusdam, animi!</p>

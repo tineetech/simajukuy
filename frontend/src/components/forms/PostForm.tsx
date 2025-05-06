@@ -1,12 +1,15 @@
 import { useRef, useState } from "react";
 import { Image, Smile, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import Swal from "sweetalert2";
 
 export default function PostForm() {
     const [isFocused, setIsFocused] = useState(false);
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [selectedImage, setSelectedImage] = useState<object | null>(null);
+    const [imageRaw, setImageRaw] = useState<string | null>(null);
     const [showEmojis, setShowEmojis] = useState(false);
     const [postContent, setPostContent] = useState("");
+    const token = localStorage.getItem('authToken') ?? '';
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -29,10 +32,11 @@ export default function PostForm() {
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            setSelectedImage(file as object);
             const reader = new FileReader();
             reader.onload = () => {
-                setSelectedImage(reader.result as string);
                 setIsFocused(true);
+                setImageRaw(reader?.result as string)
             };
             reader.readAsDataURL(file);
         }
@@ -42,8 +46,68 @@ export default function PostForm() {
         setPostContent((prev) => prev + emoji);
     };
 
-    const post = () => {
-        // const res = fetch(`${import.meta.env.VITE_POST_SERVICE}/api/post/create`)
+    const post = async () => {
+        const formData = new FormData();
+        formData.append('content', postContent?.toString() ?? '');
+        formData.append('type', selectedImage ? 'image' : "text");
+        // console.log(formData)
+        
+        try {
+            if (selectedImage !== null) {
+                 
+                formData.append('image', selectedImage ?? null);
+                
+                const res = await fetch(`${import.meta.env.VITE_POST_SERVICE}/api/postingan/create`, {
+                    method: "POST",
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                })
+    
+                if (!res?.ok) {
+                    console.error(res)
+                    Swal.fire({
+                      title: "Gagal Membuat Postingan",
+                      text: "Terjadi kesalahan saat menghubungi server.",
+                      icon: "error",
+                    });
+                    return
+                }
+
+                Swal.fire({
+                    title: "Berhasil Membuat Postingan",
+                    text: "Postingan berhasil dibuat.",
+                    icon: "success",
+                  });
+                return
+            }
+            
+            const res = await fetch(`${import.meta.env.VITE_POST_SERVICE}/api/postingan/create`, {
+                method: "POST",
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            })
+    
+            if (!res?.ok) {
+                Swal.fire({
+                  title: "Gagal Membuat Postingan",
+                  text: "Terjadi kesalahan saat menghubungi server.",
+                  icon: "error",
+                });
+                return
+            }
+
+            Swal.fire({
+              title: "Berhasil Membuat Postingan",
+              text: "Postingan berhasil dibuat.",
+              icon: "success",
+            });
+        } catch (e) {
+            console.error(e)
+        }
     }
     return (
         <motion.div
@@ -68,7 +132,7 @@ export default function PostForm() {
                             transition={{ duration: 0.3 }}
                             className="relative mb-4"
                         >
-                            <img src={selectedImage} alt="preview" className="rounded-lg max-h-60 object-cover" />
+                            <img src={imageRaw ?? ""} alt="preview" className="rounded-lg max-h-60 object-cover" />
                             <button
                                 className="absolute top-2 right-2 bg-gray-500 p-1 rounded-full hover:bg-black/80"
                                 onClick={() => setSelectedImage(null)}

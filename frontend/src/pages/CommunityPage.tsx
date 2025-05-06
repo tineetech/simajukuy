@@ -1,35 +1,32 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PostForm from "../components/forms/PostForm";
 import PostItem from "../components/PostItem";
 import SortFilter from "../components/widgets/SortFilter";
 import TrendingTopics from "../components/TrendingTopics";
 import { PostInterface } from "../types";
 
-const dummyPosts: PostInterface[] = [
-    {
-        id: 1,
-        username: "raka_dev",
-        avatar: "/images/profile.jpg",
-        content: "Ada tumpukan sampah di pinggir jalan Sudirman, tolong segera ditindak.",
-        timestamp: "1 jam lalu",
-        likes: 23,
-        comments: 5,
-    },
-    {
-        id: 2,
-        username: "wulan",
-        avatar: "/images/profile.jpg",
-        content: "Saya suka ide taman kota yang ada WiFi dan charging station! 🌳📶",
-        timestamp: "3 jam lalu",
-        likes: 40,
-        comments: 8,
-    },
-];
-
 export default function CommunityPage() {
     const [sortBy, setSortBy] = useState("terbaru");
+    const [posts, setPosts] = useState<PostInterface>([])
 
-    const sortedPosts = [...dummyPosts].sort((a, b) => {
+    useEffect(() => {
+        const getPosts = async () => {
+            try {
+                fetch(`${import.meta.env.VITE_POST_SERVICE}/api/postingan/`)
+                .then(res => res.json()) 
+                .then(res => {
+                    console.log(res)
+                    setPosts(res.data)
+                })
+                
+            } catch (e) {
+                console.error(e)
+            }
+        }
+        getPosts()
+    }, [])
+
+    const sortedPosts = [...posts].sort((a, b) => {
         if (sortBy === "populer") return b.likes - a.likes;
         return b.id - a.id; // asumsi id urutan waktu (terbaru)
     });

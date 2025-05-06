@@ -23,7 +23,108 @@ const getStatusBadgeColor = (status: string) => {
 };
 
 export default function ReportModal({ report, onClose }: ReportModalProps) {
-    const handleVerification = async () => {
+    const isDark = document.documentElement.classList.contains("dark");
+    const updateStatus = async (id: number) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_LAPOR_SERVICE}/api/lapor/update-status/${id}`, {
+                method: "POST",
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken') ?? ''}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: 'success',
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('Update status failed:', data);
+                Swal.fire({
+                    title: "Gagal Update Status!",
+                    text: data.error ?? 'Gagal update coba lagi nanti.',
+                    icon: "error",
+                    confirmButtonColor: "#2563eb",
+                    background: isDark ? "#1f2937" : undefined,
+                    color: isDark ? "#f9fafb" : undefined,
+                    customClass: {
+                        popup: isDark ? "dark-swal" : "",
+                    },
+                });
+                return { error: true }; // Return object indicating failure
+            }
+
+            console.log('Successfully updated status:', data);
+            return data; // Return successful data
+        } catch (error) {
+            console.error('Network error (updateStatus):', error);
+            Swal.fire({
+                title: "Gagal Update Status!",
+                text: 'Terjadi kesalahan jaringan.',
+                icon: "error",
+                confirmButtonColor: "#2563eb",
+                background: isDark ? "#1f2937" : undefined,
+                color: isDark ? "#f9fafb" : undefined,
+                customClass: {
+                    popup: isDark ? "dark-swal" : "",
+                },
+            });
+            return { error: true }; // Return object indicating failure
+        }
+    };
+
+    const sendCoin = async (user_id: number) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_USER_SERVICE}/api/users/koin/update/${user_id}`, {
+                method: "POST",
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken') ?? ''}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    amount: 500,
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('Send coin failed:', data);
+                Swal.fire({
+                    title: "Gagal Update Koin!",
+                    text: data.error ?? 'Gagal update koin coba lagi nanti.',
+                    icon: "error",
+                    confirmButtonColor: "#2563eb",
+                    background: isDark ? "#1f2937" : undefined,
+                    color: isDark ? "#f9fafb" : undefined,
+                    customClass: {
+                        popup: isDark ? "dark-swal" : "",
+                    },
+                });
+                return { error: true }; // Return object indicating failure
+            }
+
+            console.log('Successfully updated koin:', data);
+            return data; // Return successful data
+        } catch (error) {
+            console.error('Network error (sendCoin):', error);
+            Swal.fire({
+                title: "Gagal Update Koin!",
+                text: 'Terjadi kesalahan jaringan.',
+                icon: "error",
+                confirmButtonColor: "#2563eb",
+                background: isDark ? "#1f2937" : undefined,
+                color: isDark ? "#f9fafb" : undefined,
+                customClass: {
+                    popup: isDark ? "dark-swal" : "",
+                },
+            });
+            return { error: true }; // Return object indicating failure
+        }
+    };
+
+    const handleVerification = async (id: number, user_id: number) => {
         const isDark = document.documentElement.classList.contains("dark");
 
         const result = await Swal.fire({
@@ -33,7 +134,7 @@ export default function ReportModal({ report, onClose }: ReportModalProps) {
             showCancelButton: true,
             confirmButtonText: "Verifikasi",
             cancelButtonText: "Batal",
-            confirmButtonColor: "#2563eb", // Tailwind blue-600
+            confirmButtonColor: "#2563eb",
             background: isDark ? "#1f2937" : undefined,
             color: isDark ? "#f9fafb" : undefined,
             customClass: {
@@ -42,6 +143,16 @@ export default function ReportModal({ report, onClose }: ReportModalProps) {
         });
 
         if (result.isConfirmed) {
+            const resStatus = await updateStatus(id);
+            if (resStatus?.error) {
+                return; // Stop if updateStatus failed
+            }
+
+            const resCoint = await sendCoin(user_id);
+            if (resCoint?.error) {
+                return; // Stop if sendCoin failed
+            }
+
             Swal.fire({
                 title: "Terverifikasi!",
                 text: "Laporan telah berhasil diverifikasi.",
@@ -53,7 +164,7 @@ export default function ReportModal({ report, onClose }: ReportModalProps) {
                 },
             });
 
-            // Tutup modal setelah verifikasi
+            // Tutup modal setelah verifikasi berhasil
             onClose();
         }
     };
@@ -78,7 +189,7 @@ export default function ReportModal({ report, onClose }: ReportModalProps) {
                     >
                         <div className="flex flex-col gap-4">
                             <img
-                                src={report.image}
+                                src={import.meta.env.VITE_LAPOR_SERVICE + report.image}
                                 alt={report.title}
                                 className="rounded-lg w-full max-h-56 object-cover"
                             />
@@ -106,7 +217,7 @@ export default function ReportModal({ report, onClose }: ReportModalProps) {
                                     Tutup
                                 </button>
                                 <button
-                                    onClick={handleVerification}
+                                    onClick={() => handleVerification(report.id, report.user_id)}
                                     className="px-4 py-2 rounded-md text-sm font-medium bg-primary hover:bg-primary/70 text-white transition"
                                 >
                                     Verifikasi

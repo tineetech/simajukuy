@@ -35,7 +35,7 @@ export default function ProfileWidget() {
                 className="rounded-full overflow-hidden w-10 h-10"
             >
                 <img
-                    src="/images/profile.jpg"
+                    src={datas?.data?.avatar ?? ''}
                     alt="Profile"
                     className="object-cover w-full h-full"
                 />
