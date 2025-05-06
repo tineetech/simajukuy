@@ -42,23 +42,42 @@ export default function ProfilePage() {
     const dummyPosts: PostInterface[] = [
         {
             id: 1,
-            avatar: "/images/profile.jpg",
+            user_id: 101,
             username: "farhan.mp4",
-            timestamp: "1 jam lalu",
+            avatar: "/images/profile.jpg",
+            image: "", // Kosongkan jika tidak ada gambar
             content: "Hari ini saya melihat langsung proses pembersihan saluran air di Suryakencana. Salut untuk petugas!",
+            type: "text", // Contoh tipe, bisa disesuaikan
+            users: {
+                user_id: 101,
+                username: "farhan.mp4"
+            },
+            timestamp: "1 jam lalu",
             likes: 18,
-            comments: 4,
+            comment_count: 4,
+            like_count: 18,
+            comments: {} // Kosongkan untuk dummy
         },
         {
             id: 2,
-            avatar: "/images/profile.jpg",
+            user_id: 101,
             username: "farhan.mp4",
-            timestamp: "3 hari lalu",
+            avatar: "/images/profile.jpg",
+            image: "",
             content: "Apakah ada yang tahu siapa yang bisa dihubungi untuk perbaikan lampu jalan di daerah Bubulak?",
+            type: "text",
+            users: {
+                user_id: 101,
+                username: "farhan.mp4"
+            },
+            timestamp: "3 hari lalu",
             likes: 42,
-            comments: 9,
-        },
+            comment_count: 9,
+            like_count: 42,
+            comments: {}
+        }
     ];
+
 
     return (
         <div className="bg-background dark:bg-backgroundDark text-text dark:text-textDark">
