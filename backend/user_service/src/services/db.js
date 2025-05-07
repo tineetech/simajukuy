@@ -8,14 +8,25 @@ let connection = mysql.createConnection({
     port: process.env.DB_PORT,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
+    connectTimeout: 20000, // 20 seconds timeout
 })
 
 connection.connect(function(error) {
     if (!!error) {
-        console.log(error);
+        console.log('error koneksi mysql gagal : ', error);
     } else {
         console.log('koneksi mysql berhasil')
     }
 })
+
+async function ensureConnection() {
+    if (connection.state === 'disconnected') {
+      await connection.connect();
+    }
+}
+
+setInterval(() => {
+    ensureConnection()
+}, 1000)
 
 export default connection

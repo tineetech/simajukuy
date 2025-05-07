@@ -13,7 +13,7 @@ export class LaporanController {
 
       const sanitizedData = dataGet;
 
-      res.json({ status: 200, message: 'success get data', data: sanitizedData })
+      res.json({ status: 200, message: 'success get data', data: sanitizedData.data })
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unknown error occurred";

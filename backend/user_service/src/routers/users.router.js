@@ -44,6 +44,36 @@ export class UsersRouter {
       this.usersController.deleteUsers,
       this.authMiddleware.checkRole('admin')
     );
+
+    this.router.get(
+      "/koin",
+      this.usersController.getKoins,
+      this.authMiddleware.verifyToken
+    );
+
+    this.router.get(
+      "/koin/:id",
+      this.usersController.getKoinById,
+      this.authMiddleware.verifyToken
+    );
+
+    this.router.post(
+      "/koin/create",
+      this.usersController.createKoin,
+      this.authMiddleware.checkRole('admin')
+    );
+
+    this.router.post(
+      "/koin/update/:id",
+      this.usersController.updateKoin,
+      this.authMiddleware.verifyToken
+    );
+
+    this.router.post(
+      "/koin/delete/:id",
+      this.usersController.deleteKoin,
+      this.authMiddleware.checkRole('admin')
+    );
   }
 
   getRouter() {

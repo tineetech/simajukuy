@@ -19,8 +19,8 @@ exports.up = async function (knex) {
       table.text('password_reset_token').nullable();
       table.text('google_id').nullable();
       table.text('verify_email_token').nullable();
-      table.boolean('status').notNullable().defaultTo(true);
       table.timestamp('created_at').defaultTo(knex.fn.now());
+      table.boolean('status').notNullable().defaultTo(true);
       table.timestamp('updated_at').defaultTo(knex.fn.now());
     });
   

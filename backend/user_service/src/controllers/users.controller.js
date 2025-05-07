@@ -52,8 +52,9 @@ export class UsersController {
       const sqlCreateData = 'INSERT INTO users (username, first_name, last_name, email, phone, password, role) VALUES (?, ?, ?, ?, ?, ?, ?)';
       const sqlCreateKoin = 'INSERT INTO koin (user_id, amount) VALUES (?, ?)';
       const hashedPass = await hashPass(password)
+      console.log(req.body)
       connection.query(sqlCreateData, [username, first_name, last_name, email, phone, hashedPass, role], (err, result) => {
-        if (err) res.json({"error": err})
+        if (err) res.status(500).json({"error": err})
         if (!result) {
           return res.status(400).json({ message: "User not found" });
         }
@@ -107,9 +108,112 @@ export class UsersController {
       connection.query(sqlDeleteData, [req.params.id], (err, result) => {
         res.json({ status: 200, message: 'success remove user', data: result })
       })
-      // const koin = await prisma.koin.delete({
-      //   where: { user_id: parseInt(req.params.id) }
-      // }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      return res.status(500).json({ error: message });
+    }
+  }
+
+  async getKoins (req, res) {
+    try {
+      const sqlDataGet = 'SELECT * FROM koin';
+      connection.query(sqlDataGet, (err, result) => {
+        if (err) res.json({"error": err})
+        if (result) {
+          const sanitizedData = result.map(({ password, ...user }) => user);
+    
+          res.json({ status: 200, message: 'success get data', data: sanitizedData })
+        }
+      })
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      return res.status(500).json({ error: message });
+    }
+  }
+
+  async getKoinById (req, res) {
+    try {
+      const sqlDataGet = 'SELECT * FROM koin WHERE id = ?';
+      connection.query(sqlDataGet, [req.params.id ?? 1], (err, result) => {
+        if (err) res.json({"error": err})
+        if (result) {
+          const sanitizedData = result.map(({ password, ...user }) => user);
+    
+          res.json({ status: 200, message: 'success get data', data: sanitizedData })
+        }
+      })
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      return res.status(500).json({ error: message });
+    }
+  }
+
+  async createKoin (req, res) {
+    try {
+      const { 
+        user_id,
+        amount,
+      } = req.body
+      const sqlCreateData = 'INSERT INTO koin (user_id, amount) VALUES (?, ?)';
+
+      connection.query(sqlCreateData, [user_id, amount], (err, result) => {
+        if (!result) {
+          return res.status(400).json({ message: "User not found" });
+        }
+        res.json({
+          status: 200,
+          message: 'Berhasil membuat koin!',
+          data: {
+            user_id,
+            amount,
+          }
+        });
+      })
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      return res.status(500).json({ error: message });
+    }
+  }
+
+  async updateKoin (req, res) {
+    try {
+      const { amount } = req.body
+
+      const sqlGetData = 'SELECT * FROM koin WHERE user_id = ?';
+      const sqlUpdateData = 'UPDATE koin set amount = ? WHERE user_id = ?';
+
+      connection.query(sqlGetData, [req.params.id], (err, result) => {
+        if (err) {
+          return res.status(400).json({ message: "koin not found" });
+        }
+
+        const newAmount = result[0].amount + amount
+        
+        connection.query(sqlUpdateData, [newAmount, req.params.id], (err, result) => {
+          if (!result) {
+            return res.status(400).json({ message: "Cannot update koin" });
+          }
+          return res.status(200).json({ message: 'success update data', data: result })
+        })
+      })
+
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      return res.status(500).json({ error: message });
+    }
+  }
+
+  async deleteKoin (req, res) {
+    try {
+      const sqlDeleteData = 'DELETE FROM koin WHERE user_id = ?';
+      connection.query(sqlDeleteData, [req.params.id], (err, result) => {
+        return res.status(200).json({ message: 'success remove koin', data: result })
+      })
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unknown error occurred";

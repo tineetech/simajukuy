@@ -1,70 +1,103 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Newspaper, Megaphone, Users, ArrowRight } from 'lucide-react';
-import { Report } from "../types";
+import { ClipboardPenLine, Megaphone, Users } from 'lucide-react';
+import { Report, ReportedPost } from "../types";
 import MonthlyReportChart from "../components/charts/MonthlyReportChart";
 import ReportCategoryChart from "../components/charts/ReportCategoryChart";
 import ReportCard from "../components/cards/ReportCard";
 import StatsCard from "../components/cards/StatsCard";
-import ReportModal from "../components/ReportModal"
-import ReportHistoryTable from "../components/ReportHistoryTable";
+import ReportModal from "../components/modals/ReportModal"
+import ReportedPostCard from "../components/ReportedPostList";
+import PostDetailModal from "../components/modals/ReportedPostModal";
+import DataUser from "../services/dataUser";
+import GetLaporanData from "../services/getLaporanData";
+import GetPostData from "../services/getPostData";
+import GetUsersData from "../services/getUsersData";
 
 export default function Dashboard() {
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+    const [selectedPost, setSelectedPost] = useState<ReportedPost | null>(null);
+    const dataLapor = GetLaporanData()
+    const dataPost = GetPostData()
+    const dataUsers = GetUsersData()
 
     const cards = [
         {
             bgColor: "bg-red-200",
             icon: <Megaphone size={16} />,
             title: "Total Laporan",
-            value: "724",
+            value: dataLapor?.data?.data?.length ?? '0',
+            link: "/admin/laporan"
         },
         {
             bgColor: "bg-yellow-200",
-            icon: <Newspaper size={16} />,
-            title: "Post Artikel",
-            value: "92",
+            icon: <ClipboardPenLine size={16} />,
+            title: "Postingan",
+            value: dataPost?.data?.data?.length ?? 'Loading..',
+            link: "/komunitas"
         },
         {
             bgColor: "bg-blue-200",
             icon: <Users size={16} />,
-            title: "User Aktif",
-            value: "1.8K",
+            title: "Total User",
+            value: dataUsers?.data?.data?.length,
+            link: "/profile"
         },
     ];
 
-    const recentUnverified: Report[] = [
+    const [recentUnverified, setRecentUnverified]: Report[] = useState([]);
+
+    useEffect(() => {
+        if (dataLapor?.data?.data) {
+          const formattedReports = dataLapor.data.data.map((item: any) => ({
+            user_id: item.user_id || 0,
+            id: item.id || 0,
+            title: item.title || 'Laporan Warga',
+            submittedAt: new Date(item.created_at).toLocaleDateString('id-ID', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            }),
+            description: item.description || 'Tidak ada deskripsi',
+            image: item.image || '/images/default-report.jpg',
+            status: item.status || 'Tertunda'
+          }));
+          
+          setRecentUnverified(formattedReports);
+        }
+      }, [dataLapor]);
+
+    const reportedPosts: ReportedPost[] = [
         {
-            title: "Jalan berlubang di Jl. Merdeka",
-            submittedAt: "10 April 2025",
-            description: "Jalan rusak menyebabkan kendaraan sulit lewat, terutama saat hujan.",
-            image: "/images/about.jpg",
+            reportedBy: 'RizkyPratama',
+            date: '2025-04-28',
+            content: 'Isi postingan mengandung ujaran kebencian terhadap kelompok tertentu.',
+            reason: 'Ujaran kebencian',
+            image: 'https://source.unsplash.com/random/400x300?hate'
         },
         {
-            title: "Tumpukan sampah di TPS ilegal",
-            submittedAt: "9 April 2025",
-            description: "Bau menyengat dan tidak diangkut lebih dari seminggu.",
-            image: "/images/about.jpg",
+            reportedBy: 'DewiAnggraini',
+            date: '2025-04-25',
+            content: 'Postingan ini menawarkan pekerjaan dengan gaji tinggi tetapi meminta uang pendaftaran.',
+            reason: 'Penipuan',
+            image: 'https://source.unsplash.com/random/400x300?fraud'
         },
         {
-            title: "Pohon tumbang menutup jalan",
-            submittedAt: "8 April 2025",
-            description: "Pohon besar tumbang saat hujan, akses jalan tertutup total.",
-            image: "/images/about.jpg",
+            reportedBy: 'YusufHalim',
+            date: '2025-04-24',
+            content: 'Judul clickbait dan isi tidak sesuai dengan fakta atau sumber resmi.',
+            reason: 'Informasi menyesatkan',
         },
         {
-            title: "Lampu jalan pahlawan mati total",
-            submittedAt: "7 April 2025",
-            description: "Area jadi sangat gelap di malam hari, rawan kejahatan.",
-            image: "/images/about.jpg",
-        },
-        {
-            title: "Banjir di pemukiman warga",
-            submittedAt: "6 April 2025",
-            description: "Air menggenangi rumah warga hingga 30 cm.",
-            image: "/images/about.jpg",
-        },
+            reportedBy: 'YusufHalim',
+            date: '2025-04-24',
+            content: 'Judul clickbait dan isi tidak sesuai dengan fakta atau sumber resmi.',
+            reason: 'Informasi menyesatkan',
+        }
     ];
+
+    
+    const datas = DataUser()
 
     return (
         <>
@@ -77,8 +110,8 @@ export default function Dashboard() {
                     {/* Hello World */}
                     <div className="bg-tertiary dark:bg-tertiaryDark flex gap-16 p-8 shadow-md rounded-md">
                         <div className="flex-col">
-                            <h1 className="font-semibold text-2xl mb-4">Hi John Doe</h1>
-                            <p className="text-textBody dark:text-textBodyDark text-sm mb-8">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ipsa tempora vero est rem dolorum impedit, ratione error repellendus unde eos quis ad quia blanditiis natus itaque</p>
+                            <h1 className="font-semibold text-2xl mb-4">Hi { datas.data?.username?.toUpperCase() ?? '!' }</h1>
+                            <p className="text-textBody dark:text-textBodyDark text-sm mb-8">Pantau dan kelola laporan masalah dari warga dengan mudah melalui dasbor admin Simajukuy. Dapatkan visibilitas lengkap atas isu-isu yang dilaporkan, lacak status penanganan, dan koordinasikan tindakan penyelesaian secara efisien.</p>
                             <Link to='/lapor' className="bg-tertiaryDark dark:bg-tertiary text-textDark dark:text-text   px-6 py-3 rounded-md text-sm">
                                 Lihat Selengkapnya
                             </Link>
@@ -108,6 +141,7 @@ export default function Dashboard() {
                                     index={index}
                                     item={report}
                                     onViewDetail={setSelectedReport}
+                                    colSpan="col-span-4"
                                 />
                             ))}
                         </div>
@@ -115,7 +149,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Right */}
-                <div className="flex flex-col col-span-4 bg-tertiary dark:bg-tertiaryDark rounded-sm">
+                <div className="flex flex-col col-span-4 bg-tertiary dark:bg-tertiaryDark rounded-md shadow-md">
 
                     {/* Stats */}
                     <div className="flex flex-col p-8 gap-4">
@@ -126,6 +160,7 @@ export default function Dashboard() {
                                 icon={card.icon}
                                 title={card.title}
                                 value={card.value}
+                                link={card.link}
                             />
                         ))}
                     </div>
@@ -136,25 +171,24 @@ export default function Dashboard() {
                         <ReportCategoryChart />
                     </div>
 
-                    {/* History */}
-                    <div className="my-8 px-8">
-                        <h1 className="text-lg font-semibold mb-6">Riwayat Laporan</h1>
-                        <ReportHistoryTable />
-                        <Link to={'/laporan'} className="flex font-light justify-end mt-4 gap-1 items-center">
-                            Lainnya
-                            <ArrowRight size={16} />
-                        </Link>
+                    {/* Reported Posts */}
+                    <div className="flex flex-col gap-4 p-8">
+                        <div className="flex w-full justify-between items-center">
+                            <h1 className="text-lg font-semibold mb-2">Postingan yang Dilaporkan</h1>
+                            <p className="text-sm text-textBody dark:text-textBodyDark">{reportedPosts.length} Post</p>
+                        </div>
+                        {reportedPosts.slice(0, 3).map((post, index) => (
+                            <ReportedPostCard key={index} post={post} onClick={() => setSelectedPost(post)} />
+                        ))}
                     </div>
                 </div>
-            </div>
+            </div >
 
 
-            <ReportModal
-                report={selectedReport}
-                onClose={() => setSelectedReport(null)}
-                onVerify={() => alert("Laporan telah diverifikasi!")}
+            <ReportModal report={selectedReport} onClose={() => setSelectedReport(null)}
             />
 
+            <PostDetailModal post={selectedPost} onClose={() => setSelectedPost(null)} />
         </>
     );
 }

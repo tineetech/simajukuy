@@ -1,11 +1,10 @@
 import { motion } from "framer-motion";
-import { LayoutDashboard, Settings, LogOut, Megaphone, History } from "lucide-react";
-import { Link} from "react-router-dom";
+import { LayoutDashboard, Settings, LogOut, Megaphone } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const sidebarItems = [
     { icon: <LayoutDashboard />, label: "Dashboard", path: "/admin" },
     { icon: <Megaphone />, label: "Laporan", path: "/admin/laporan" },
-    { icon: <History />, label: "Documents", path: "/admin/riwayat" },
     { icon: <Settings />, label: "Settings", path: "/admin/settings" },
 ];
 
@@ -28,14 +27,16 @@ export default function Sidebar() {
                             <motion.div
                                 whileHover={{ scale: 1.2 }}
                                 whileTap={{ scale: 0.95 }}
-                                className='p-2 rounded-lg flex items-center justify-center'
+                                className="p-2 rounded-full flex items-center justify-center"
                             >
                                 {item.icon}
                             </motion.div>
                         </Link>
                     );
                 })}
+
             </div>
+
             <div className="mt-auto">
                 <motion.button
                     whileHover={{ scale: 1.2 }}

@@ -3,24 +3,11 @@ module.exports = {
   development: {
     client: 'mysql2',
     connection: {
-      host: 'crossover.proxy.rlwy.net',
-      user: 'root',
-      password: 'hDluBesfjbRFIdzjPNwUgCMSfLzPlYzc',
-      database: 'railway',
-      port: 31109,
-    },
-    migrations: {
-      directory: './migrations',
-    },
-  },
-  production: {
-    client: 'mysql2',
-    connection: {
-      host: 'crossover.proxy.rlwy.net',
-      user: 'root',
-      password: 'hDluBesfjbRFIdzjPNwUgCMSfLzPlYzc',
-      database: 'railway',
-      port: 31109,
+      host: 'dbpplg.smkn4bogor.sch.id',
+      user: 'pplg',
+      password: 'adminpplg2025!',
+      database: 'simajukuy_laporan',
+      port: 6093,
     },
     migrations: {
       directory: './migrations',

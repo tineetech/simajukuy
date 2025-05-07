@@ -37,7 +37,7 @@ export default function Contact() {
     };
 
     return (
-        <section className="px-6 md:px-16 lg:px-32 pb-20">
+        <section className="px-6  pb-20">
             <div className="flex flex-col md:flex-row gap-12 md:items-start md:justify-between space-x-4">
                 <div className="md:w-1/2 space-y-6 md:pr-12 text-center md:text-left">
                     <h2 className="text-2xl md:text-4xl font-bold leading-snug">
@@ -69,7 +69,7 @@ export default function Contact() {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className={`w-full px-4 py-3 border rounded-lg focus:outline-none ${errors.email} ? "border-red-500" : "border-gray-300"}`}
+                            className={`w-full px-4 py-3 border rounded-lg focus:outline-none ${errors.email} ? "border-red-500" : "border-gray-10"}`}
                             placeholder="Alamat email aktif"
                         />
                         {errors.email && <p className="text-red-500 text-sm mt-1">Email wajib diisi.</p>}
@@ -100,7 +100,7 @@ export default function Contact() {
                     >
                         <button
                             type="submit"
-                            className="w-full bg-accent font-semibold py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
+                            className="w-full bg-primary text-white font-semibold py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
                         >
                             Kirim Pesan
                         </button>

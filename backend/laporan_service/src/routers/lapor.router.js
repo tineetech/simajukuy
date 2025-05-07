@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { AuthMiddleware } from "../middleware/auth.verify.js";
 import { LaporController } from "../controllers/lapor.controller.js";
+import { upload } from "../middleware/multer.js";
 
 export class LaporRouter {
   router;
@@ -15,10 +16,11 @@ export class LaporRouter {
   }
 
   initializeRoutes() {
-    this.router.get(
+    this.router.post(
       "/analisis-ai",
+      this.authMiddleware.verifyToken,
+      upload.single("file"),
       this.laporController.analisisWithAi,
-      this.authMiddleware.verifyToken
     );
 
     this.router.get(
@@ -26,17 +28,24 @@ export class LaporRouter {
       this.laporController.getLapor,
       this.authMiddleware.verifyToken
     );
-
+    
     this.router.post(
       "/create",
-      this.laporController.createLapor,
-      this.authMiddleware.checkRole('admin')
+      this.authMiddleware.verifyToken,
+      upload.single("file"),
+      this.laporController.createLapor
     );
 
     this.router.post(
       "/update/:id",
+      this.authMiddleware.verifyToken,
       this.laporController.updateLapor,
-      this.authMiddleware.verifyToken
+    );
+
+    this.router.post(
+      "/update-status/:id",
+      this.authMiddleware.verifyToken,
+      this.laporController.updateStatus,
     );
 
     this.router.post(

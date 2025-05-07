@@ -17,10 +17,21 @@
     --color-backgroundDark: #060d16;
     --color-accentDark: #345B93;
     --color-textDark: #f9fafb;
-    --color-textBodyDark: #B9BBBC,
+    --color-textBodyDark: #9a9c9c,
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Sweet Alert */
+.swal2-popup.dark-swal {
+    background-color: #111A27 !important;
+    color: #f9fafb !important;            
+}
+
+.swal2-title,
+.swal2-content {
+    color: inherit !important;
+}
 
 /* Scrollbar style untuk modern look */
 .custom-scrollbar::-webkit-scrollbar {
@@ -48,4 +59,16 @@
 
 .custom-scrollbar:hover {
     scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
+}
+.banner1 {
+    width: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 30%, transparent 100%), url('/images/banner1.jpg') center center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+    overflow: hidden;
+}
+.bg-lapor {
+    background: url('/images/banner1.jpg') center center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
 }
