@@ -11,6 +11,7 @@
 /backend/migration/laporan_service/node_modules
 /backend/migration/user_service/node_modules
 /backend/artikel_service/node_modules
+/autostart/node_modules
 /backend/user_service/node_modules
 /backend/post_service/node_modules
 /backend/notification_service/node_modules
