@@ -150,11 +150,11 @@ export default function PostItem({ post }: { post: PostInterface }) {
             <span className="text-sm text-textBody dark:text-textBodyDark">{post.timestamp}</span>
           </div>
         </div>
-
-        {post.type === "image" && (
-          <img src={import.meta.env.VITE_POST_SERVICE + post.image} className="w-50" alt="" />
-        )}
-
+            {
+                post.type === 'image' ? (
+                    <img src={import.meta.env.VITE_POST_SERVICE + post.image} className="w-50 rounded-sm" alt="" />       
+                ) : ''
+            }
         <p className="text-sm md:text-base mb-3">{post.content}</p>
 
         <div className="flex justify-between text-textBody dark:text-textBodyDark text-sm z-10">

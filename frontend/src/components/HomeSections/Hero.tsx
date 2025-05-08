@@ -54,8 +54,8 @@ export default function Hero() {
                     {/* <img src="/images/hero.png" alt="Gedung" className="w-80 md:w-[28rem] object-cover z-1" /> */}
 
                     {/* new code */}
-                    <div className="flex flex-col lg:flex-row gap-3 py-10">
-                        <div className="w-[400px] rounded-2xl h-[450px] bg-white overflow-hidden">
+                    <div className="flex flex-col items-center lg:flex-row gap-3 py-10">
+                        <div className="w-[280px] lg:w-[400px] rounded-2xl h-[450px] bg-white overflow-hidden">
                             <img src="/images/banner1.jpg" className="w-full object-cover h-full" alt="" />
                         </div>
                         <div className="flex flex-col gap-3">
@@ -79,12 +79,12 @@ export default function Hero() {
                                 <div className="hidden lg:flex w-[350px] overflow-hidden rounded-2xl h-[220px] bg-white">
                                     <img src="/images/banner1.jpg" className="w-full object-cover h-full" alt="" />
                                 </div>
-                                <div className="w-[400px] lg:w-[350px] overflow-hidden rounded-2xl h-[220px] flex items-start relative justify-start bg-slate-700 text-white hover:bg-slate-600 ease-in-out transition-all dark:bg-gray-700">
+                                <div className="w-[280px] lg:w-[350px] overflow-hidden rounded-2xl h-[220px] flex items-start relative justify-start bg-slate-700 text-white hover:bg-slate-600 ease-in-out transition-all dark:bg-gray-700">
                                     <div className="p-5 w-[230px]">
                                         <h1 className="font-bold mb-2">Lapor Bijak Untuk Kita !</h1>
                                         <p className="text-sm">Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quibusdam, animi!</p>
                                     </div>
-                                    <img src="/images/maskot.png" className="w-[200px] object-cover h-[200px] absolute bottom-0 right-0" alt="" />
+                                    <img src="/images/maskot.png" className="w-[130px] lg:w-[200px] object-cover h-auto absolute bottom-0 right-0" alt="" />
                                     
                                     <button className="bg-slate-500 absolute bottom-5 left-5 rounded-full p-3">
                                         <ArrowUpRight size={20} className="text-white" />
