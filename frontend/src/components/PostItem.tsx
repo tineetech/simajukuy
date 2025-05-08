@@ -82,7 +82,7 @@ export default function PostItem({ post }: { post: PostInterface }) {
       <div
         className="bg-gray-100 border border-gray-300 dark:border-gray-600 dark:bg-tertiaryDark p-4 rounded-lg"
       >
-        <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-center gap-3 mb-4">
           <img
             src={post.avatar ?? "https://i.pinimg.com/736x/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg"}
             alt="avatar"
@@ -95,7 +95,7 @@ export default function PostItem({ post }: { post: PostInterface }) {
         </div>
             {
                 post.type === 'image' ? (
-                    <img src={import.meta.env.VITE_POST_SERVICE + post.image} className="w-50" alt="" />       
+                    <img src={import.meta.env.VITE_POST_SERVICE + post.image} className="w-50 rounded-sm" alt="" />       
                 ) : ''
             }
         <p className="text-sm md:text-base mb-3">{post.content}</p>
