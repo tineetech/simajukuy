@@ -17,7 +17,7 @@
     --color-backgroundDark: #060d16;
     --color-accentDark: #345B93;
     --color-textDark: #f9fafb;
-    --color-textBodyDark: #9a9c9c,
+    --color-textBodyDark: #b5b5b5;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -60,6 +60,8 @@
 .custom-scrollbar:hover {
     scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
 }
+
+/* Background img */
 .banner1 {
     width: 100%;
     background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 30%, transparent 100%), url('/images/banner1.jpg') center center !important;
@@ -67,8 +69,13 @@
     background-size: cover !important;
     overflow: hidden;
 }
+
 .bg-lapor {
     background: url('/images/banner1.jpg') center center !important;
     background-repeat: no-repeat !important;
     background-size: cover !important;
+}
+
+.bg-coverProfile {
+    background: url('/images/banner2.jpg');
 }
