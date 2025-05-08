@@ -2,12 +2,13 @@ import { Report } from "../types";
 import { motion } from "framer-motion";
 
 type ReportListProps = {
-    report: Report,
-    index: number,
-    onViewDetail: (report: Report) => void;
+    report: Report;
+    index: number;
+    onViewDetail?: (report: Report) => void;
+    hideDetailButton?: boolean; // tambah prop ini
 }
 
-export default function ReportList({ report, onViewDetail, index }: ReportListProps) {
+export default function ReportList({ report, onViewDetail, index, hideDetailButton = false }: ReportListProps) {
 
     const getStatusBadgeColor = (status: string) => {
         switch (status) {
@@ -49,11 +50,11 @@ export default function ReportList({ report, onViewDetail, index }: ReportListPr
                     </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-4 w-1/3 shrink-0">
-                    <p className="text-sm text-right whitespace-nowrap ml-auto">
+                <div className="flex items-center justify-end gap-4 shrink-0">
+                    <p className="text-sm text-right whitespace-nowrap">
                         {report.submittedAt}
                     </p>
-                    <div className="flex min-w-[80px] justify-center">
+                    <div className="flex min-w-[100px] justify-center">
                         <span
                             className={`text-sm font-semibold px-2 py-0.5 rounded-full ${getStatusBadgeColor(
                                 report.status
@@ -62,9 +63,14 @@ export default function ReportList({ report, onViewDetail, index }: ReportListPr
                             {report.status}
                         </span>
                     </div>
-                    <button onClick={() => onViewDetail(report)} className="bg-primary hover:cursor-pointer px-4 py-2 text-white rounded-md text-sm whitespace-nowrap">
-                        Detail Laporan
-                    </button>
+                    {!hideDetailButton && (
+                        <button
+                            onClick={() => onViewDetail?.(report)}
+                            className="bg-primary hover:cursor-pointer px-4 py-2 text-white rounded-md text-sm whitespace-nowrap"
+                        >
+                            Detail Laporan
+                        </button>
+                    )}
                 </div>
             </div>
         </motion.div>

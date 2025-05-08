@@ -7,7 +7,7 @@ import { PostInterface } from "../types";
 
 export default function CommunityPage() {
     const [sortBy, setSortBy] = useState("terbaru");
-    const [posts, setPosts] = useState<PostInterface>([])
+    const [posts, setPosts] = useState<PostInterface[]>([])
 
     useEffect(() => {
         const getPosts = async () => {

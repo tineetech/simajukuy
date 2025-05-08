@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { X, SendIcon, Bot } from "lucide-react";
 
 type ChatMessage = {
     id: number;
@@ -73,24 +74,29 @@ export default function ChatBotModal({ onClose }: ChatBotModalProps) {
                 className="fixed bottom-24 right-6 z-50 w-80 h-[28rem] bg-tertiary dark:bg-tertiaryDark text-text dark:text-textDark rounded-md shadow-xl flex flex-col overflow-hidden"
             >
                 {/* Header */}
-                <div className="bg-accent text-white p-3 flex justify-between items-center">
-                    <h2 className="font-semibold text-sm">Simajukuy ChatBot</h2>
-                    <button
-                        onClick={onClose}
-                        className="text-white hover:text-gray-200 text-lg leading-none"
-                    >
-                        ×
-                    </button>
+                <div className="px-4">
+                    <div className="flex justify-between items-center border-b border-textBody dark:border-textBodyDark py-4">
+                        <div className="flex items-center gap-2">
+                            <Bot size={32} />
+                            <h2 className="font-semibold text-xl">Ucup AI</h2>
+                        </div>
+                        <button
+                            onClick={onClose}
+                            className="leading-none cursor-pointer"
+                        >
+                            <X />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Chat List */}
-                <div className="flex-1 p-3 space-y-2 overflow-y-auto text-sm scroll-smooth">
+                <div className="flex-1 p-4 space-y-2 overflow-y-auto text-sm scroll-smooth">
                     {messages.map((msg) => (
                         <div
                             key={msg.id}
                             className={`px-4 py-2 rounded-xl whitespace-pre-wrap break-words ${msg.from === "bot"
-                                    ? "bg-secondary text-textDark text-left text-sm max-w-[75%]"
-                                    : "bg-accent dark:bg-accentDark text-white ml-auto text-right max-w-[75%]"
+                                ? "bg-secondary text-textDark text-left text-sm max-w-[75%]"
+                                : "bg-accent dark:bg-accentDark text-white ml-auto text-right max-w-[75%]"
                                 }`}
                             style={{ width: "fit-content" }}
                         >
@@ -100,15 +106,18 @@ export default function ChatBotModal({ onClose }: ChatBotModalProps) {
                 </div>
 
                 {/* Input */}
-                <div className="border-t px-3 py-2 bg-background dark:bg-backgroundDark">
+                <div className="flex px-4 py-4 gap-2">
                     <input
                         type="text"
                         placeholder="Ketik pesan..."
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        className="w-full bg-white dark:bg-gray-800 border-none rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                        className="bg-background dark:bg-backgroundDark w-full rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                     />
+                    <button onClick={handleSend} className="text-textDark bg-accent dark:bg-accentDark flex items-center justify-center p-2 rounded-md hover:scale-110 transition ease-in-out cursor-pointer">
+                        <SendIcon />
+                    </button>
                 </div>
             </motion.div>
         </AnimatePresence>
