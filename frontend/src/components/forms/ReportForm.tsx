@@ -100,7 +100,7 @@ export default function ReportForm() {
             const resAi = await analyzeAi()
             setProgress(70)
             setMessage('Menganalisa kesimpulan..')
-
+            console.log(resAi)
             if (!resAi) {
                 console.log("gagal analisis tidak ada hasil :", resAi)
             }
@@ -176,7 +176,7 @@ export default function ReportForm() {
                 },
                 body: formData
             })
-
+            console.log(res)
             const data = await res.json()
             if (data) {
                 setProgress(40)
