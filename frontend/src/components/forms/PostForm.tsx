@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 
 export default function PostForm() {
     const [isFocused, setIsFocused] = useState(false);
-    const [selectedImage, setSelectedImage] = useState<object | null>(null);
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [imageRaw, setImageRaw] = useState<string | null>(null);
     const [showEmojis, setShowEmojis] = useState(false);
     const [postContent, setPostContent] = useState("");
@@ -32,11 +32,11 @@ export default function PostForm() {
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            setSelectedImage(file as object);
+            setSelectedImage(file);
             const reader = new FileReader();
             reader.onload = () => {
                 setIsFocused(true);
-                setImageRaw(reader?.result as string)
+                setImageRaw(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -49,8 +49,9 @@ export default function PostForm() {
     const post = async () => {
         const formData = new FormData();
         formData.append('content', postContent?.toString() ?? '');
-        formData.append('type', selectedImage ? 'image' : "text");
-        // console.log(formData)
+        if (selectedImage !== null) {
+            formData.append('image', selectedImage);
+        }        
 
         try {
             if (selectedImage !== null) {
@@ -173,7 +174,7 @@ export default function PostForm() {
                                         <Image size={20} />
                                     </button>
 
-                                    <div className="relative">
+                                    <div className="relative flex">
                                         <button
                                             type="button"
                                             className="hover:text-accent"

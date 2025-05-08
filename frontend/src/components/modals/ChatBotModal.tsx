@@ -90,7 +90,7 @@ export default function ChatBotModal({ onClose }: ChatBotModalProps) {
                 </div>
 
                 {/* Chat List */}
-                <div className="flex-1 p-3 space-y-2 overflow-y-auto text-sm scroll-smooth">
+                <div className="flex-1 p-4 space-y-2 overflow-y-auto text-sm scroll-smooth">
                     {messages.map((msg) => (
                         <div
                             key={msg.id}
