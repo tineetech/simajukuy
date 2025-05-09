@@ -11,6 +11,7 @@ export default function DashboardHeader() {
         "/admin": "Admin Dashboard",
         "/admin/laporan/": "Laporan",
         "/admin/laporan": "Laporan",
+        "/admin/koin": "Verifikasi Koin"
     };
 
     const currentPath = location.pathname;
