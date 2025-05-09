@@ -49,23 +49,23 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (dataLapor?.data?.data) {
-          const formattedReports = dataLapor.data.data.map((item: any) => ({
-            user_id: item.user_id || 0,
-            id: item.id || 0,
-            title: item.title || 'Laporan Warga',
-            submittedAt: new Date(item.created_at).toLocaleDateString('id-ID', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric'
-            }),
-            description: item.description || 'Tidak ada deskripsi',
-            image: item.image || '/images/default-report.jpg',
-            status: item.status || 'Tertunda'
-          }));
-          
-          setRecentUnverified(formattedReports);
+            const formattedReports = dataLapor.data.data.map((item: any) => ({
+                user_id: item.user_id || 0,
+                id: item.id || 0,
+                title: item.title || 'Laporan Warga',
+                submittedAt: new Date(item.created_at).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                }),
+                description: item.description || 'Tidak ada deskripsi',
+                image: item.image || '/images/default-report.jpg',
+                status: item.status || 'Tertunda'
+            }));
+
+            setRecentUnverified(formattedReports);
         }
-      }, [dataLapor]);
+    }, [dataLapor]);
 
     const reportedPosts: ReportedPost[] = [
         {
@@ -96,7 +96,7 @@ export default function Dashboard() {
         }
     ];
 
-    
+
     const datas = DataUser()
 
     return (
@@ -110,9 +110,9 @@ export default function Dashboard() {
                     {/* Hello World */}
                     <div className="bg-tertiary dark:bg-tertiaryDark flex gap-16 p-8 shadow-md rounded-md">
                         <div className="flex-col">
-                            <h1 className="font-semibold text-2xl mb-4">Hi { datas.data?.username?.toUpperCase() ?? '!' }</h1>
+                            <h1 className="font-semibold text-2xl mb-4">Hi {datas.data?.username?.toUpperCase() ?? '!'}</h1>
                             <p className="text-textBody dark:text-textBodyDark text-sm mb-8">Pantau dan kelola laporan masalah dari warga dengan mudah melalui dasbor admin Simajukuy. Dapatkan visibilitas lengkap atas isu-isu yang dilaporkan, lacak status penanganan, dan koordinasikan tindakan penyelesaian secara efisien.</p>
-                            <Link to='/lapor' className="bg-tertiaryDark dark:bg-tertiary text-textDark dark:text-text   px-6 py-3 rounded-md text-sm">
+                            <Link to='/admin/laporan' className="bg-tertiaryDark dark:bg-tertiary text-textDark dark:text-text   px-6 py-3 rounded-md text-sm">
                                 Lihat Selengkapnya
                             </Link>
                         </div>
@@ -129,7 +129,7 @@ export default function Dashboard() {
                     <div className="flex flex-col">
                         <div className="flex justify-between px-8">
                             <h1 className="text-lg font-semibold mb-4">Laporan Terbaru</h1>
-                            <Link to={'/laporan'} className="font-light">
+                            <Link to={'/admin/laporan'} className="font-light">
                                 Lihat Semua
 
                             </Link>

@@ -13,6 +13,7 @@ import RegisterPage from "./pages/RegisterPage";
 import ResetPassPage from "./pages/ResetPassPage";
 import VerifyResetPassPage from "./pages/VerifyResetPassPage";
 import ProfilePage from "./pages/ProfilePage";
+import CoinsVerificationPage from "./pages/CoinsVerificationPage";
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="laporan" element={<ReviewReportPage />} />
+          <Route path="koin" element={<CoinsVerificationPage />} />
         </Route>
       </Routes>
     </Router>
