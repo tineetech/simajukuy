@@ -1,27 +1,44 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TermsModal from "../modals/TermsModal";
 
 export default function CoinExchangeForm() {
+    const dummyUser = {
+        name: "John Doe",
+        coins: 50000,
+    };
+
+    const [userCoins, setUserCoins] = useState(0);
     const [showModal, setShowModal] = useState(false);
     const [agreed, setAgreed] = useState(false);
     const [amount, setAmount] = useState("");
-    const [showAmountError, setShowAmountError] = useState(false);
+    const [isBelowMinimum, setIsBelowMinimum] = useState(false);
+    const [isExceedingBalance, setIsExceedingBalance] = useState(false);
     const [termsChecked, setTermsChecked] = useState(false);
 
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState<string | null>(null);
+    const [accountNumber, setAccountNumber] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
 
     const options = {
         Bank: ["BCA", "Mandiri", "BNI", "BRI"],
         "E-Wallet": ["DANA", "OVO", "GoPay", "ShopeePay"],
     };
 
-    const handleAmountChange = (e: { target: { value: any } }) => {
+    useEffect(() => {
+        // Simulasi ambil data user
+        setUserCoins(dummyUser.coins);
+    }, []);
+
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setAmount(value);
-        setShowAmountError(value && Number(value) < 10000);
+
+        const numericValue = Number(value);
+        setIsBelowMinimum(numericValue > 0 && numericValue < 10000);
+        setIsExceedingBalance(numericValue > userCoins);
     };
 
     const handleTermsClick = () => {
@@ -37,13 +54,24 @@ export default function CoinExchangeForm() {
     const handleSelect = (item: string) => {
         setSelected(item);
         setOpen(false);
+        setAccountNumber("");
+        setPhoneNumber("");
     };
+
+    const isBank = selected && ["BCA", "Mandiri", "BNI", "BRI"].includes(selected);
+    const isEWallet = selected && ["DANA", "OVO", "GoPay", "ShopeePay"].includes(selected);
 
     return (
         <>
             <form className="bg-tertiary dark:bg-tertiaryDark p-6 rounded-lg shadow-md max-w-md mx-auto mt-10 space-y-6">
                 <h2 className="text-xl font-semibold">Tukar Koin</h2>
 
+                {/* ✅ Jumlah Koin User */}
+                <div className="text-sm text-text dark:text-textDark">
+                    Koin tersedia: <span className="font-semibold">{userCoins.toLocaleString()}</span>
+                </div>
+
+                {/* ✅ Input Jumlah Koin */}
                 <div className="flex flex-col">
                     <label htmlFor="amount" className="text-sm mb-1">Jumlah Koin</label>
                     <input
@@ -54,11 +82,15 @@ export default function CoinExchangeForm() {
                         className="p-2 rounded bg-background dark:bg-backgroundDark border border-textBody"
                         placeholder="Masukkan jumlah koin"
                     />
-                    {showAmountError && (
+                    {isBelowMinimum && (
                         <p className="text-red-500 text-sm mt-1">Minimal penukaran adalah 10.000 koin</p>
+                    )}
+                    {isExceedingBalance && (
+                        <p className="text-red-500 text-sm mt-1">Jumlah koin melebihi saldo yang tersedia</p>
                     )}
                 </div>
 
+                {/* ✅ Pilih metode penukaran */}
                 <div className="relative">
                     <label className="text-sm mb-1 block">Pilih Penukaran</label>
                     <div
@@ -75,7 +107,7 @@ export default function CoinExchangeForm() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -8 }}
                                 transition={{ duration: 0.2 }}
-                                className="absolute z-50 w-full max-h-40 overflow-y-auto bg-white dark:bg-backgroundDark border-r border-l border-b border-textBody rounded shadow-lg"
+                                className="absolute z-50 w-full max-h-40 overflow-y-auto bg-white dark:bg-backgroundDark border rounded shadow-lg"
                             >
                                 {Object.entries(options).map(([group, values]) => (
                                     <li key={group} className="px-3 py-1 font-semibold">
@@ -98,6 +130,36 @@ export default function CoinExchangeForm() {
                     </AnimatePresence>
                 </div>
 
+                {/* ✅ Tambahan input berdasarkan metode */}
+                {isBank && (
+                    <div className="flex flex-col">
+                        <label htmlFor="rekening" className="text-sm mb-1">Nomor Rekening</label>
+                        <input
+                            id="rekening"
+                            type="text"
+                            value={accountNumber}
+                            onChange={(e) => setAccountNumber(e.target.value)}
+                            className="p-2 rounded bg-background dark:bg-backgroundDark border border-textBody"
+                            placeholder="Masukkan nomor rekening"
+                        />
+                    </div>
+                )}
+
+                {isEWallet && (
+                    <div className="flex flex-col">
+                        <label htmlFor="telepon" className="text-sm mb-1">Nomor Telepon</label>
+                        <input
+                            id="telepon"
+                            type="text"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            className="p-2 rounded bg-background dark:bg-backgroundDark border border-textBody"
+                            placeholder="Masukkan nomor telepon e-wallet"
+                        />
+                    </div>
+                )}
+
+                {/* ✅ Terms & Conditions */}
                 <div className="flex items-start gap-2 text-sm">
                     <input
                         type="checkbox"
@@ -111,10 +173,11 @@ export default function CoinExchangeForm() {
                     </label>
                 </div>
 
+                {/* ✅ Tombol Submit */}
                 <button
                     type="submit"
-                    disabled={!agreed || Number(amount) < 10000}
-                    className={`w-full p-2 rounded ${agreed && Number(amount) >= 10000
+                    disabled={!agreed || Number(amount) < 10000 || Number(amount) > userCoins}
+                    className={`w-full p-2 rounded ${agreed && Number(amount) >= 10000 && Number(amount) <= userCoins
                         ? "bg-accent hover:opacity-90"
                         : "bg-gray-500 cursor-not-allowed"
                         }`}
