@@ -169,6 +169,52 @@ export default function ReportModal({ report, onClose }: ReportModalProps) {
         }
     };
 
+    const statusOptions = ["Diterima", "Diproses", "Selesai"];
+
+    const handleManualStatusUpdate = async (newStatus: string) => {
+        if (!report) return;
+        const res = await fetch(`${import.meta.env.VITE_LAPOR_SERVICE}/api/lapor/update-status/${report.id}`, {
+            method: "POST",
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken') ?? ''}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: newStatus })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            Swal.fire({
+                title: "Gagal Update Status!",
+                text: data.error ?? 'Coba lagi nanti.',
+                icon: "error",
+                confirmButtonColor: "#2563eb",
+                background: isDark ? "#1f2937" : undefined,
+                color: isDark ? "#f9fafb" : undefined,
+                customClass: {
+                    popup: isDark ? "dark-swal" : "",
+                },
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: "Status Diperbarui!",
+            text: `Status berhasil diubah menjadi "${newStatus}".`,
+            icon: "success",
+            confirmButtonColor: "#2563eb",
+            background: isDark ? "#1f2937" : undefined,
+            color: isDark ? "#f9fafb" : undefined,
+            customClass: {
+                popup: isDark ? "dark-swal" : "",
+            },
+        });
+
+        onClose();
+    };
+
+
     return (
         <AnimatePresence>
             {report && (
@@ -216,12 +262,29 @@ export default function ReportModal({ report, onClose }: ReportModalProps) {
                                 >
                                     Tutup
                                 </button>
-                                <button
-                                    onClick={() => handleVerification(report.id, report.user_id)}
-                                    className="px-4 py-2 rounded-md text-sm font-medium bg-primary hover:bg-primary/70 text-white transition"
-                                >
-                                    Verifikasi
-                                </button>
+
+                                {report.status === "Tertunda" ? (
+                                    <button
+                                        onClick={() => handleVerification(report.id, report.user_id)}
+                                        className="px-4 py-2 rounded-md text-sm font-medium bg-primary hover:bg-primary/70 text-white transition"
+                                    >
+                                        Verifikasi
+                                    </button>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <select
+                                            onChange={(e) => handleManualStatusUpdate(e.target.value)}
+                                            className="px-3 py-2 text-sm rounded-md border dark:border-gray-600 text-text dark:text-textDark bg-white dark:bg-gray-800 focus:outline-none"
+                                            defaultValue={report.status}
+                                        >
+                                            {statusOptions.map((status) => (
+                                                <option key={status} value={status}>
+                                                    {status}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </motion.div>
