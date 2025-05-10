@@ -80,7 +80,7 @@ export default function Header() {
                         isLoggedIn ? (
                             <ProfileWidget />
                         ) : (
-                            <div onClick={() => window.location.href = '/login'} className="cursor-pointer">
+                            <div onClick={() => window.location.href = '/login'} className="hidden lg:flex cursor-pointer">
                                 <LogIn />
                             </div>
                         )
@@ -138,32 +138,43 @@ export default function Header() {
                                         </Link>
                                     );
                                 })}
+                                
+                                {
+                                    isLoggedIn ? (
+                                        <>
+                                        {/* Profile Link */}
+                                        <Link
+                                            to="/profile"
+                                            onClick={() => setIsOpen(false)}
+                                            className={`flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg transition ease-in-out ${location.pathname === "/profile"
+                                                ? "bg-accent text-textDark"
+                                                : "hover:bg-accent"
+                                                }`}
+                                        >
+                                            <User size={20} />
+                                            <span>Profile</span>
+                                        </Link>
 
-                                {/* Profile Link */}
-                                <Link
-                                    to="/profile"
-                                    onClick={() => setIsOpen(false)}
-                                    className={`flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg transition ease-in-out ${location.pathname === "/profile"
-                                        ? "bg-accent text-textDark"
-                                        : "hover:bg-accent"
-                                        }`}
-                                >
-                                    <User size={20} />
-                                    <span>Profile</span>
-                                </Link>
-
-                                {/* Logout Button */}
-                                <button
-                                    onClick={() => {
-                                        setIsOpen(false);
-                                        // handle actual logout here
-                                        console.log("Logged out");
-                                    }}
-                                    className="flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg hover:bg-red-600 text-left transition"
-                                >
-                                    <LogOut size={20} />
-                                    <span>Logout</span>
-                                </button>
+                                        {/* Logout Button */}
+                                        <button
+                                            onClick={() => {
+                                                setIsOpen(false);
+                                                // handle actual logout here
+                                                console.log("Logged out");
+                                            }}
+                                            className="flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg hover:bg-red-600 text-left transition"
+                                        >
+                                            <LogOut size={20} />
+                                            <span>Logout</span>
+                                        </button>
+                                        </>
+                                    ) : (
+                                        <div onClick={() => window.location.href = '/login'} className="lg:hidden hover:bg-accent flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg transition ease-in-out cursor-pointer">
+                                            <LogIn size={20} />
+                                            <span>Login</span>
+                                        </div>
+                                    )
+                                }
                             </motion.div>
                         )}
                     </AnimatePresence>

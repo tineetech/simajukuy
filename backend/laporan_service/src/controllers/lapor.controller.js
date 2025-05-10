@@ -155,7 +155,7 @@ export class LaporController {
         console.log("Respon dari Gemini API:", responseData);
         return res.status(200).json({ data: responseData });
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error :", error);
         return res.status(500).json({ message: "Terjadi kesalahan internal.", error: error.message });
       }
     } catch (error) {

@@ -7,8 +7,11 @@ export default function DashboardHeader() {
     const location = useLocation();
 
     const pageTitles: Record<string, string> = {    
+        "/admin/": "Admin Dashboard",
         "/admin": "Admin Dashboard",
+        "/admin/laporan/": "Laporan",
         "/admin/laporan": "Laporan",
+        "/admin/koin": "Verifikasi Koin"
     };
 
     const currentPath = location.pathname;

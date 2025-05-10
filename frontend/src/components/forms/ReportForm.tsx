@@ -100,7 +100,7 @@ export default function ReportForm() {
             const resAi = await analyzeAi()
             setProgress(70)
             setMessage('Menganalisa kesimpulan..')
-
+            console.log(resAi)
             if (!resAi) {
                 console.log("gagal analisis tidak ada hasil :", resAi)
             }
@@ -176,13 +176,46 @@ export default function ReportForm() {
                 },
                 body: formData
             })
-
+            console.log(res)
             const data = await res.json()
             if (data) {
                 setProgress(40)
                 setMessage('Mengambil respon..')
                 return data.data.candidates[0].content.parts[0].text
             }
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    const createPostWhenFinishReport = async () => {
+        
+        if (!uploadFile1) {
+            alert('Harap unggah foto laporan.');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('type', 'image');
+        formData.append('image', uploadFile1);
+        formData.append('content', deskripsi);
+
+        try {
+            const res = await fetch(`${import.meta.env.VITE_POST_SERVICE}/api/postingan/create`, {
+                method: "POST",
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            })
+
+            const data = await res.json()
+            if (data) {
+                setProgress(80)
+                setMessage('Membuat postingan dari laporan..')
+                return
+            }
+
         } catch (e) {
             console.error(e)
         }
@@ -220,6 +253,7 @@ export default function ReportForm() {
         const responseData = await response.json();
 
         if (response.ok) {
+            createPostWhenFinishReport()
             Swal.fire({
                 title: "Laporan berhasil!",
                 text: `Laporan id #${responseData.data.insertId ?? ''} anda sudah dikirim, mohon menunggu untuk verifikasi laporan tersebut.`,

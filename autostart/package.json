@@ -1,0 +1,21 @@
+{
+  "name": "autostart",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev-all": "concurrently \"cd ../backend/laporan_service && npm start\" \"cd ../backend/post_service && npm start\" \"cd ../backend/user_service && npm start\" \"cd ../backend/notification_service && npm start\" \"cd ../frontend && bun dev\"",
+    "start:user": "cd ../backend/user_service && npm start",
+    "start:laporan": "cd ../backend/laporan_service && npm start",
+    "start:post": "cd ../backend/post_service && npm start",
+    "start:notif": "cd ../backend/notif_service && npm start",
+    "start:all": "npm run start:user && npm run start:laporan && npm run start:post && npm run start:notif",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

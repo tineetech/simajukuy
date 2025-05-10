@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 
 export default function PostForm() {
     const [isFocused, setIsFocused] = useState(false);
-    const [selectedImage, setSelectedImage] = useState<object | null>(null);
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [imageRaw, setImageRaw] = useState<string | null>(null);
     const [showEmojis, setShowEmojis] = useState(false);
     const [postContent, setPostContent] = useState("");
@@ -32,11 +32,11 @@ export default function PostForm() {
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            setSelectedImage(file as object);
+            setSelectedImage(file);
             const reader = new FileReader();
             reader.onload = () => {
                 setIsFocused(true);
-                setImageRaw(reader?.result as string)
+                setImageRaw(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -49,14 +49,15 @@ export default function PostForm() {
     const post = async () => {
         const formData = new FormData();
         formData.append('content', postContent?.toString() ?? '');
-        formData.append('type', selectedImage ? 'image' : "text");
-        // console.log(formData)
-        
+        if (selectedImage !== null) {
+            formData.append('image', selectedImage);
+        }        
+
         try {
             if (selectedImage !== null) {
-                 
+
                 formData.append('image', selectedImage ?? null);
-                
+
                 const res = await fetch(`${import.meta.env.VITE_POST_SERVICE}/api/postingan/create`, {
                     method: "POST",
                     headers: {
@@ -64,13 +65,13 @@ export default function PostForm() {
                     },
                     body: formData
                 })
-    
+
                 if (!res?.ok) {
                     console.error(res)
                     Swal.fire({
-                      title: "Gagal Membuat Postingan",
-                      text: "Terjadi kesalahan saat menghubungi server.",
-                      icon: "error",
+                        title: "Gagal Membuat Postingan",
+                        text: "Terjadi kesalahan saat menghubungi server.",
+                        icon: "error",
                     });
                     return
                 }
@@ -79,10 +80,10 @@ export default function PostForm() {
                     title: "Berhasil Membuat Postingan",
                     text: "Postingan berhasil dibuat.",
                     icon: "success",
-                  });
+                });
                 return
             }
-            
+
             const res = await fetch(`${import.meta.env.VITE_POST_SERVICE}/api/postingan/create`, {
                 method: "POST",
                 headers: {
@@ -90,20 +91,20 @@ export default function PostForm() {
                 },
                 body: formData
             })
-    
+
             if (!res?.ok) {
                 Swal.fire({
-                  title: "Gagal Membuat Postingan",
-                  text: "Terjadi kesalahan saat menghubungi server.",
-                  icon: "error",
+                    title: "Gagal Membuat Postingan",
+                    text: "Terjadi kesalahan saat menghubungi server.",
+                    icon: "error",
                 });
                 return
             }
 
             Swal.fire({
-              title: "Berhasil Membuat Postingan",
-              text: "Postingan berhasil dibuat.",
-              icon: "success",
+                title: "Berhasil Membuat Postingan",
+                text: "Postingan berhasil dibuat.",
+                icon: "success",
             });
         } catch (e) {
             console.error(e)
@@ -163,7 +164,7 @@ export default function PostForm() {
                             transition={{ duration: 0.2 }}
                         >
                             <div className="flex items-center justify-between mt-2 px-1">
-                                <div className="flex gap-4 text-gray-400">
+                                <div className="flex gap-4 text-gray-400 relative overflow-visible">
                                     <button
                                         type="button"
                                         className="hover:text-accent"
@@ -172,43 +173,46 @@ export default function PostForm() {
                                     >
                                         <Image size={20} />
                                     </button>
-                                    <button
-                                        type="button"
-                                        className="hover:text-accent"
-                                        title="Emoji"
-                                        onClick={() => setShowEmojis((prev) => !prev)}
-                                    >
-                                        <Smile size={20} />
-                                    </button>
+
+                                    <div className="relative flex">
+                                        <button
+                                            type="button"
+                                            className="hover:text-accent"
+                                            title="Emoji"
+                                            onClick={() => setShowEmojis((prev) => !prev)}
+                                        >
+                                            <Smile size={20} />
+                                        </button>
+
+                                        <AnimatePresence>
+                                            {showEmojis && (
+                                                <motion.div
+                                                    key="emoji-picker"
+                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                    className="absolute bottom-full left-1/2 -translate-x-4 mb-2 z-50 bg-background dark:bg-backgroundDark p-4 rounded-xl shadow-xl grid grid-cols-8 gap-3 text-2xl min-w-[260px] after:content-[''] after:absolute after:bottom-[-8px] after:left-1/2 after:-translate-x-1/2 after:border-[8px] after:border-transparent after:border-t-tertiary dark:after:border-t-tertiaryDark"
+                                                >
+                                                    {["😀", "😂", "😎", "😢", "🤔", "🔥", "❤️", "👍", "🙌", "🌟", "💡", "💬"].map((emoji) => (
+                                                        <button
+                                                            key={emoji}
+                                                            onClick={() => handleEmojiClick(emoji)}
+                                                            className="hover:scale-125 transition-transform duration-200"
+                                                        >
+                                                            {emoji}
+                                                        </button>
+                                                    ))}
+                                                </motion.div>
+
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
                                 </div>
                                 <button className="bg-primary text-white px-4 py-1.5 rounded-lg hover:opacity-90 transition" onClick={() => post()}>
                                     Posting
                                 </button>
                             </div>
-
-                            {/* Picker Emoji */}
-                            <AnimatePresence>
-                                {showEmojis && (
-                                    <motion.div
-                                        key="emoji-picker"
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 10 }}
-                                        transition={{ duration: 0.25 }}
-                                        className="mt-2 grid grid-cols-8 gap-2 text-lg bg-tertiary p-2 rounded-lg"
-                                    >
-                                        {["😀", "😂", "😎", "😢", "🤔", "🔥", "❤️", "👍", "🙌", "🌟", "💡", "💬"].map((emoji) => (
-                                            <button
-                                                key={emoji}
-                                                onClick={() => handleEmojiClick(emoji)}
-                                                className="hover:scale-110 transition"
-                                            >
-                                                {emoji}
-                                            </button>
-                                        ))}
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
 
                             <input
                                 type="file"

@@ -11,12 +11,12 @@ import SearchBar from "../components/widgets/SearchBar";
 import SelectCategoryFilter from "../components/widgets/SelectCategoryFilter";
 import { Report } from "../types";
 import ReportList from "../components/ReportList";
-import ReportStatusFilter from "../components/widgets/ReportStatusFilter";
 import { AnimatePresence } from "framer-motion";
 import ReportCard from "../components/cards/ReportCard";
 import ReportModal from "../components/modals/ReportModal";
 import StatusReportChart from "../components/charts/StatusReportChart";
 import ReportProgressList from "../components/ReportProgressList";
+import OptionFilter from "../components/widgets/OptionFilterProps";
 
 export default function ReviewReportPage() {
     const dummyReports: Report[] = [
@@ -116,6 +116,7 @@ export default function ReviewReportPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [filterCategory, setFilterCategory] = useState("Semua");
     const [filterStatus, setFilterStatus] = useState("Semua");
+    const statusOptions = ["Semua", "Diterima", "Diproses", "Selesai"];
     const [currentPage, setCurrentPage] = useState(1);
     const reportsPerPage = 5;
 
@@ -195,7 +196,13 @@ export default function ReviewReportPage() {
                     </div>
 
                     {/* Filter Status */}
-                    <ReportStatusFilter filterStatus={filterStatus} setFilterStatus={setFilterStatus} />
+                    <div className="mb-4">
+                        <OptionFilter
+                            options={statusOptions}
+                            selected={filterStatus}
+                            onChange={setFilterStatus}
+                        />
+                    </div>
 
                     {/* ALL Report */}
                     <div ref={reportListRef} className="flex flex-col gap-4">
@@ -266,7 +273,6 @@ export default function ReviewReportPage() {
             <ReportModal
                 report={selectedReport}
                 onClose={() => setSelectedReport(null)}
-                onVerify={() => alert("Laporan telah diverifikasi!")}
             />
         </>
     );
