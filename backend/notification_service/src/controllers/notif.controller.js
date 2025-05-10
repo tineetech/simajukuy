@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 
 const query = promisify(connection.query).bind(connection);
 
+
+
 export class NotifController {
   async getNotifs(req, res) {
     try {

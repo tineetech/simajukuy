@@ -180,9 +180,7 @@ export class PostController {
 
       const fetchUser = async (id) => {
         try {
-          const res = await fetch(
-            `${process.env.USER_SERVICE}/api/users/${id}`
-          );
+          const res = await fetch(`${process.env.USER_SERVICE}/api/users/`);
           const data = await res.json();
           return data;
         } catch (e) {
@@ -294,14 +292,73 @@ export class PostController {
         LIMIT 1;
       `;
 
+      const fetchUser = async (userId) => {
+        try {
+          const response = await fetch(
+            `${process.env.USER_SERVICE}/api/users/${userId}`
+          );
+
+          if (!response.ok) {
+            throw new Error(`User service returned ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log("User service response:", data); // Debugging
+
+          // Handle different response structures
+          if (data.data) {
+            // Case 1: Response has data property (could be array or object)
+            if (Array.isArray(data.data)) {
+              return {
+                username: data.data[0]?.username || "Unknown",
+                avatar: data.data[0]?.avatar || null,
+              };
+            } else {
+              return {
+                username: data.data.username || "Unknown",
+                avatar: data.data.avatar || null,
+              };
+            }
+          } else if (data.username) {
+            // Case 2: Direct user object
+            return {
+              username: data.username,
+              avatar: data.avatar || null,
+            };
+          } else {
+            throw new Error("Invalid user data structure");
+          }
+        } catch (e) {
+          console.error("Error fetching user:", e);
+          return { error: e.message };
+        }
+      };
+
+      // In your main function:
       const [postRows] = await connection.promise().query(query, [id]);
 
       if (postRows.length === 0) {
         return res.status(404).json({ message: "Postingan tidak ditemukan" });
       }
 
-      const post = postRows[0];
+      let post = postRows[0];
 
+      // Fetch user data for the post
+      const userData = await fetchUser(post.user_id);
+      if (userData.error) {
+        post.user_error = userData.error;
+        post.users = {
+          username: userData.username,
+          avatar: userData.avatar,
+        };
+      } else {
+        post.users = {
+          username: userData.username,
+          avatar: userData.avatar,
+        };
+      }
+
+      // Get comments with user data
       const [commentRows] = await connection
         .promise()
         .query(
@@ -309,11 +366,54 @@ export class PostController {
           [id]
         );
 
+      const formatReplies = async (commentId) => {
+        const [replies] = await connection.promise().query(
+          `SELECT * FROM postingan_comment_replies 
+         WHERE comment_id = ? 
+         ORDER BY created_at ASC`,
+          [commentId]
+        );
+
+        return Promise.all(
+          replies.map(async (reply) => {
+            const replyUserData = await fetchUser(reply.user_id);
+            return {
+              ...reply,
+              username: replyUserData.error
+                ? "Unknown"
+                : replyUserData.username,
+              avatar: replyUserData.error ? null : replyUserData.avatar,
+              error: replyUserData.error || null,
+            };
+          })
+        );
+      };
+
+      const formattedComments = await Promise.all(
+        commentRows.map(async (comment) => {
+          const userData = await fetchUser(comment.user_id);
+          return {
+            id: comment.id,
+            user_id: comment.user_id,
+            content: comment.content,
+            created_at: comment.created_at,
+            username: userData.error ? "Unknown" : userData.username,
+            avatar: userData.error ? null : userData.avatar,
+            error: userData.error || null,
+            replies: await formatReplies(comment.id),
+          };
+        })
+      );
+
+      // Add comments to the post object
+      post.comments = formattedComments;
+
       return res.status(200).json({
-        post,
-        comments: commentRows,
+        message: "Success get post by id",
+        data: post,
       });
     } catch (error) {
+      console.error("Error in getPostById:", error);
       return res.status(500).json({ message: error.message });
     }
   }

@@ -65,7 +65,7 @@ export class PostRouter {
       this.authMiddleware.verifyToken,
       PostController.votePoll
     );
-    
+
     // ======================
     // COMMENT ROUTES
     // ======================
@@ -75,11 +75,31 @@ export class PostRouter {
       BridgeController.addComment
     );
 
-
     this.router.delete(
       "/:post_id/comments/:id",
       this.authMiddleware.verifyToken,
       BridgeController.deleteComment
+    );
+
+    // ======================
+    // REPLIES ROUTES
+    // ======================
+
+    this.router.post(
+      "/comments/:comment_id/replies",
+      this.authMiddleware.verifyToken,
+      BridgeController.addReply
+    );
+
+    this.router.get(
+      "/comments/:comment_id/replies",
+      BridgeController.getReplies
+    );
+
+    this.router.delete(
+      "/replies/:id",
+      this.authMiddleware.verifyToken,
+      BridgeController.deleteReply
     );
 
     // ======================
@@ -125,7 +145,8 @@ export class PostRouter {
         const allowed = ["image/jpeg", "image/png", "image/gif", "image/jpg"];
         if (!allowed.includes(fileType)) {
           return res.status(400).json({
-            message: "Hanya file gambar (JPEG, PNG, JPG, GIF) yang diperbolehkan",
+            message:
+              "Hanya file gambar (JPEG, PNG, JPG, GIF) yang diperbolehkan",
           });
         }
       } else if (type === "video") {

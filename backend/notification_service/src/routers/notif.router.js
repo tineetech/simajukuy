@@ -30,8 +30,8 @@ export class NotifRouter {
 
     this.router.post(
       "/update/:id",
-      this.authMiddleware.verifyToken,
-      this.notifController.updateNotif
+      this.notifController.updateNotif,
+      this.authMiddleware.checkRole('admin')
     );
 
     this.router.post(
