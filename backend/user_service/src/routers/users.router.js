@@ -62,6 +62,12 @@ export class UsersRouter {
       this.usersController.createKoin,
       this.authMiddleware.checkRole('admin')
     );
+    
+    this.router.post(
+      "/koin/bayar-penukaran/",
+      this.authMiddleware.checkRole('admin'),
+      this.usersController.createKoin,
+    );
 
     this.router.post(
       "/koin/update/:id",
