@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Camera, Coins, FileText, GalleryHorizontal, MapPin, NotebookPen, SearchCheck } from "lucide-react";
+import { Bell, Camera, Coins, FileText, GalleryHorizontal, MapPin, NotebookPen, SearchCheck } from "lucide-react";
 import PostItem from "../components/PostItem";
 import ReportList from "../components/ReportList";
 import { PostInterface, Report } from "../types";
 import { Link } from "react-router-dom";
+import NotificationsHistory from "../components/NotificationsHistory";
 
 export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState("report");
@@ -168,61 +169,7 @@ export default function ProfilePage() {
                             </div>
                         </main>
 
-                        {/* Side Content */}
-                        <aside className="col-span-3 space-y-6">
-                            {/* Quick Actions */}
-                            <div className="bg-tertiary dark:bg-tertiaryDark rounded-md shadow p-4">
-                                <h3 className="font-semibold text-lg mb-4 text-center">Aksi Cepat</h3>
-                                <div className="flex flex-col gap-3">
-                                    <Link to="/lapor" className="flex items-center gap-3 bg-primary dark:bg-primaryDark text-textDark px-4 py-2 rounded-md hover:bg-primary/90 transition">
-                                        <FileText size={18} />
-                                        Buat Laporan
-                                    </Link>
-                                    <Link to="/komunitas" className="flex items-center gap-3 bg-secondary dark:bg-secondaryDark text-textDark px-4 py-2 rounded-md hover:bg-secondary/90 transition">
-                                        <GalleryHorizontal size={18} />
-                                        Unggah Postingan Baru
-                                    </Link>
-                                    <Link to="/" className="flex items-center gap-3 bg-secondary dark:bg-secondaryDark text-textDark px-4 py-2 rounded-md hover:bg-secondary/90 transition">
-                                        <Coins size={18} />
-                                        Tukar Coin
-                                    </Link>
-                                </div>
-                            </div>
-
-                            {/* Edukasi Singkat */}
-                            <div className="bg-blue-50 dark:bg-blue-950 rounded-xl shadow p-5 border border-blue-200 dark:border-blue-800">
-                                <h3 className="font-semibold text-lg text-blue-800 dark:text-blue-200 text-center mb-4">
-                                    Tips Pelaporan Efektif
-                                </h3>
-                                <ul className="space-y-4">
-                                    <li className="flex items-center gap-3">
-                                        <NotebookPen className="text-blue-900 dark:text-blue-100 mt-1" size={32} />
-                                        <p className="text-sm text-blue-900 dark:text-blue-100">
-                                            <span className="font-medium">Gunakan bahasa yang sopan dan jelas</span> agar laporan mudah dipahami.
-                                        </p>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <MapPin className="text-blue-900 dark:text-blue-100 mt-1" size={32} />
-                                        <p className="text-sm text-blue-900 dark:text-blue-100">
-                                            <span className="font-medium">Sertakan lokasi dan waktu kejadian</span> untuk mempercepat verifikasi.
-                                        </p>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <Camera className="text-blue-900 dark:text-blue-100 mt-1" size={32} />
-                                        <p className="text-sm text-blue-900 dark:text-blue-100">
-                                            <span className="font-medium">Tambahkan foto bukti</span> jika memungkinkan untuk meningkatkan kredibilitas.
-                                        </p>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <SearchCheck className="text-blue-900 dark:text-blue-100 mt-1" size={32} />
-                                        <p className="text-sm text-blue-900 dark:text-blue-100">
-                                            <span className="font-medium">Periksa ulang laporan</span> sebelum dikirim agar tidak ada kesalahan.
-                                        </p>
-                                    </li>
-                                </ul>
-                            </div>
-
-                        </aside>
+                        <NotificationsHistory />
                     </div>
                 </div>
             </div>
