@@ -15,6 +15,7 @@ import VerifyResetPassPage from "./pages/VerifyResetPassPage";
 import ProfilePage from "./pages/ProfilePage";
 import CoinsVerificationPage from "./pages/CoinsVerificationPage";
 import CoinExchangePage from "./pages/CoinsExcangePage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 export default function App() {
   return (
@@ -40,6 +41,8 @@ export default function App() {
           <Route path="laporan" element={<ReviewReportPage />} />
           <Route path="koin" element={<CoinsVerificationPage />} />
         </Route>
+
+        <Route path="*" element={<NotFoundPage />}/>
       </Routes>
     </Router>
   );
