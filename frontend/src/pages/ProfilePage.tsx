@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Bell, Camera, Coins, FileText, GalleryHorizontal, MapPin, NotebookPen, SearchCheck } from "lucide-react";
+import { Coins, FileText, GalleryHorizontal, Plus, Repeat } from "lucide-react";
 import PostItem from "../components/PostItem";
 import ReportList from "../components/ReportList";
 import { PostInterface, Report } from "../types";
-import { Link } from "react-router-dom";
 import NotificationsHistory from "../components/NotificationsHistory";
+import { Link } from "react-router-dom";
 
 export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState("report");
@@ -101,30 +101,61 @@ export default function ProfilePage() {
                         </div>
 
                         <div className="mt-6 space-y-4">
-                            <div className="flex items-center gap-3">
-                                <Coins className="text-yellow-500" />
-                                <div>
-                                    <p className="text-sm text-textBody dark:text-textBodyDark">Coin</p>
-                                    <p className="text-xl font-medium">{dummyUser.coin}</p>
+                            {/* COIN */}
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3">
+                                    <Coins className="text-yellow-500" />
+                                    <div>
+                                        <p className="text-sm text-textBody dark:text-textBodyDark">Coin</p>
+                                        <p className="text-xl font-medium">{dummyUser.coin}</p>
+                                    </div>
                                 </div>
+                                <Link
+                                    to="/tukar-coin"
+                                    className="p-2 rounded-md bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition"
+                                    title="Tukar Coin"
+                                >
+                                    <Repeat size={18} />
+                                </Link>
                             </div>
 
-                            <div className="flex items-center gap-3">
-                                <FileText className="text-blue-500" />
-                                <div>
-                                    <p className="text-sm text-textBody dark:text-textBodyDark">Total Laporan</p>
-                                    <p className="text-xl font-medium">{dummyReports.length}</p>
+                            {/* LAPORAN */}
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3">
+                                    <FileText className="text-blue-500" />
+                                    <div>
+                                        <p className="text-sm text-textBody dark:text-textBodyDark">Total Laporan</p>
+                                        <p className="text-xl font-medium">{dummyReports.length}</p>
+                                    </div>
                                 </div>
+                                <Link
+                                    to="/lapor"
+                                    className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
+                                    title="Buat Laporan"
+                                >
+                                    <Plus size={18} />
+                                </Link>
                             </div>
 
-                            <div className="flex items-center gap-3">
-                                <GalleryHorizontal className="text-green-500" />
-                                <div>
-                                    <p className="text-sm text-textBody dark:text-textBodyDark">Total Postingan</p>
-                                    <p className="text-xl font-medium">{dummyPosts.length}</p>
+                            {/* POSTINGAN */}
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3">
+                                    <GalleryHorizontal className="text-green-500" />
+                                    <div>
+                                        <p className="text-sm text-textBody dark:text-textBodyDark">Total Postingan</p>
+                                        <p className="text-xl font-medium">{dummyPosts.length}</p>
+                                    </div>
                                 </div>
+                                <Link
+                                    to="/postingan"
+                                    className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition"
+                                    title="Buat Postingan"
+                                >
+                                    <Plus size={18} />
+                                </Link>
                             </div>
                         </div>
+
 
                         <div className="mt-6 space-y-2 text-sm text-textBody dark:text-textBodyDark text-center">
                             <p>Bergabung pada {dummyUser.joinedAt}</p>
