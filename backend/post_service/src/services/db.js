@@ -21,10 +21,9 @@ setInterval(async () => {
         const conn = await pool.getConnection();
         await conn.ping();
         conn.release();
-        console.log('Database connected at: ', new Date())
     } catch (err) {
         console.error('Database health check failed:', err);
     }
-}, 8000); // Setiap 10 detik
+}, 30000); // Setiap 30 detik
 
 export default pool;
