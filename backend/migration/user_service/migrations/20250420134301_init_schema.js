@@ -19,8 +19,8 @@ exports.up = async function (knex) {
       table.text('password_reset_token').nullable();
       table.text('google_id').nullable();
       table.text('verify_email_token').nullable();
-      table.timestamp('created_at').defaultTo(knex.fn.now());
       table.boolean('status').notNullable().defaultTo(true);
+      table.timestamp('created_at').defaultTo(knex.fn.now());
       table.timestamp('updated_at').defaultTo(knex.fn.now());
     });
   
@@ -41,11 +41,11 @@ exports.up = async function (knex) {
       table.integer('user_id').unsigned().notNullable()
            .references('user_id').inTable('users')
            .onDelete('CASCADE').onUpdate('CASCADE');
-      table.string('number_target').notNullable();
+      table.integer('target').notNullable();
       table.string('method_target').notNullable();
       table.string('method_pay').nullable();
-      table.integer('amount').nullable();
-      table.enu('status', ['pending', 'success', 'failed']).notNullable().defaultTo('pending');
+      table.integer('success_convert_amount').nullable();
+      table.enu('status', ['pending', 'proses', 'success']).notNullable().defaultTo('pending');
       table.timestamp('created_at').defaultTo(knex.fn.now());
       table.timestamp('updated_at').defaultTo(knex.fn.now());
     });
