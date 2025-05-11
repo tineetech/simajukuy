@@ -10,7 +10,7 @@ export interface PostInterface {
         user_id: number
         username: string
     };
-    timestamp: string;
+    created_at: string;
     likes: number;
     comment_count: number;
     like_count: number;
@@ -21,6 +21,11 @@ export interface CommentInterface {
     id: number;
     avatar: string;
     username: string;
+    replies: {
+        avatar: string;
+        content: string;
+        length: number;
+    }
     replyTo?: string;
     content: string;
 }

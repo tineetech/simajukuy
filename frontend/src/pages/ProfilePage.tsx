@@ -8,8 +8,7 @@ import { Link } from "react-router-dom";
 import DataUser from "../services/dataUser";
 
 export default function ProfilePage() {
-    const datas = DataUser()
-    console.log(datas)
+    const datas = DataUser();
     const [activeTab, setActiveTab] = useState("report");
     const tabs = [
         { key: "report", label: "Laporan" },
@@ -24,10 +23,16 @@ export default function ProfilePage() {
         coin: datas?.data?.amount ?? 0,
         avatar: "/images/profile.jpg",
         email: "ucup@gmail.com"
-    }
+    };
+
+    const isoDate = dummyUser.joinedAt;
+    const date = new Date(isoDate);
+    const options = { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' };
+    const formattedDate = date.toLocaleDateString('id-ID', options);
 
     const dummyReports: Report[] = [
         {
+            id: 1,
             title: "Sampah menumpuk di Taman Sempur",
             description: "Terdapat tumpukan sampah yang tidak diangkut lebih dari 3 hari.",
             image: "/images/sample-report.jpg",
@@ -35,6 +40,7 @@ export default function ProfilePage() {
             submittedAt: "2025-04-22",
         },
         {
+            id: 2,
             title: "Jalan rusak di Jl. Pajajaran",
             description: "Lubang besar berbahaya untuk pengendara motor, perlu perbaikan.",
             image: "/images/sample-report2.jpg",
@@ -49,18 +55,18 @@ export default function ProfilePage() {
             user_id: 101,
             username: "farhan.mp4",
             avatar: "/images/profile.jpg",
-            image: "", // Kosongkan jika tidak ada gambar
+            image: "",
             content: "Hari ini saya melihat langsung proses pembersihan saluran air di Suryakencana. Salut untuk petugas!",
-            type: "text", // Contoh tipe, bisa disesuaikan
+            type: "text",
             users: {
                 user_id: 101,
                 username: "farhan.mp4"
             },
-            timestamp: "1 jam lalu",
+            created_at: "1 jam lalu",
             likes: 18,
             comment_count: 4,
             like_count: 18,
-            comments: {} // Kosongkan untuk dummy
+            comments: {}
         },
         {
             id: 2,
@@ -74,7 +80,7 @@ export default function ProfilePage() {
                 user_id: 101,
                 username: "farhan.mp4"
             },
-            timestamp: "3 hari lalu",
+            created_at: "3 hari lalu",
             likes: 42,
             comment_count: 9,
             like_count: 42,
@@ -82,17 +88,16 @@ export default function ProfilePage() {
         }
     ];
 
-
     return (
         <div className="bg-background dark:bg-backgroundDark text-text dark:text-textDark">
             {/* Cover */}
             <div className="bg-lapor py-28 pb-46 relative" />
 
-            <div className="grid grid-cols-12 gap-6 mx-auto container pb-8 min-h-screen">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mx-auto container px-4 md:px-0 pb-8 min-h-screen">
 
                 {/* Profile Information */}
-                <aside className="col-span-3 -mt-24 relative z-10">
-                    <div className="bg-tertiary dark:bg-tertiaryDark rounded-md shadow p-8">
+                <aside className="col-span-12 md:col-span-4 lg:col-span-3 -mt-24 relative z-10 order-1 md:order-none">
+                    <div className="bg-tertiary dark:bg-tertiaryDark rounded-md shadow p-6 md:p-8">
                         <img
                             src={dummyUser.avatar}
                             alt="Profile"
@@ -159,23 +164,22 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-
                         <div className="mt-6 space-y-2 text-sm text-textBody dark:text-textBodyDark text-center">
-                            <p>Bergabung pada {dummyUser.joinedAt}</p>
+                            <p>Bergabung pada {formattedDate}</p>
                             <p>{dummyUser.email}</p>
                         </div>
                     </div>
                 </aside>
 
-
                 {/* Content */}
-                <div className="col-span-9 mt-4">
-                    <div className="flex gap-4 mb-4 col-span-9">
+                <div className="col-span-12 md:col-span-8 lg:col-span-9 order-2 mt-4">
+                    {/* Tabs */}
+                    <div className="flex flex-wrap gap-4 mb-4">
                         {tabs.map((t) => (
                             <button
                                 key={t.key}
                                 onClick={() => setActiveTab(t.key)}
-                                className={`font-medium text-lg ${activeTab === t.key
+                                className={`font-medium text-base ${activeTab === t.key
                                     ? "text-text dark:text-textDark"
                                     : "text-textBody dark:text-textBodyDark hover:text-text dark:hover:text-textDark"
                                     }`}
@@ -184,26 +188,27 @@ export default function ProfilePage() {
                             </button>
                         ))}
                     </div>
-                    <div className="grid grid-cols-9 gap-6">
-                        {/* Main Content */}
-                        <main className="col-span-6">
-                            <div className="space-y-4">
-                                {activeTab === "report"
-                                    ? dummyReports.map((report, index) => (
-                                        <ReportList
-                                            key={report.id}
-                                            report={report}
-                                            index={index}
-                                            hideDetailButton={true}
-                                        />
-                                    ))
-                                    : dummyPosts.map((post) => (
-                                        <PostItem key={post.id} post={post} />
-                                    ))}
-                            </div>
+
+                    {/* Content and Notification */}
+                    <div className="grid grid-cols-1 lg:grid-cols-9 gap-6">
+                        <main className="col-span-1 lg:col-span-6 space-y-4">
+                            {activeTab === "report"
+                                ? dummyReports.map((report, index) => (
+                                    <ReportList
+                                        key={report.id}
+                                        report={report}
+                                        index={index}
+                                        hideDetailButton={true}
+                                    />
+                                ))
+                                : dummyPosts.map((post) => (
+                                    <PostItem key={post.id} post={post} />
+                                ))}
                         </main>
 
-                        <NotificationsHistory />
+                        <div className="col-span-1 lg:col-span-3">
+                            <NotificationsHistory />
+                        </div>
                     </div>
                 </div>
             </div>
