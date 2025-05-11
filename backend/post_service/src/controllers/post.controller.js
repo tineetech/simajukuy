@@ -140,130 +140,102 @@ export class PostController {
       if (connection) connection.release();
     }
   }
-
+  
   static async getAllPosts(req, res) {
-    let connection;
-    try {
-      connection = await pool.getConnection();
+      let connection;
+      try {
+          connection = await pool.getConnection();
 
-      const query = `
-        SELECT
-          p.*,
-          pi.image,
-          pv.url_video,
-          (SELECT COUNT(*) FROM postingan_likes WHERE post_id = p.id) AS like_count,
-          (SELECT COUNT(*) FROM postingan_comments WHERE post_id = p.id) AS comment_count,
-          COALESCE(
-              (SELECT JSON_ARRAYAGG(
-                  JSON_OBJECT(
-                      'id', po.id,
-                      'content', po.content,
-                      'votes', (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id),
-                      'percentage', ROUND(
-                          (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id) /
-                          GREATEST(
-                              (SELECT COUNT(DISTINCT user_id)
-                              FROM postingan_polling_votes
-                              WHERE option_id IN (
-                                  SELECT id FROM postingan_polling_options
-                                  WHERE post_id = p.id
-                              )),
-                              1
-                          ) * 100,
-                          1
-                      )
-                  )
-              )
-              FROM postingan_polling_options po
-              WHERE po.post_id = p.id),
-              JSON_ARRAY()
-          ) AS polling_options,
-          (SELECT JSON_ARRAYAGG(
-              JSON_OBJECT(
-                  'id', pc.id,
-                  'user_id', pc.user_id,
-                  'content', pc.content,
-                  'created_at', pc.created_at
-              )
-          )
-          FROM postingan_comments pc
-          WHERE pc.post_id = p.id) AS comments
-        FROM postingan p
-        LEFT JOIN postingan_image pi ON p.id = pi.post_id
-        LEFT JOIN postingan_video pv ON p.id = pv.post_id
-        ORDER BY p.created_at DESC;
-      `;
+          // Base query untuk mendapatkan postingan
+          const query = `
+              SELECT
+                  p.*,
+                  pi.image,
+                  pv.url_video,
+                  (SELECT COUNT(*) FROM postingan_likes WHERE post_id = p.id) AS like_count,
+                  (SELECT COUNT(*) FROM postingan_comments WHERE post_id = p.id) AS comment_count
+              FROM postingan p
+              LEFT JOIN postingan_image pi ON p.id = pi.post_id
+              LEFT JOIN postingan_video pv ON p.id = pv.post_id
+              ORDER BY p.created_at DESC;
+          `;
 
-      const fetchUser = async (id) => {
-        try {
-          const res = await fetch(`${process.env.USER_SERVICE}/api/users/`);
-          const data = await res.json();
-          return data;
-        } catch (e) {
-          console.error(e);
-          throw e;
-        }
-      };
+          const [posts] = await connection.query(query);
 
-      const [rows] = await connection.query(query);
-
-      const promisesUsers = rows.map(async (item) => {
-        try {
-          const datas = await fetchUser(item.user_id);
-          return {
-            ...item,
-            users: {
-              username: datas.data[0].username,
-              avatar: datas.data[0].avatar,
-            },
+          // Fungsi untuk mendapatkan user data
+          const fetchUser = async (userId) => {
+              try {
+                  const res = await fetch(`${process.env.USER_SERVICE}/api/users/${userId}`);
+                  const data = await res.json();
+                  return data.data[0] || null;
+              } catch (e) {
+                  console.error("Error fetching user:", e);
+                  return null;
+              }
           };
-        } catch (e) {
-          console.error(e);
-          return { ...item, error: e.message };
-        }
-      });
 
-      const updatedRows1 = await Promise.all(promisesUsers);
+          // Proses setiap postingan
+          const processedPosts = await Promise.all(posts.map(async (post) => {
+              // Dapatkan data user untuk postingan
+              const postUser = await fetchUser(post.user_id);
+              
+              // Dapatkan komentar untuk postingan ini
+              const [comments] = await connection.query(
+                  "SELECT * FROM postingan_comments WHERE post_id = ?", 
+                  [post.id]
+              );
 
-      const promisesComments = updatedRows1.map(async (item) => {
-        try {
-          const [comments] = await connection.query(
-            "SELECT * FROM postingan_comments WHERE post_id = ?",
-            [item.id]
-          );
+              // Proses setiap komentar
+              const processedComments = await Promise.all(comments.map(async (comment) => {
+                  const commentUser = await fetchUser(comment.user_id);
+                  
+                  // Dapatkan replies untuk komentar ini
+                  const [replies] = await connection.query(
+                      "SELECT * FROM postingan_comment_replies WHERE comment_id = ?",
+                      [comment.id]
+                  );
 
-          const formattedComments = await Promise.all(
-            comments.map(async (comment) => {
-              const user = await fetchUser(comment.user_id);
+                  // Proses setiap reply
+                  const processedReplies = await Promise.all(replies.map(async (reply) => {
+                      const replyUser = await fetchUser(reply.user_id);
+                      return {
+                          id: reply.id,
+                          user_id: reply.user_id,
+                          content: reply.content,
+                          created_at: reply.created_at,
+                          username: replyUser?.username || null,
+                          avatar: replyUser?.avatar || null
+                      };
+                  }));
+
+                  return {
+                      id: comment.id,
+                      user_id: comment.user_id,
+                      content: comment.content,
+                      created_at: comment.created_at,
+                      username: commentUser?.username || null,
+                      avatar: commentUser?.avatar || null,
+                      replies: processedReplies
+                  };
+              }));
+
               return {
-                id: comment.id,
-                user_id: comment.user_id,
-                content: comment.content,
-                username: user?.data[0].username || null,
-                avatar: user?.data[0].avatar || null,
+                  ...post,
+                  user: {
+                      username: postUser?.username || null,
+                      avatar: postUser?.avatar || null
+                  },
+                  comments: processedComments
               };
-            })
-          );
+          }));
 
-          return {
-            ...item,
-            comments: formattedComments,
-          };
-        } catch (error) {
-          console.error("Error fetching comments:", error);
-          return { ...item, comments: [], error: error.message };
-        }
-      });
-
-      const updatedRows2 = await Promise.all(promisesComments);
-
-      return res.status(200).json({ data: updatedRows2 });
-    } catch (error) {
-      console.error("Error in getAllPosts:", error);
-      return res.status(500).json({ message: error.message });
-    } finally {
-      if (connection) connection.release();
-    }
+          return res.status(200).json({ data: processedPosts });
+      } catch (error) {
+          console.error("Error in getAllPosts:", error);
+          return res.status(500).json({ message: error.message });
+      } finally {
+          if (connection) connection.release();
+      }
   }
 
   static async getPostById(req, res) {

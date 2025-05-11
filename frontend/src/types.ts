@@ -21,6 +21,11 @@ export interface CommentInterface {
     id: number;
     avatar: string;
     username: string;
+    replies: {
+        avatar: string;
+        content: string;
+        length: number;
+    }
     replyTo?: string;
     content: string;
 }

@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ThumbsUp, MessageCircle, Share2, Send, Flag, MessageCircleMore, Facebook, Twitter, Instagram } from "lucide-react";
+import { ThumbsUp, MessageCircle, Share2, Send, Flag, MessageCircleMore, Facebook, Twitter, Instagram, X } from "lucide-react";
 import Comment from "./Comment";
 import { jwtDecode } from "jwt-decode";
 import { PostInterface } from "../types";
@@ -12,6 +12,8 @@ export default function PostItem({ post }: { post: PostInterface }) {
   const token = localStorage.getItem("authToken") ?? "";
   const [showSharePopup, setShowSharePopup] = useState(false);
   const shareButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [replyToUser, setReplyToUser] = useState('')
+  const [replyCommentId, setReplyCommentId] = useState('')
 
   const handleLike = async (postId: number) => {
     try {
@@ -92,8 +94,18 @@ export default function PostItem({ post }: { post: PostInterface }) {
     setShowSharePopup(false);
   };
   
+  const handleReplySecondary = (id: string, username: string) => {
+    setReplyCommentId(id)
+    setReplyToUser(username)
+  }
 
   const handleComment = async (id: number) => {
+
+    if (replyToUser !== "" && replyCommentId !== "") {
+      handleReply(parseInt(replyCommentId))
+      return
+    }
+
     const urlEncodedData = new URLSearchParams();
     urlEncodedData.append("content", content);
 
@@ -142,6 +154,48 @@ export default function PostItem({ post }: { post: PostInterface }) {
   const formattedDate = date.toLocaleDateString('id-ID', options);
 
   const decodedToken: any = jwtDecode(token);
+
+  const handleReply = async (commentId: number) => {
+    const urlEncodedData = new URLSearchParams();
+    urlEncodedData.append("content", content);
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_POST_SERVICE}/api/postingan/comments/${commentId}/replies`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: urlEncodedData.toString(),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        console.error(data);
+        Swal.fire({
+          title: "Gagal Membuat Balasan Komentar",
+          text: "Terjadi kesalahan saat menghubungi server.",
+          icon: "error",
+        });
+        return;
+      }
+
+      const data = await res.json();
+      console.log(data);
+
+      Swal.fire({
+        title: "Berhasil Menambahkan Balasan Komentar.",
+        text: "Komentar berhasil ditambahkan.",
+        icon: "success",
+      }).then((res) => {
+        if (res.isConfirmed) {
+          location.reload();
+        }
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
   return (
     <>
       <div className="bg-gray-100 border border-gray-300 dark:border-gray-600 dark:bg-tertiaryDark p-4 rounded-lg">
@@ -252,36 +306,50 @@ export default function PostItem({ post }: { post: PostInterface }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="mt-4 rounded-xl p-4 flex flex-col gap-4 border border-gray-200 dark:border-gray-700"
+              className="mt-4 rounded-xl p-4 flex flex-col gap-4  dark:border-gray-700"
             >
               {/* Komentar yang ada */}
               {post.comments.map((comment: any) => (
-                <Comment key={comment.id} postingan={post} comment={comment} />
+                <Comment key={comment.id} postingan={post} comment={comment} handleReply={handleReplySecondary} />
               ))}
 
               {/* Input Komentar */}
-              <div className="flex items-center gap-3 border-t pt-4 dark:border-gray-700 flex-wrap sm:flex-nowrap">
-                <img
-                  src="https://i.pravatar.cc/40"
-                  alt="avatar"
-                  className="w-9 h-9 rounded-full object-cover"
-                />
-                <input
-                  type="text"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  className="flex-1 bg-gray-100 dark:bg-gray-800 text-sm text-gray-900 dark:text-white p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-primary w-full sm:w-auto"
-                  placeholder="Tulis komentarmu..."
-                  name="commentContent"
-                  id="commentContent"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleComment(post.id)}
-                  className="text-primary hover:text-blue-700 dark:hover:text-blue-400"
-                >
-                  <Send size={18} />
-                </button>
+              <div className="flex flex-col gap-3 border-t pt-4 dark:border-gray-700 flex-wrap sm:flex-nowrap">
+                {
+                  replyToUser && (
+                    <div className="pb-2 flex justify-between">
+                      <div>
+                        Balasan Untuk @{replyToUser}
+                      </div>
+                      <div onClick={() => setReplyToUser('')} className="cursor-pointer">
+                        <X />
+                      </div>
+                    </div>
+                  )
+                }
+                <div className="flex gap-3 w-full">
+                  <img
+                    src="https://i.pravatar.cc/40"
+                    alt="avatar"
+                    className="w-9 h-9 rounded-full object-cover"
+                  />
+                  <input
+                    type="text"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    className="flex-1 bg-gray-100 dark:bg-gray-800 text-sm text-gray-900 dark:text-white p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-primary w-full sm:w-auto"
+                    placeholder="Tulis komentarmu..."
+                    name="commentContent"
+                    id="commentContent"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleComment(post.id)}
+                    className="text-primary hover:text-blue-700 cursor-pointer dark:hover:text-blue-400"
+                  >
+                    <Send size={18} />
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
