@@ -1,37 +1,43 @@
-import connection from "../services/db.js";
+import pool from "../services/db.js";
 import dotenv from "dotenv";
 dotenv.config();
 
 export class PostController {
   static async createPost(req, res) {
+    let connection;
     try {
+      connection = await pool.getConnection();
+
       const { content, type, status, polling_options, postingan_comments } =
         req.body;
-
       const user_id = req.user?.id;
-      if (!user_id) return res.status(401).json({ message: "Unauthorized" });
+
+      if (!user_id) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
 
       const statusValue = status || "active";
-
       const allowedTypes = ["text", "image", "video", "polling"];
-
       const cleanType = allowedTypes.includes(type) ? type : "text";
 
-      const [result] = await connection
-        .promise()
-        .query(
-          "INSERT INTO postingan (user_id, type, content, status) VALUES (?, ?, ?, ?)",
-          [user_id, cleanType, content, statusValue]
-        );
+      // Start transaction
+      await connection.beginTransaction();
+
+      const [result] = await connection.query(
+        "INSERT INTO postingan (user_id, type, content, status) VALUES (?, ?, ?, ?)",
+        [user_id, cleanType, content, statusValue]
+      );
 
       const postId = result.insertId;
       const file = req.files?.[0];
 
       if (cleanType === "image") {
-        if (!file)
+        if (!file) {
+          await connection.rollback();
           return res
             .status(400)
             .json({ message: "File gambar harus diupload." });
+        }
 
         const allowedImageTypes = [
           "image/jpeg",
@@ -40,46 +46,50 @@ export class PostController {
           "image/gif",
         ];
         if (!allowedImageTypes.includes(file.mimetype)) {
+          await connection.rollback();
           return res.status(400).json({
             message: "File harus berupa gambar (JPEG, PNG, JPG, GIF).",
           });
         }
 
         const imageUrl = "/storage/images/" + file.filename;
-        await connection
-          .promise()
-          .query("INSERT INTO postingan_image (post_id, image) VALUES (?, ?)", [
-            postId,
-            imageUrl,
-          ]);
-        return res
-          .status(201)
-          .json({ message: "Postingan berhasil dibuat dengan gambar", postId });
+        await connection.query(
+          "INSERT INTO postingan_image (post_id, image) VALUES (?, ?)",
+          [postId, imageUrl]
+        );
+        await connection.commit();
+        return res.status(201).json({
+          message: "Postingan berhasil dibuat dengan gambar",
+          postId,
+        });
       }
 
       if (cleanType === "video") {
-        if (!file)
+        if (!file) {
+          await connection.rollback();
           return res
             .status(400)
             .json({ message: "File video harus diupload." });
+        }
 
         const allowedVideoTypes = ["video/mp4", "video/webm", "video/ogg"];
         if (!allowedVideoTypes.includes(file.mimetype)) {
-          return res
-            .status(400)
-            .json({ message: "File harus berupa video (MP4, WEBM, OGG)." });
+          await connection.rollback();
+          return res.status(400).json({
+            message: "File harus berupa video (MP4, WEBM, OGG).",
+          });
         }
 
         const videoUrl = "/storage/videos/" + file.filename;
-        await connection
-          .promise()
-          .query(
-            "INSERT INTO postingan_video (post_id, url_video) VALUES (?, ?)",
-            [postId, videoUrl]
-          );
-        return res
-          .status(201)
-          .json({ message: "Postingan berhasil dibuat dengan video", postId });
+        await connection.query(
+          "INSERT INTO postingan_video (post_id, url_video) VALUES (?, ?)",
+          [postId, videoUrl]
+        );
+        await connection.commit();
+        return res.status(201).json({
+          message: "Postingan berhasil dibuat dengan video",
+          postId,
+        });
       }
 
       if (cleanType === "polling") {
@@ -88,95 +98,101 @@ export class PostController {
           !Array.isArray(polling_options) ||
           polling_options.length < 2
         ) {
-          return res
-            .status(400)
-            .json({ message: "Polling harus memiliki minimal dua pilihan." });
+          await connection.rollback();
+          return res.status(400).json({
+            message: "Polling harus memiliki minimal dua pilihan.",
+          });
         }
 
         for (const optionContent of polling_options) {
-          await connection
-            .promise()
-            .query(
-              "INSERT INTO postingan_polling_options (post_id, content) VALUES (?, ?)",
-              [postId, optionContent]
-            );
+          await connection.query(
+            "INSERT INTO postingan_polling_options (post_id, content) VALUES (?, ?)",
+            [postId, optionContent]
+          );
         }
 
-        return res
-          .status(201)
-          .json({ message: "Postingan polling berhasil dibuat", postId });
+        await connection.commit();
+        return res.status(201).json({
+          message: "Postingan polling berhasil dibuat",
+          postId,
+        });
       }
 
       if (postingan_comments?.length > 0) {
         for (const comment of postingan_comments) {
-          await connection
-            .promise()
-            .query(
-              "INSERT INTO postingan_comments (post_id, user_id, content) VALUES (?, ?, ?)",
-              [postId, user_id, comment]
-            );
+          await connection.query(
+            "INSERT INTO postingan_comments (post_id, user_id, content) VALUES (?, ?, ?)",
+            [postId, user_id, comment]
+          );
         }
       }
 
+      await connection.commit();
       return res.status(201).json({
         message: "Postingan berhasil dibuat",
         postId,
         type: cleanType,
       });
     } catch (error) {
+      if (connection) await connection.rollback();
       return res.status(500).json({ message: error.message });
+    } finally {
+      if (connection) connection.release();
     }
   }
 
   static async getAllPosts(req, res) {
+    let connection;
     try {
+      connection = await pool.getConnection();
+
       const query = `
         SELECT
-        p.*,
-        pi.image,
-        pv.url_video,
-        (SELECT COUNT(*) FROM postingan_likes WHERE post_id = p.id) AS like_count,
-        (SELECT COUNT(*) FROM postingan_comments WHERE post_id = p.id) AS comment_count,
-        COALESCE(
-            (SELECT JSON_ARRAYAGG(
-                JSON_OBJECT(
-                    'id', po.id,
-                    'content', po.content,
-                    'votes', (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id),
-                    'percentage', ROUND(
-                        (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id) /
-                        GREATEST(
-                            (SELECT COUNT(DISTINCT user_id)
-                            FROM postingan_polling_votes
-                            WHERE option_id IN (
-                                SELECT id FROM postingan_polling_options
-                                WHERE post_id = p.id
-                            )),
-                            1
-                        ) * 100,
-                        1
-                    )
-                )
-            )
-            FROM postingan_polling_options po
-            WHERE po.post_id = p.id),
-            JSON_ARRAY()
-        ) AS polling_options,
-        (SELECT JSON_ARRAYAGG(
-            JSON_OBJECT(
-                'id', pc.id,  -- ID komentar
-                'user_id', pc.user_id,
-                'content', pc.content,
-                'created_at', pc.created_at
-            )
-        )
-        FROM postingan_comments pc
-        WHERE pc.post_id = p.id) AS comments -- Mengambil detail komentar
-    FROM postingan p
-    LEFT JOIN postingan_image pi ON p.id = pi.post_id
-    LEFT JOIN postingan_video pv ON p.id = pv.post_id
-    ORDER BY p.created_at DESC;
-    `;
+          p.*,
+          pi.image,
+          pv.url_video,
+          (SELECT COUNT(*) FROM postingan_likes WHERE post_id = p.id) AS like_count,
+          (SELECT COUNT(*) FROM postingan_comments WHERE post_id = p.id) AS comment_count,
+          COALESCE(
+              (SELECT JSON_ARRAYAGG(
+                  JSON_OBJECT(
+                      'id', po.id,
+                      'content', po.content,
+                      'votes', (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id),
+                      'percentage', ROUND(
+                          (SELECT COUNT(*) FROM postingan_polling_votes WHERE option_id = po.id) /
+                          GREATEST(
+                              (SELECT COUNT(DISTINCT user_id)
+                              FROM postingan_polling_votes
+                              WHERE option_id IN (
+                                  SELECT id FROM postingan_polling_options
+                                  WHERE post_id = p.id
+                              )),
+                              1
+                          ) * 100,
+                          1
+                      )
+                  )
+              )
+              FROM postingan_polling_options po
+              WHERE po.post_id = p.id),
+              JSON_ARRAY()
+          ) AS polling_options,
+          (SELECT JSON_ARRAYAGG(
+              JSON_OBJECT(
+                  'id', pc.id,
+                  'user_id', pc.user_id,
+                  'content', pc.content,
+                  'created_at', pc.created_at
+              )
+          )
+          FROM postingan_comments pc
+          WHERE pc.post_id = p.id) AS comments
+        FROM postingan p
+        LEFT JOIN postingan_image pi ON p.id = pi.post_id
+        LEFT JOIN postingan_video pv ON p.id = pv.post_id
+        ORDER BY p.created_at DESC;
+      `;
 
       const fetchUser = async (id) => {
         try {
@@ -189,7 +205,7 @@ export class PostController {
         }
       };
 
-      const [rows] = await connection.promise().query(query);
+      const [rows] = await connection.query(query);
 
       const promisesUsers = rows.map(async (item) => {
         try {
@@ -211,11 +227,10 @@ export class PostController {
 
       const promisesComments = updatedRows1.map(async (item) => {
         try {
-          const [comments] = await connection
-            .promise()
-            .query("SELECT * FROM postingan_comments WHERE post_id = ?", [
-              item.id,
-            ]);
+          const [comments] = await connection.query(
+            "SELECT * FROM postingan_comments WHERE post_id = ?",
+            [item.id]
+          );
 
           const formattedComments = await Promise.all(
             comments.map(async (comment) => {
@@ -246,11 +261,15 @@ export class PostController {
     } catch (error) {
       console.error("Error in getAllPosts:", error);
       return res.status(500).json({ message: error.message });
+    } finally {
+      if (connection) connection.release();
     }
   }
 
   static async getPostById(req, res) {
+    let connection;
     try {
+      connection = await pool.getConnection();
       const { id } = req.params;
 
       const query = `
@@ -303,11 +322,9 @@ export class PostController {
           }
 
           const data = await response.json();
-          console.log("User service response:", data); // Debugging
+          console.log("User service response:", data);
 
-          // Handle different response structures
           if (data.data) {
-            // Case 1: Response has data property (could be array or object)
             if (Array.isArray(data.data)) {
               return {
                 username: data.data[0]?.username || "Unknown",
@@ -320,7 +337,6 @@ export class PostController {
               };
             }
           } else if (data.username) {
-            // Case 2: Direct user object
             return {
               username: data.username,
               avatar: data.avatar || null,
@@ -334,8 +350,7 @@ export class PostController {
         }
       };
 
-      // In your main function:
-      const [postRows] = await connection.promise().query(query, [id]);
+      const [postRows] = await connection.query(query, [id]);
 
       if (postRows.length === 0) {
         return res.status(404).json({ message: "Postingan tidak ditemukan" });
@@ -343,7 +358,6 @@ export class PostController {
 
       let post = postRows[0];
 
-      // Fetch user data for the post
       const userData = await fetchUser(post.user_id);
       if (userData.error) {
         post.user_error = userData.error;
@@ -358,19 +372,16 @@ export class PostController {
         };
       }
 
-      // Get comments with user data
-      const [commentRows] = await connection
-        .promise()
-        .query(
-          "SELECT * FROM postingan_comments WHERE post_id = ? ORDER BY created_at ASC",
-          [id]
-        );
+      const [commentRows] = await connection.query(
+        "SELECT * FROM postingan_comments WHERE post_id = ? ORDER BY created_at ASC",
+        [id]
+      );
 
       const formatReplies = async (commentId) => {
-        const [replies] = await connection.promise().query(
+        const [replies] = await connection.query(
           `SELECT * FROM postingan_comment_replies 
-         WHERE comment_id = ? 
-         ORDER BY created_at ASC`,
+           WHERE comment_id = ? 
+           ORDER BY created_at ASC`,
           [commentId]
         );
 
@@ -405,7 +416,6 @@ export class PostController {
         })
       );
 
-      // Add comments to the post object
       post.comments = formattedComments;
 
       return res.status(200).json({
@@ -415,106 +425,134 @@ export class PostController {
     } catch (error) {
       console.error("Error in getPostById:", error);
       return res.status(500).json({ message: error.message });
+    } finally {
+      if (connection) connection.release();
     }
   }
 
   static async updatePost(req, res) {
+    let connection;
     try {
+      connection = await pool.getConnection();
       const { id } = req.params;
       const { content, status, postingan_comments } = req.body;
       const statusValue = status ? "active" : "draft";
 
+      await connection.beginTransaction();
+
       const query = `
         UPDATE postingan SET content = ?, status = ?, updated_at = NOW()
         WHERE id = ?`;
-      const [result] = await connection
-        .promise()
-        .query(query, [content, statusValue, id]);
+      const [result] = await connection.query(query, [
+        content,
+        statusValue,
+        id,
+      ]);
 
-      if (result.affectedRows === 0)
+      if (result.affectedRows === 0) {
+        await connection.rollback();
         return res.status(404).json({ message: "Postingan tidak ditemukan" });
+      }
 
-      // Update komentar jika ada
       if (postingan_comments && postingan_comments.length > 0) {
         for (let comment of postingan_comments) {
-          await connection
-            .promise()
-            .query(
-              "INSERT INTO postingan_comments (post_id, user_id, content) VALUES (?, ?, ?)",
-              [id, req.user.id, comment]
-            );
+          await connection.query(
+            "INSERT INTO postingan_comments (post_id, user_id, content) VALUES (?, ?, ?)",
+            [id, req.user.id, comment]
+          );
         }
       }
 
+      await connection.commit();
       return res.status(200).json({ message: "Postingan berhasil diupdate" });
     } catch (error) {
+      if (connection) await connection.rollback();
       return res.status(500).json({ message: error.message });
+    } finally {
+      if (connection) connection.release();
     }
   }
 
   static async deletePost(req, res) {
+    let connection;
     try {
+      connection = await pool.getConnection();
       const { id } = req.params;
       const user_id = req.user?.id;
       const user_role = req.user?.role;
 
-      const [rows] = await connection
-        .promise()
-        .query("SELECT user_id FROM postingan WHERE id = ?", [id]);
+      await connection.beginTransaction();
 
-      if (rows.length === 0)
+      const [rows] = await connection.query(
+        "SELECT user_id FROM postingan WHERE id = ?",
+        [id]
+      );
+
+      if (rows.length === 0) {
+        await connection.rollback();
         return res.status(404).json({ message: "Postingan tidak ditemukan" });
+      }
 
       const postOwnerId = rows[0].user_id;
-      if (user_role !== "admin" && postOwnerId !== user_id)
+      if (user_role !== "admin" && postOwnerId !== user_id) {
+        await connection.rollback();
         return res.status(403).json({
           message: "Forbidden: Kamu tidak boleh menghapus postingan ini",
         });
+      }
 
-      await connection
-        .promise()
-        .query("DELETE FROM postingan WHERE id = ?", [id]);
+      await connection.query("DELETE FROM postingan WHERE id = ?", [id]);
+      await connection.commit();
       return res.status(200).json({ message: "Postingan berhasil dihapus" });
     } catch (error) {
+      if (connection) await connection.rollback();
       return res.status(500).json({ message: error.message });
+    } finally {
+      if (connection) connection.release();
     }
   }
 
   static async checkPostinganExists(postingan_id) {
-    const [rows] = await connection
-      .promise()
-      .query("SELECT * FROM postingan WHERE id = ?", [postingan_id]);
-    if (rows.length === 0) throw new Error("Postingan tidak ditemukan");
+    let connection;
+    try {
+      connection = await pool.getConnection();
+      const [rows] = await connection.query(
+        "SELECT * FROM postingan WHERE id = ?",
+        [postingan_id]
+      );
+      if (rows.length === 0) throw new Error("Postingan tidak ditemukan");
+    } finally {
+      if (connection) connection.release();
+    }
   }
 
   static async votePoll(req, res) {
+    let connection;
     try {
+      connection = await pool.getConnection();
       const user_id = req.user?.id;
       const { post_id, option_id } = req.params;
 
-      // Validasi opsi polling berdasarkan option_id
-      const [option] = await connection
-        .promise()
-        .query("SELECT post_id FROM postingan_polling_options WHERE id = ?", [
-          option_id,
-        ]);
+      await connection.beginTransaction();
+
+      const [option] = await connection.query(
+        "SELECT post_id FROM postingan_polling_options WHERE id = ?",
+        [option_id]
+      );
 
       if (option.length === 0) {
+        await connection.rollback();
         return res.status(404).json({ message: "Opsi tidak valid" });
       }
 
-      // Pastikan post_id yang diberikan sesuai dengan post_id opsi yang dipilih
       if (option[0].post_id !== parseInt(post_id)) {
+        await connection.rollback();
         return res
           .status(400)
           .json({ message: "Post ID tidak sesuai dengan opsi" });
       }
 
-      // Cek apakah user sudah memberikan vote pada post_id tersebut
-
-      console.log(req.message);
-
-      const [existingVote] = await connection.promise().query(
+      const [existingVote] = await connection.query(
         `SELECT * FROM postingan_polling_votes 
          WHERE user_id = ? 
          AND option_id IN (
@@ -524,22 +562,24 @@ export class PostController {
       );
 
       if (existingVote.length > 0) {
-        return res
-          .status(400)
-          .json({ message: "Anda sudah melakukan vote pada post ini" });
+        await connection.rollback();
+        return res.status(400).json({
+          message: "Anda sudah melakukan vote pada post ini",
+        });
       }
 
-      // Insert vote
-      await connection
-        .promise()
-        .query(
-          "INSERT INTO postingan_polling_votes (option_id, user_id) VALUES (?, ?)",
-          [option_id, user_id]
-        );
+      await connection.query(
+        "INSERT INTO postingan_polling_votes (option_id, user_id) VALUES (?, ?)",
+        [option_id, user_id]
+      );
 
+      await connection.commit();
       return res.status(201).json({ message: "Vote berhasil dicatat" });
     } catch (error) {
+      if (connection) await connection.rollback();
       return res.status(500).json({ message: error.message });
+    } finally {
+      if (connection) connection.release();
     }
   }
 }

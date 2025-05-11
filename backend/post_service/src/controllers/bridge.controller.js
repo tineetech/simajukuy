@@ -1,72 +1,64 @@
-import connection from "../services/db.js";
+import pool from "../services/db.js";
 
 export class BridgeController {
   static async toggleLikePost(req, res) {
+    const connection = await pool.getConnection();
     try {
       const user_id = req.user?.id;
       const { post_id } = req.params;
       if (!user_id) return res.status(401).json({ message: "Unauthorized" });
 
-      const [check] = await connection
-        .promise()
-        .query(
-          "SELECT * FROM postingan_likes WHERE post_id = ? AND user_id = ?",
-          [post_id, user_id]
-        );
+      const [check] = await connection.query(
+        "SELECT * FROM postingan_likes WHERE post_id = ? AND user_id = ?",
+        [post_id, user_id]
+      );
 
       if (check.length > 0) {
-        await connection
-          .promise()
-          .query(
-            "DELETE FROM postingan_likes WHERE post_id = ? AND user_id = ?",
-            [post_id, user_id]
-          );
+        await connection.query(
+          "DELETE FROM postingan_likes WHERE post_id = ? AND user_id = ?",
+          [post_id, user_id]
+        );
         return res.status(200).json({ message: "Unliked" });
       } else {
-        await connection
-          .promise()
-          .query(
-            "INSERT INTO postingan_likes (post_id, user_id) VALUES (?, ?)",
-            [post_id, user_id]
-          );
+        await connection.query(
+          "INSERT INTO postingan_likes (post_id, user_id) VALUES (?, ?)",
+          [post_id, user_id]
+        );
         return res.status(200).json({ message: "Liked" });
       }
     } catch (error) {
       return res.status(500).json({ message: error.message });
+    } finally {
+      connection.release(); // Release connection back to the pool
     }
   }
 
   static async addComment(req, res) {
+    const connection = await pool.getConnection();
     try {
       const { post_id } = req.params;
       const user_id = req.user?.id;
       const { content } = req.body;
 
-      // console.log(req);
-      console.log("Body:", req.body);
-
       if (!content) {
-        return res
-          .status(400)
-          .json({ message: "Komentar tidak boleh kosong." });
+        return res.status(400).json({ message: "Komentar tidak boleh kosong." });
       }
 
-      await connection
-        .promise()
-        .query(
-          "INSERT INTO postingan_comments (post_id, user_id, content) VALUES (?, ?, ?)",
-          [post_id, user_id, content]
-        );
+      await connection.query(
+        "INSERT INTO postingan_comments (post_id, user_id, content) VALUES (?, ?, ?)",
+        [post_id, user_id, content]
+      );
 
-      return res
-        .status(201)
-        .json({ message: "Komentar berhasil ditambahkan." });
+      return res.status(201).json({ message: "Komentar berhasil ditambahkan." });
     } catch (error) {
       return res.status(500).json({ message: error.message });
+    } finally {
+      connection.release();
     }
   }
 
   static async deleteComment(req, res) {
+    const connection = await pool.getConnection();
     try {
       const { id } = req.params; // ID dari komentar
       const { post_id } = req.body; // post_id dari frontend
@@ -74,11 +66,10 @@ export class BridgeController {
       const user_role = req.user?.role;
 
       // Cek apakah komentar dengan ID itu ada dan milik post yang benar
-      const [rows] = await connection
-        .promise()
-        .query("SELECT user_id, post_id FROM postingan_comments WHERE id = ?", [
-          id,
-        ]);
+      const [rows] = await connection.query(
+        "SELECT user_id, post_id FROM postingan_comments WHERE id = ?",
+        [id]
+      );
 
       if (rows.length === 0) {
         return res.status(404).json({ message: "Komentar tidak ditemukan" });
@@ -87,9 +78,7 @@ export class BridgeController {
       const comment = rows[0];
 
       if (comment.post_id !== parseInt(post_id)) {
-        return res
-          .status(400)
-          .json({ message: "Komentar tidak sesuai dengan post_id" });
+        return res.status(400).json({ message: "Komentar tidak sesuai dengan post_id" });
       }
 
       // Validasi user
@@ -100,20 +89,18 @@ export class BridgeController {
       }
 
       // Hapus komentar
-      await connection
-        .promise()
-        .query("DELETE FROM postingan_comments WHERE id = ?", [id]);
+      await connection.query("DELETE FROM postingan_comments WHERE id = ?", [id]);
 
       return res.status(200).json({ message: "Komentar berhasil dihapus" });
     } catch (error) {
-      console.error("Error deleting comment:", error);
-      return res
-        .status(500)
-        .json({ message: "Terjadi kesalahan saat menghapus komentar" });
+      return res.status(500).json({ message: "Terjadi kesalahan saat menghapus komentar" });
+    } finally {
+      connection.release();
     }
   }
 
   static async addReply(req, res) {
+    const connection = await pool.getConnection();
     try {
       const { comment_id } = req.params;
       const user_id = req.user?.id;
@@ -124,9 +111,10 @@ export class BridgeController {
       }
 
       // Validasi apakah comment parent ada
-      const [commentCheck] = await connection
-        .promise()
-        .query("SELECT id FROM postingan_comments WHERE id = ?", [comment_id]);
+      const [commentCheck] = await connection.query(
+        "SELECT id FROM postingan_comments WHERE id = ?",
+        [comment_id]
+      );
 
       if (commentCheck.length === 0) {
         return res.status(404).json({ message: "Komentar tidak ditemukan." });
@@ -134,41 +122,40 @@ export class BridgeController {
 
       // Jika ini reply ke reply lain, validasi parent reply
       if (parent_reply_id) {
-        const [replyCheck] = await connection
-          .promise()
-          .query("SELECT id FROM postingan_comment_replies WHERE id = ?", [
-            parent_reply_id,
-          ]);
+        const [replyCheck] = await connection.query(
+          "SELECT id FROM postingan_comment_replies WHERE id = ?",
+          [parent_reply_id]
+        );
 
         if (replyCheck.length === 0) {
           return res.status(404).json({ message: "Balasan tidak ditemukan." });
         }
       }
 
-      await connection
-        .promise()
-        .query(
-          "INSERT INTO postingan_comment_replies (comment_id, user_id, content, parent_reply_id) VALUES (?, ?, ?, ?)",
-          [comment_id, user_id, content, parent_reply_id || null]
-        );
+      await connection.query(
+        "INSERT INTO postingan_comment_replies (comment_id, user_id, content, parent_reply_id) VALUES (?, ?, ?, ?)",
+        [comment_id, user_id, content, parent_reply_id || null]
+      );
 
       return res.status(201).json({ message: "Balasan berhasil ditambahkan." });
     } catch (error) {
       return res.status(500).json({ message: error.message });
+    } finally {
+      connection.release();
     }
   }
 
   static async deleteReply(req, res) {
+    const connection = await pool.getConnection();
     try {
       const { id } = req.params;
       const user_id = req.user?.id;
       const user_role = req.user?.role;
 
-      const [rows] = await connection
-        .promise()
-        .query("SELECT user_id FROM postingan_comment_replies WHERE id = ?", [
-          id,
-        ]);
+      const [rows] = await connection.query(
+        "SELECT user_id FROM postingan_comment_replies WHERE id = ?",
+        [id]
+      );
 
       if (rows.length === 0) {
         return res.status(404).json({ message: "Balasan tidak ditemukan" });
@@ -182,17 +169,18 @@ export class BridgeController {
         });
       }
 
-      await connection
-        .promise()
-        .query("DELETE FROM postingan_comment_replies WHERE id = ?", [id]);
+      await connection.query("DELETE FROM postingan_comment_replies WHERE id = ?", [id]);
 
       return res.status(200).json({ message: "Balasan berhasil dihapus" });
     } catch (error) {
       return res.status(500).json({ message: error.message });
+    } finally {
+      connection.release();
     }
   }
 
   static async getReplies(req, res) {
+    const connection = await pool.getConnection();
     try {
       const { comment_id } = req.params;
 
@@ -208,7 +196,7 @@ export class BridgeController {
       };
 
       // Hanya mengambil data reply dari database tanpa join ke tabel users
-      const [replies] = await connection.promise().query(
+      const [replies] = await connection.query(
         `SELECT * FROM postingan_comment_replies 
          WHERE comment_id = ?
          ORDER BY created_at ASC`,
@@ -244,6 +232,8 @@ export class BridgeController {
       return res.status(200).json(formattedReplies);
     } catch (error) {
       return res.status(500).json({ message: error.message });
+    } finally {
+      connection.release();
     }
   }
 }

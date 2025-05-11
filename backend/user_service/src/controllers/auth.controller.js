@@ -1,4 +1,4 @@
-import connection from "../services/db.js";
+import pool from "../services/db.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { tokenService } from "../helpers/createToken.js";
@@ -12,7 +12,7 @@ export class AuthController {
   async registerGuest(req, res) {
     const { email, password, username, avatar } = req.body;
   
-    connection.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
+    pool.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
       if (err) {
         console.error("DB Error:", err);
         return res.status(500).json({ message: "Internal server error" });
@@ -24,7 +24,7 @@ export class AuthController {
   
       const hashedPassword = await hashPass(password);
   
-      connection.query(
+      pool.query(
         "INSERT INTO users (email, password, username, avatar, role) VALUES (?, ?, ?, ?, ?)",
         [email, hashedPassword, username, avatar ?? 'https://i.pinimg.com/736x/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg', "guest"],
         (insertErr, insertResult) => {
@@ -33,7 +33,7 @@ export class AuthController {
             return res.status(500).json({ message: "Failed to register user" });
           }
           
-          connection.query("INSERT INTO koin (user_id, amount) VALUES (?, ?)", [insertResult.insertId, 0], (err, resKoin) => {
+          pool.query("INSERT INTO koin (user_id, amount) VALUES (?, ?)", [insertResult.insertId, 0], (err, resKoin) => {
             if (insertErr) {
               console.error("Insert Error:", insertErr);
               return res.status(500).json({ message: "Failed to create coin" });
@@ -49,7 +49,7 @@ export class AuthController {
   // async registerAdmin(req, res) {
   //   const { email, password, username } = req.body;
   
-  //   connection.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
+  //   pool.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
   //     if (err) {
   //       console.error("DB Error:", err);
   //       return res.status(500).json({ message: "Internal server error" });
@@ -61,7 +61,7 @@ export class AuthController {
   
   //     const hashedPassword = await hashPass(password);
   
-  //     connection.query(
+  //     pool.query(
   //       "INSERT INTO users (email, password, username, role) VALUES (?, ?, ?, ?)",
   //       [email, hashedPassword, username, "admin"],
   //       (insertErr, insertResult) => {
@@ -79,7 +79,7 @@ export class AuthController {
   async loginAny(req, res) {
     const { email, password } = req.body;
     try {
-      connection.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
+      pool.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
         if (err) {
           console.error("DB Error:", err); 
           return res.status(500).json({ message: "Internal server error" });
@@ -107,7 +107,7 @@ export class AuthController {
   async loginAdmin(req, res) {
     const { email, password } = req.body;
     try {
-      connection.query("SELECT * FROM users WHERE email = ? AND role = ?", [email, 'admin'], async (err, results) => {
+      pool.query("SELECT * FROM users WHERE email = ? AND role = ?", [email, 'admin'], async (err, results) => {
         if (err) {
           console.error("DB Error:", err);
           return res.status(500).json({ message: "Internal server error" });
@@ -135,7 +135,7 @@ export class AuthController {
   async resetPassword(req, res) {
     const { email } = req.body;
     try {
-      connection.query("SELECT * FROM users WHERE email = ?", [email], (err, results) => {
+      pool.query("SELECT * FROM users WHERE email = ?", [email], (err, results) => {
         if (results.length < 1) return res.status(400).json({ message: "Invalid credentials" });
         
         const token = tokenService.createResetToken({
@@ -145,7 +145,7 @@ export class AuthController {
         });
         
         const sqlUpdate = "UPDATE users SET password_reset_token = ? WHERE user_id = ?"
-        connection.query(sqlUpdate, [token, results[0].user_id], (err, resultSetToken) => {
+        pool.query(sqlUpdate, [token, results[0].user_id], (err, resultSetToken) => {
           if (err) res.status(300).json({err})
           // console.log(resultSetToken)
           sendResetPassEmail(email, token);
@@ -168,7 +168,7 @@ export class AuthController {
     const { token } = req.body;
     const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
     try {
-      connection.query("SELECT * FROM users WHERE user_id = ?", [decodedToken.id], (err, results) => {
+      pool.query("SELECT * FROM users WHERE user_id = ?", [decodedToken.id], (err, results) => {
         if (results.length < 1) return res.status(400).json({ message: "Invalid credentials" });
         if (results[0].password_reset_token == null) {
           return res.status(250).json({ message: "token tidak tersedia" });
@@ -217,7 +217,7 @@ export class AuthController {
 
       const userId = decodedToken.id;
 
-      connection.query("SELECT * FROM users WHERE user_id = ? AND password_reset_token = ?", [userId, token], async (err, results) => {
+      pool.query("SELECT * FROM users WHERE user_id = ? AND password_reset_token = ?", [userId, token], async (err, results) => {
         if (results.length < 1) return res.status(400).json({ message: "Invalid credentials or Reset token is empty on db", data: results });
 
         // Bandingkan password yang belum di-hash dengan password yang sudah di-hash
@@ -238,7 +238,7 @@ export class AuthController {
 
         // console.log(hashedPassword)
         const sqlUpdate = "UPDATE users SET password = ?, password_reset_token = NULL WHERE user_id = ?"
-        connection.query(sqlUpdate, [hashedPassword, results[0].user_id], (err, resultReset) => {
+        pool.query(sqlUpdate, [hashedPassword, results[0].user_id], (err, resultReset) => {
           if (err) res.status(300).json({err})
           return res.status(201).json({
             status: "success",
@@ -265,18 +265,18 @@ export class AuthController {
         return res.status(400).json({ message: "Email not verified by Google" });
       }
   
-      connection.query("SELECT * FROM users WHERE email = ?", [email], (err, results) => {
+      pool.query("SELECT * FROM users WHERE email = ?", [email], (err, results) => {
         if (err) return res.status(500).json({ message: "Database error" });
   
         if (results.length === 0) {
           // User belum ada, insert
-          connection.query(
+          pool.query(
             "INSERT INTO users (email, role, username, avatar) VALUES (?, ?, ?, ?)",
             [email, "guest", name, picture],
             (err, resultCreate) => {
               if (err) return res.status(500).json({ message: "Insert error" });
   
-              connection.query("SELECT * FROM users WHERE user_id = ?", [resultCreate.insertId], (err, resultSelect) => {
+              pool.query("SELECT * FROM users WHERE user_id = ?", [resultCreate.insertId], (err, resultSelect) => {
                 if (err) return res.status(500).json({ message: "Select error" });
   
                 const token = tokenService.createLoginToken({
@@ -310,7 +310,7 @@ export class AuthController {
       if (!req.user.id) {
         return res.status(500).json({ message: "Unauthorization" });
       }
-      connection.query("SELECT * FROM users WHERE user_id = ?", [req.user.id], (err, results) => {
+      pool.query("SELECT * FROM users WHERE user_id = ?", [req.user.id], (err, results) => {
         if (err) {
           console.error("DB Error:", err);
           return res.status(500).json({ message: "Internal server error" });

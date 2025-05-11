@@ -1,11 +1,11 @@
-import connection from "../services/db.js";
+import pool from "../services/db.js";
 import { hashPass } from "../helpers/hashpassword.js";
 
 export class UsersController {
   async getUsers (req, res) {
     try {
       const sqlDataGet = 'SELECT * FROM users';
-      connection.query(sqlDataGet, (err, result) => {
+      pool.query(sqlDataGet, (err, result) => {
         if (err) res.json({"error": err})
         if (result) {
           const sanitizedData = result.map(({ password, ...user }) => user);
@@ -23,7 +23,7 @@ export class UsersController {
   async getUserById (req, res) {
     try {
       const sqlDataGet = 'SELECT * FROM users WHERE user_id = ?';
-      connection.query(sqlDataGet, [req.params.id ?? 1], (err, result) => {
+      pool.query(sqlDataGet, [req.params.id ?? 1], (err, result) => {
         if (err) res.json({"error": err})
         if (result) {
           const sanitizedData = result.map(({ password, ...user }) => user);
@@ -53,14 +53,14 @@ export class UsersController {
       const sqlCreateKoin = 'INSERT INTO koin (user_id, amount) VALUES (?, ?)';
       const hashedPass = await hashPass(password)
       console.log(req.body)
-      connection.query(sqlCreateData, [username, first_name, last_name, email, phone, hashedPass, role], (err, result) => {
+      pool.query(sqlCreateData, [username, first_name, last_name, email, phone, hashedPass, role], (err, result) => {
         if (err) res.status(500).json({"error": err})
         if (!result) {
           return res.status(400).json({ message: "User not found" });
         }
         const userId = result.insertId; // ambil user_id yang baru dibuat
 
-        connection.query(sqlCreateKoin, [userId, 0], (errKoin, resultKoin) => {
+        pool.query(sqlCreateKoin, [userId, 0], (errKoin, resultKoin) => {
           if (errKoin) return res.json({ error: errKoin });
 
           res.json({
@@ -88,7 +88,7 @@ export class UsersController {
       const { username, firstName, lastName, avatar, phone } = req.body
 
       const sqlUpdateData = 'UPDATE users set username = ?, first_name = ?, last_name = ?, avatar = ?, phone = ? WHERE user_id = ?';
-      connection.query(sqlUpdateData, [username, firstName, lastName, avatar, phone, req.params.id], (err, result) => {
+      pool.query(sqlUpdateData, [username, firstName, lastName, avatar, phone, req.params.id], (err, result) => {
         if (err) res.json({"error": err})
         if (!result) {
           return res.status(400).json({ message: "Cannot update users" });
@@ -105,7 +105,7 @@ export class UsersController {
   async deleteUsers (req, res) {
     try {
       const sqlDeleteData = 'DELETE FROM users WHERE user_id = ?';
-      connection.query(sqlDeleteData, [req.params.id], (err, result) => {
+      pool.query(sqlDeleteData, [req.params.id], (err, result) => {
         res.json({ status: 200, message: 'success remove user', data: result })
       })
       // const koin = await prisma.koin.delete({
