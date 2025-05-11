@@ -1,30 +1,9 @@
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
 import clsx from "clsx";
 import SearchBar from "../components/widgets/SearchBar";
 import { motion, AnimatePresence } from "framer-motion";
 import OptionFilter from "../components/widgets/OptionFilterProps";
-
-const dummyData = [
-    {
-        id: 1,
-        user: "Budi Santoso",
-        email: "budi@gmail.com",
-        coin: 1500,
-        method: "DANA",
-        date: "2025-05-09 13:24",
-        status: "Tertunda",
-    },
-    {
-        id: 2,
-        user: "Siti Aminah",
-        email: "siti@gmail.com",
-        coin: 1000,
-        method: "OVO",
-        date: "2025-05-09 12:40",
-        status: "Berhasil",
-    },
-];
 
 const statusColor = {
     Tertunda: "bg-yellow-100 text-yellow-800",
@@ -36,7 +15,50 @@ export default function CoinVerificationPage() {
     const [search, setSearch] = useState("");
     const [filterStatus, setFilterStatus] = useState("Tertunda");
     const statusOptions = ["Semua","Tertunda", "Berhasil", "Ditolak"];
+    const [dummyData, setDummyData] = useState([
+        {
+            id: 1,
+            user: "Budi Santoso",
+            email: "budi@gmail.com",
+            coin: 1500,
+            method: "DANA",
+            date: "2025-05-09 13:24",
+            status: "Tertunda",
+        },
+        {
+            id: 2,
+            user: "Siti Aminah",
+            email: "siti@gmail.com",
+            coin: 1000,
+            method: "OVO",
+            date: "2025-05-09 12:40",
+            status: "Berhasil",
+        },
+    ])
 
+    useEffect(() => {
+        getPenukaran()
+    }, [])
+    
+    const token = localStorage.getItem('authToken') ?? '';
+    const getPenukaran = async () => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_USER_SERVICE}/api/koin/riwayat-penukaran`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                }
+            })
+
+            const data = await res.json()
+
+            if (!res) console.log('gagal get penukaran: ', res)
+
+            console.log(data)
+
+        } catch (e) {
+            console.log(e)
+        }
+    }
     const filteredData = dummyData.filter(
         (item) =>
             (filterStatus === "Semua" || item.status === filterStatus) &&
@@ -75,7 +97,7 @@ export default function CoinVerificationPage() {
                         <tr>
                             <th className="p-4">User</th>
                             <th className="p-4">Email</th>
-                            <th className="p-4">Coin</th>
+                            <th className="p-4">Jumlah</th>
                             <th className="p-4">Metode</th>
                             <th className="p-4">Tanggal</th>
                             <th className="p-4">Status</th>

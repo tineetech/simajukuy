@@ -1,5 +1,11 @@
 import connection from "../services/db.js";
 import { hashPass } from "../helpers/hashpassword.js";
+import midtransClient from "midtrans-client"
+
+const snap = new midtransClient.Snap({
+  isProduction: false,
+  serverKey: process.env.MIDTRANS_SERVER_KEY,
+});
 
 export class UsersController {
   async getUsers (req, res) {
@@ -176,6 +182,162 @@ export class UsersController {
       const message =
         error instanceof Error ? error.message : "Unknown error occurred";
       return res.status(500).json({ error: message });
+    }
+  }
+  
+  async getTrxKoin(req, res) {
+    try {      
+      // 2. Query dengan JOIN yang lebih eksplisit
+      const sqlDataGet = `
+        SELECT 
+          tk.id as transaction_id,
+          tk.user_id,
+          tk.amount,
+          tk.number_target,
+          tk.method_target,
+          tk.created_at,
+          tk.updated_at,
+          tk.status,
+          u.username,
+          u.email
+        FROM 
+          transaction_koin tk
+        LEFT JOIN 
+          users u ON tk.user_id = u.user_id
+        ORDER BY tk.created_at DESC
+      `;
+      
+      connection.query(sqlDataGet, (err, result) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ error: "Database error", details: err });
+        }
+          
+        if (result && result.length > 0) {
+          return res.status(200).json({ 
+            status: 200, 
+            message: 'Success get data', 
+            data: result 
+          });
+        } else {
+          // 3. Berikan informasi lebih detail saat data kosong
+          return res.status(404).json({ 
+            message: 'No transaction data found',
+            suggestion: 'Check if transaction_koin table has records'
+          });
+        }
+      });
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return res.status(500).json({ 
+        error: "Internal server error",
+        details: error.message 
+      });
+    }
+  }
+
+
+
+  async createTrxKoin (req, res) {
+    try {
+      const { 
+        user_id,
+        coin,
+        number_target,
+        method_target,
+        amount,
+      } = req.body
+
+      const sqlCreateData = 'INSERT INTO transaction_koin (user_id, number_target, method_target, amount) VALUES (?, ?, ?, ?)';
+      const sqlAdjustKoin = 'UPDATE koin SET amount = ? WHERE user_id = ?';
+
+      connection.query(sqlCreateData, [user_id, number_target, method_target, amount], (err, result) => {
+        if (!result) {
+          return res.status(400).json({ message: "User not found" });
+        }
+        
+        if (amount % 1000 !== 0) {
+          return res.status(400).json({ message: "Nilai jumlah penukaran harus berupa kelipatan ribuan (1000)" });
+        }
+        
+        const downCoin = coin - amount
+
+        connection.query(sqlAdjustKoin, [downCoin, user_id], (err, resultAdjust) => {
+          if (err) return res.status(400).json({ message: "Error: " + err });
+          
+          res.json({
+            status: 200,
+            message: 'Berhasil membuat penukaran!',
+            data: {
+              user_id,
+              number_target,
+              method_target,
+              amount,
+            }
+          });
+        })
+
+      })
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      return res.status(500).json({ error: message });
+    }
+  }
+
+  async bayarPenukaranKoin (req, res) {
+    try {
+      const { idOrder, productId, productName, price, userId, userName, email, nomor_tujuan } = req.body;
+  
+      // Hitung total harga item
+      const parsedPrice = parseInt(price);
+      const parsedQty = 1;
+      const itemTotal = parsedPrice * 1;
+  
+      // Hitung pajak dan biaya layanan
+      const taxAmount = itemTotal * (10 / 100); // 10% pajak
+      const serviceCharge = itemTotal * (2 / 100); // 2% biaya layanan
+      
+      // Hitung gross amount
+      var grossAmount = itemTotal + taxAmount + serviceCharge;
+  
+      const parameter = {
+        transaction_details: {
+          order_id: idOrder,
+          gross_amount: grossAmount, // Harus sama dengan total item_details
+        },
+        item_details: [
+          {
+            id: productId,
+            price: parsedPrice,
+            quantity: parsedQty,
+            name: productName,
+          },
+          {
+            id: 'tax',
+            price: Math.round(taxAmount), // Pajak
+            quantity: 1,
+            name: 'Tax (10%)',
+          },
+          {
+            id: 'service_charge',
+            price: Math.round(serviceCharge), // Biaya layanan
+            quantity: 1,
+            name: 'Service Charge (2%)',
+          },
+        ],
+        customer_details: {
+          first_name: userName,
+          nomor_tujuan,
+          email: `${email}`, // Ganti dengan email aktual
+        },
+      };
+  
+      const transaction = await snap.createTransaction(parameter);
+      res.status(200).json({ token: transaction.token, redirect_url: transaction.redirect_url });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to create transaction', details: error.message });
     }
   }
 

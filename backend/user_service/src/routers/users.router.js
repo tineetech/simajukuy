@@ -62,6 +62,24 @@ export class UsersRouter {
       this.usersController.createKoin,
       this.authMiddleware.checkRole('admin')
     );
+    
+    this.router.get(
+      "/koin/penukaran",
+      this.authMiddleware.verifyToken,
+      this.usersController.getTrxKoin,
+    );
+
+    this.router.post(
+      "/koin/request-penukaran/",
+      this.authMiddleware.verifyToken,
+      this.usersController.createTrxKoin,
+    );
+
+    this.router.post(
+      "/koin/bayar-penukaran/",
+      this.authMiddleware.checkRole('admin'),
+      this.usersController.createKoin,
+    );
 
     this.router.post(
       "/koin/update/:id",

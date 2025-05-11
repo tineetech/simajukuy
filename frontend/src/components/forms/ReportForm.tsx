@@ -133,6 +133,7 @@ export default function ReportForm() {
                 const responseData = await response.json();
 
                 if (response.ok) {
+                    createPostWhenFinishReport()
                     Swal.fire({
                         title: "Laporan berhasil!",
                         text: `Laporan id #${responseData.data.insertId ?? ''} anda sudah dikirim, anda mendapat reward 50 koin.`,

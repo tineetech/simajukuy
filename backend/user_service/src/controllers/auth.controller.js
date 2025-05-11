@@ -310,11 +310,23 @@ export class AuthController {
       if (!req.user.id) {
         return res.status(500).json({ message: "Unauthorization" });
       }
-      connection.query("SELECT * FROM users WHERE user_id = ?", [req.user.id], (err, results) => {
+      const query = `
+      SELECT 
+        u.*, 
+        k.*
+      FROM 
+        users u
+      LEFT JOIN 
+        koin k ON u.user_id = k.user_id
+      WHERE 
+        u.user_id = ?
+    `;
+      connection.query(query, [req.user.id], (err, results) => {
         if (err) {
           console.error("DB Error:", err);
           return res.status(500).json({ message: "Internal server error" });
         }
+        
         res.status(200).json({ results });
 
       });

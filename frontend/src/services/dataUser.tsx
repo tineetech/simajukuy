@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 
 export interface UserData {
+    first_name?: string;
+    last_name?: string;
     username?: string;
     email?: string;
     user_id?: number;
+    koin?: number;
+    amount?: number;
+    created_at?: number;
     id?: number;
     avatar?: string;
     // properti lain

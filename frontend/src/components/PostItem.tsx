@@ -146,7 +146,7 @@ export default function PostItem({ post }: { post: PostInterface }) {
             className="w-10 h-10 rounded-full object-cover"
           />
           <div>
-            <p className="font-semibold">@{post.users.username ?? "Unknown"}</p>
+            <p className="font-semibold">@{post?.users?.username ?? "Unknown"}</p>
             <span className="text-sm text-textBody dark:text-textBodyDark">{post.timestamp}</span>
           </div>
         </div>
@@ -310,7 +310,7 @@ export default function PostItem({ post }: { post: PostInterface }) {
                 {post.type === "image" && (
                   <img src={import.meta.env.VITE_POST_SERVICE + post.image} className="w-full" alt="" />
                 )}
-                <span>@{post.users.username ?? "Unknown"}</span>
+                <span>@{post?.users?.username ?? "Unknown"}</span>
                 <p className="text-gray-300">{post.content}</p>
               </motion.div>
             </motion.div>

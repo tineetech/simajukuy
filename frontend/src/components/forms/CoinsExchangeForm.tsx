@@ -1,18 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+ 
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TermsModal from "../modals/TermsModal";
+import DataUser from "../../services/dataUser";
+import { Coins } from "lucide-react";
+import Swal from "sweetalert2";
 
 export default function CoinExchangeForm() {
+    const datas = DataUser()
+    
     const dummyUser = {
-        name: "John Doe",
-        coins: 50000,
+        name: datas?.data?.username ?? '',
+        coins: datas?.data?.amount ?? 0,
     };
 
-    const [userCoins, setUserCoins] = useState(0);
     const [showModal, setShowModal] = useState(false);
     const [agreed, setAgreed] = useState(false);
     const [amount, setAmount] = useState("");
+    const [isNotRibuan, setIsNotRibuan] = useState(false);
     const [isBelowMinimum, setIsBelowMinimum] = useState(false);
     const [isExceedingBalance, setIsExceedingBalance] = useState(false);
     const [termsChecked, setTermsChecked] = useState(false);
@@ -27,18 +32,14 @@ export default function CoinExchangeForm() {
         "E-Wallet": ["DANA", "OVO", "GoPay", "ShopeePay"],
     };
 
-    useEffect(() => {
-        // Simulasi ambil data user
-        setUserCoins(dummyUser.coins);
-    }, []);
-
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setAmount(value);
 
         const numericValue = Number(value);
-        setIsBelowMinimum(numericValue > 0 && numericValue < 10000);
-        setIsExceedingBalance(numericValue > userCoins);
+        setIsBelowMinimum(numericValue > 0 && numericValue < 1000);
+        setIsNotRibuan(numericValue % 1000 !== 0 && !isNaN(numericValue)); // Pastikan numericValue adalah angka
+        setIsExceedingBalance(numericValue > dummyUser.coins);
     };
 
     const handleTermsClick = () => {
@@ -61,38 +62,99 @@ export default function CoinExchangeForm() {
     const isBank = selected && ["BCA", "Mandiri", "BNI", "BRI"].includes(selected);
     const isEWallet = selected && ["DANA", "OVO", "GoPay", "ShopeePay"].includes(selected);
 
+    
+    if (datas.loading) {
+        return 'loading..'
+    }
+
+    const token = localStorage.getItem('authToken') ?? '';
+    const handleSubmit = async (e: any) => {
+        e.preventDefault()
+        console.log(selected)
+        try {
+            if (parseInt(amount) % 1000 !== 0 && !isNaN(parseInt(amount))) {
+                Swal.fire({
+                    title: "Gagal!",
+                    text: 'Nilai jumlah penukaran harus berupa kelipatan ribuan (1000)',
+                    icon: "error",
+                }) 
+                return
+            }
+
+
+            const res = await fetch(`${import.meta.env.VITE_USER_SERVICE}/api/users/koin/request-penukaran`, {
+                method: "POST",
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user_id: datas.data?.user_id ?? '',
+                    coin: dummyUser.coins ?? 0,
+                    number_target: isBank ? accountNumber : isEWallet ? phoneNumber : "",
+                    method_target: selected,
+                    amount: amount
+                })
+            })
+
+            const data = await res.json()
+
+            if (!res) alert(res) 
+            
+            console.log(data)
+            Swal.fire({
+                title: "Berhasil!",
+                text: "Berhasil melakukan request penukaran koin, mohon menunggu 1-2 hari untuk verifikasi data dan pengiriman saldo.",
+                icon: "success",
+            }).then((res) => {
+                if (res.isConfirmed) {
+                window.location.href = '/profile'
+                }
+            });
+        } catch (e) {
+            alert(e)
+            console.log(e)
+        }
+    }
+
     return (
         <>
-            <form className="bg-tertiary dark:bg-tertiaryDark p-6 rounded-lg shadow-md max-w-md mx-auto mt-10 space-y-6">
-                <h2 className="text-xl font-semibold">Tukar Koin</h2>
+            <form className="bg-tertiary dark:bg-tertiaryDark p-6 rounded-lg shadow-md max-w-md mx-auto mt-10 space-y-6" onSubmit={(e) => handleSubmit(e)}>
 
                 {/* ✅ Jumlah Koin User */}
-                <div className="text-sm text-text dark:text-textDark">
-                    Koin tersedia: <span className="font-semibold">{userCoins.toLocaleString()}</span>
+                <div className="justify-between flex">
+                    <h2 className="text-xl font-semibold">Tukar Koin</h2>
+                    <div className="text-sm text-text flex gap-1 dark:text-textDark">
+                        <Coins />
+                        <span className="font-semibold"> {dummyUser?.coins.toLocaleString()}</span>
+                    </div>
                 </div>
 
                 {/* ✅ Input Jumlah Koin */}
                 <div className="flex flex-col">
-                    <label htmlFor="amount" className="text-sm mb-1">Jumlah Koin</label>
+                    <label htmlFor="amount" className="text-sm mb-1">Jumlah Uang Yang Ingin Ditukarkan</label>
                     <input
                         id="amount"
                         type="number"
                         value={amount}
                         onChange={handleAmountChange}
                         className="p-2 rounded bg-background dark:bg-backgroundDark border border-textBody"
-                        placeholder="Masukkan jumlah koin"
+                        placeholder="Masukkan jumlah uang penukaran"
                     />
+                    {isNotRibuan && (
+                        <p className="text-red-500 text-sm mt-1">Nilai jumlah penukaran harus berupa kelipatan ribuan (1000)</p>
+                    )}
                     {isBelowMinimum && (
-                        <p className="text-red-500 text-sm mt-1">Minimal penukaran adalah 10.000 koin</p>
+                        <p className="text-red-500 text-sm mt-1">Minimal penukaran adalah Rp 1.000</p>
                     )}
                     {isExceedingBalance && (
-                        <p className="text-red-500 text-sm mt-1">Jumlah koin melebihi saldo yang tersedia</p>
+                        <p className="text-red-500 text-sm mt-1">Koin tidak cukup untuk jumlah tersebut</p>
                     )}
                 </div>
 
                 {/* ✅ Pilih metode penukaran */}
                 <div className="relative">
-                    <label className="text-sm mb-1 block">Pilih Penukaran</label>
+                    <label className="text-sm mb-1 block">Pilih Metode Penukaran</label>
                     <div
                         className="p-2 rounded bg-background dark:bg-backgroundDark border border-textBody cursor-pointer"
                         onClick={() => setOpen((prev) => !prev)}
@@ -159,6 +221,13 @@ export default function CoinExchangeForm() {
                     </div>
                 )}
 
+                {/* ✅ Information exchange coins */}
+                <div className="flex items-start gap-2 text-sm">
+                    <label className="cursor-pointer text-gray-400">
+                        1.000 koin = Rp1.000
+                    </label>
+                </div>
+
                 {/* ✅ Terms & Conditions */}
                 <div className="flex items-start gap-2 text-sm">
                     <input
@@ -176,8 +245,8 @@ export default function CoinExchangeForm() {
                 {/* ✅ Tombol Submit */}
                 <button
                     type="submit"
-                    disabled={!agreed || Number(amount) < 10000 || Number(amount) > userCoins}
-                    className={`w-full p-2 rounded ${agreed && Number(amount) >= 10000 && Number(amount) <= userCoins
+                    disabled={!agreed || Number(amount) < 1000 || Number(amount) > dummyUser.coins}
+                    className={`w-full p-2 rounded ${agreed && Number(amount) >= 1000 && Number(amount) <= dummyUser.coins
                         ? "bg-accent hover:opacity-90"
                         : "bg-gray-500 cursor-not-allowed"
                         }`}

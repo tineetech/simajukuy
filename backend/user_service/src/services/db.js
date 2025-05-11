@@ -8,7 +8,10 @@ let connection = mysql.createConnection({
     port: process.env.DB_PORT,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    connectTimeout: 20000, // 20 seconds timeout
+    connectionLimit: 20,
+    waitTimeout: 10000,
+    connectTimeout: 10000,
+    queueLimit: 1000
 })
 
 connection.connect(function(error) {
