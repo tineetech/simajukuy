@@ -48,6 +48,12 @@ export class LaporRouter {
       this.laporController.updateStatus,
     );
 
+     this.router.post(
+      "/status/:id",
+      this.laporController.updateStatusLaporan,
+      this.authMiddleware.verifyToken
+    );
+
     this.router.post(
       "/delete/:id",
       this.laporController.deleteLapor,
