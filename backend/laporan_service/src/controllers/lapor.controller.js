@@ -1,6 +1,6 @@
-import connection from "../services/db.js";
+import pool from "../services/db.js";
 import { hashPass } from "../helpers/hashpassword.js";
-import axios from "axios"
+import axios from "axios";
 import fs from 'fs';
 import dotenv from "dotenv";
 import path from "path";
@@ -12,51 +12,11 @@ const __dirname = path.dirname(__filename);
 const HF_ACCESS_TOKEN = process.env.HF_API_KEY;
 
 export class LaporController {
-  // async analisisWithAi(req, res) {
-  //   if (!req.file) {
-  //     return res.status(400).json({ error: "No file uploaded" });
-  //   }
-
-  //   const imagePath = req.file.path;
-  //   try {
-  //     const imageData = fs.readFileSync(imagePath);
-
-  //     async function query(data) {
-  //       const response = await fetch(
-  //         "https://router.huggingface.co/hf-inference/models/microsoft/resnet-50",
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${HF_ACCESS_TOKEN}`,
-  //             "Content-Type": "image/jpeg",
-  //           },
-  //           method: "POST",
-  //           body: data,
-  //         }
-  //       );
-  //       const result = await response.json();
-  //       return result;
-  //     }
-
-  //     const respon = await query(imageData);
-  //     console.log(respon)
-  //     const categories = ["cliff", "drop", "valley", "foreland"];
-  //     if (respon.find((item) => item.label.includes(categories))) {
-  //       res.status(200).json({ data: respon });
-  //     } else {
-  //       return res.status(200).json({data: respon});
-  //       res.status(400).json({ message: "Gambar itu bukan bencana alam !"});
-  //     }
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // }
-
   async analisisWithAi(req, res) {
+    // Fungsi ini tidak membutuhkan database connection
     const file = req.file;
     if (!file) {
-      return res
-        .status(400)
-        .json({ message: "File gambar harus diupload." });
+      return res.status(400).json({ message: "File gambar harus diupload." });
     }
 
     const allowedImageTypes = [
@@ -70,6 +30,7 @@ export class LaporController {
         message: "File harus berupa gambar (JPEG, PNG, JPG, GIF).",
       });
     }
+
     const imagePath = path.join(__dirname, '../../storage/images/', file.filename);
     try {
       const imageData = fs.readFileSync(imagePath);
@@ -80,7 +41,6 @@ export class LaporController {
         'AIzaSyBct01Zunl6XInJJBK-xCLGgfw-Xt2_1Nw',
         'AIzaSyAhWg020Pz3Qs5k01kJicBZZd7RQ-E3P8M',
         'AIzaSyBXfLrI8nbCKH_mkC2rD9vL2atwo751nPM',
-        // Tambahkan API key lainnya sesuai kebutuhan
       ];
 
       const requestBody = {
@@ -131,25 +91,23 @@ export class LaporController {
         while (attempts < apiKeys.length) {
           try {
             responseData = await fetchData(apiKeys[attempts]);
-            break; // Jika berhasil, keluar dari loop
+            break;
           } catch (error) {
             if (error.status === 429 || error.status >= 500) {
               console.log(`API Key ${attempts + 1} (ending in ${apiKeys[attempts].slice(-5)}) gagal, mencoba API Key ${attempts + 2}...`);
-              attempts++; // Mencoba API key berikutnya
+              attempts++;
             } else {
-              // Jika error bukan karena rate limit atau server error, langsung kirim error
               return res.status(error.status).json({ message: "Gagal menghubungi Gemini API.", error: error.error });
             }
           }
         }
   
         if (attempts === apiKeys.length) {
-          // Jika semua API key gagal
           const errorMessage = "Semua API Key gagal menghubungi Gemini API.";
           console.error(errorMessage);
           return res.status(500).json({
             message: errorMessage,
-            error: { message: "Semua API Key tidak dapat digunakan." } // Provide a more specific error
+            error: { message: "Semua API Key tidak dapat digunakan." }
           });
         }
         console.log("Respon dari Gemini API:", responseData);
@@ -164,23 +122,29 @@ export class LaporController {
     }
   }
 
-  async getLapor (req, res) {
+  async getLapor(req, res) {
+    let connection;
     try {
-      const sqlDataGet = 'SELECT * FROM laporan';
-      connection.query(sqlDataGet, (err, result) => {
-        if (err) res.json({"error": err})
-        if (result) {
-          res.json({ status: 200, message: 'success get data', data: result })
-        }
-      })
+      connection = await pool.getConnection();
+      const [result] = await connection.query('SELECT * FROM laporan');
+      
+      res.status(200).json({ 
+        status: 200, 
+        message: 'success get data', 
+        data: result 
+      });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      return res.status(500).json({ error: error.message });
+      console.error("Database error:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "Unknown error occurred" 
+      });
+    } finally {
+      if (connection) connection.release();
     }
   }
 
-  async createLapor (req, res) {
+  async createLapor(req, res) {
+    let connection;
     try {
       const {
         user_id,
@@ -192,19 +156,13 @@ export class LaporController {
         type_verification,
         status,
         notes
-      } = req.body
+      } = req.body;
 
-       // Validasi user_id sebelum mencoba mengambil data user
-      if (isNaN(parseInt(user_id))) {
-        console.log(user_id)
-        return res.status(400).json({ message: "Invalid user ID" });
-      }
-
+      // Validasi file
       const file = req.file;
-      if (!file)
-        return res
-          .status(400)
-          .json({ message: "File gambar harus diupload." });
+      if (!file) {
+        return res.status(400).json({ message: "File gambar harus diupload." });
+      }
 
       const allowedImageTypes = [
         "image/jpeg",
@@ -217,34 +175,56 @@ export class LaporController {
           message: "File harus berupa gambar (JPEG, PNG, JPG, GIF).",
         });
       }
-      const imageUrl = "/storage/images/" + file.filename;
 
+      // Validasi user_id
+      if (isNaN(parseInt(user_id))) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      // Verifikasi user
       const findUser = await axios.get(`${process.env.USER_SERVICE}/api/users/${user_id}`);
       if (!findUser) {
         return res.status(400).json({ message: "User not found" });
       }
 
-      const sqlCreateData = 'INSERT INTO laporan (user_id, image, description, type_verification, status, notes, location_latitude, location_longitude, event_date, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-      connection.query(sqlCreateData, [parseInt(user_id), imageUrl, description, type_verification, status ?? "pending", notes, location_lat, location_long, event_date, category], (err, result) => {
-        if (err) {
-          console.error(err)
-          return res.status(400).json({"error": err})
-        } 
+      const imageUrl = "/storage/images/" + file.filename;
+      connection = await pool.getConnection();
 
-        res.status(200).json({
-          status: 200,
-          data: result,
-          message: 'Berhasil membuat laporan!',
-        });
-      })
+      const [result] = await connection.query(
+        `INSERT INTO laporan 
+        (user_id, image, description, type_verification, status, notes, location_latitude, location_longitude, event_date, category) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          parseInt(user_id), 
+          imageUrl, 
+          description, 
+          type_verification, 
+          status ?? "pending", 
+          notes, 
+          location_lat, 
+          location_long, 
+          event_date, 
+          category
+        ]
+      );
+
+      res.status(200).json({
+        status: 200,
+        data: result,
+        message: 'Berhasil membuat laporan!',
+      });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      return res.status(500).json({ error: message });
+      console.error("Error:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "Unknown error occurred" 
+      });
+    } finally {
+      if (connection) connection.release();
     }
   }
 
-  async updateLapor (req, res) {
+  async updateLapor(req, res) {
+    let connection;
     try {
       const {
         user_id,
@@ -252,63 +232,121 @@ export class LaporController {
         type_verification,
         status,
         notes
-      } = req.body
+      } = req.body;
 
       const image = req.file ? req.file.path : null;
 
+      // Verifikasi user
       const findUser = await axios.get(`${process.env.USER_SERVICE}/api/users/${user_id}`);
       if (!findUser) {
-          return res.status(400).json({ message: "User not found" });
+        return res.status(400).json({ message: "User not found" });
       }
 
-      const sqlUpdateData = 'UPDATE laporan set user_id = ?, image = ?, description = ?, type_verification = ?, status = ?, notes = ? WHERE id = ?';
-      connection.query(sqlUpdateData, [user_id, image, description, type_verification, status, notes, req.params.id], (err, result) => {
-        if (err) return res.status(500).json({"error": err})
-          
-        return res.status(200).json({ status: 200, message: 'success update data', data: result })
-      })
+      connection = await pool.getConnection();
+      const [result] = await connection.query(
+        `UPDATE laporan 
+        SET user_id = ?, image = ?, description = ?, type_verification = ?, status = ?, notes = ? 
+        WHERE id = ?`,
+        [user_id, image, description, type_verification, status, notes, req.params.id]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Laporan tidak ditemukan" });
+      }
+
+      res.status(200).json({ 
+        status: 200, 
+        message: 'success update data', 
+        data: result 
+      });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      return res.status(500).json({ error: message });
+      console.error("Error:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "Unknown error occurred" 
+      });
+    } finally {
+      if (connection) connection.release();
     }
   }
   
-  async updateStatus (req, res) {
+  async updateStatus(req, res) {
+    let connection;
     try {
-      const {
-        status,
-      } = req.body
+      const { status } = req.body;
 
-      const sqlGetData = 'SELECT * FROM laporan WHERE id = ?';
-      const sqlUpdateData = 'UPDATE laporan set status = ? WHERE id = ?';
-      connection.query(sqlGetData, [req.params.id], (err, result) => {
-        if (err) return res.status(500).json({"error": err})
-        if (result[0].status === 'success') return res.status(400).json({"error": 'Gagal update status, status laporan sudah success diverifikasi.'})
-        
-        connection.query(sqlUpdateData, [status, req.params.id], (err, result) => {
-          if (err) return res.status(500).json({"error": err})
-  
-          return res.status(200).json({ message: 'success update data', data: result })
-        })
-      })
+      connection = await pool.getConnection();
+      
+      // Mulai transaction
+      await connection.beginTransaction();
+
+      try {
+        // Cek status saat ini
+        const [current] = await connection.query(
+          'SELECT * FROM laporan WHERE id = ? FOR UPDATE',
+          [req.params.id]
+        );
+
+        if (current.length === 0) {
+          return res.status(404).json({ message: "Laporan tidak ditemukan" });
+        }
+
+        if (current[0].status === 'success') {
+          return res.status(400).json({
+            message: 'Gagal update status, status laporan sudah success diverifikasi.'
+          });
+        }
+
+        // Update status
+        const [result] = await connection.query(
+          'UPDATE laporan SET status = ? WHERE id = ?',
+          [status, req.params.id]
+        );
+
+        await connection.commit();
+
+        res.status(200).json({ 
+          message: 'success update data', 
+          data: result 
+        });
+      } catch (err) {
+        await connection.rollback();
+        throw err;
+      }
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      return res.status(500).json({ error: message });
+      console.error("Error:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "Unknown error occurred" 
+      });
+    } finally {
+      if (connection) connection.release();
     }
   }
 
-  async deleteLapor (req, res) {
+  async deleteLapor(req, res) {
+    let connection;
     try {
-      const sqlDeleteData = 'DELETE FROM laporan WHERE id = ?';
-      connection.query(sqlDeleteData, [req.params.id], (err, result) => {
-        res.json({ status: 200, message: 'success remove laporan', data: result })
-      })
+      connection = await pool.getConnection();
+      const [result] = await connection.query(
+        'DELETE FROM laporan WHERE id = ?',
+        [req.params.id]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Laporan tidak ditemukan" });
+      }
+
+      res.status(200).json({ 
+        status: 200, 
+        message: 'success remove laporan', 
+        data: result 
+      });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      return res.status(500).json({ error: message });
+      console.error("Error:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "Unknown error occurred" 
+      });
+    } finally {
+      if (connection) connection.release();
     }
   }
 }
