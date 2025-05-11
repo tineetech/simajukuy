@@ -30,8 +30,8 @@ const checkIsLogin = async (): Promise<boolean> => {
     }
 
     const data = await response.json();
-
-    if (data && data.results.length > 0) {
+    
+    if (data) {
       return true; // Token valid, dan backend mengembalikan success:true
     }
      else {

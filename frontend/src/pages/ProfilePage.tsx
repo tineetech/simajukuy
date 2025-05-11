@@ -5,8 +5,11 @@ import ReportList from "../components/ReportList";
 import { PostInterface, Report } from "../types";
 import NotificationsHistory from "../components/NotificationsHistory";
 import { Link } from "react-router-dom";
+import DataUser from "../services/dataUser";
 
 export default function ProfilePage() {
+    const datas = DataUser()
+    console.log(datas)
     const [activeTab, setActiveTab] = useState("report");
     const tabs = [
         { key: "report", label: "Laporan" },
@@ -14,11 +17,11 @@ export default function ProfilePage() {
     ];
 
     const dummyUser = {
-        firstName: "Farhan",
-        lastName: "Abdullah",
-        username: "farhan.mp4",
-        joinedAt: "31 Februari 2022",
-        coin: 1234,
+        firstName: datas?.data?.first_name ?? '',
+        lastName: datas?.data?.last_name ?? '',
+        username: datas?.data?.username ?? '',
+        joinedAt: datas.data?.created_at ?? '',
+        coin: datas?.data?.amount ?? 0,
         avatar: "/images/profile.jpg",
         email: "ucup@gmail.com"
     }
