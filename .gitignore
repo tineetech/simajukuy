@@ -14,11 +14,19 @@
 /backend/post_service/node_modules
 /backend/notification_service/node_modules
 /backend/laporan_service/node_modules
+/backend/artikel_service/node_modules
 /backend/.env
 /backend/user_service/.env
 /backend/post_service/.env
 /backend/notification_service/.env
 /backend/laporan_service/.env
+/backend/artikel_service/.env
+/backend/.env.dev
+/backend/user_service/.env.dev
+/backend/post_service/.env.dev
+/backend/notification_service/.env.dev
+/backend/laporan_service/.env.dev
+/backend/artikel_service/.env.dev
 
 # common
 .DS_Store
