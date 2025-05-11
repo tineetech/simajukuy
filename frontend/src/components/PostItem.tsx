@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ThumbsUp, MessageCircle, Share2, Send, Eye, X, Flag, MessageCircleMore, Facebook, Twitter, Instagram } from "lucide-react";
+import { ThumbsUp, MessageCircle, Share2, Send, Flag, MessageCircleMore, Facebook, Twitter, Instagram } from "lucide-react";
 import Comment from "./Comment";
 import { jwtDecode } from "jwt-decode";
 import { PostInterface } from "../types";
@@ -10,7 +10,6 @@ export default function PostItem({ post }: { post: PostInterface }) {
   const [showComments, setShowComments] = useState(false);
   const [content, setContent] = useState("");
   const token = localStorage.getItem("authToken") ?? "";
-  const [showPopup, setShowPopup] = useState(false);
   const [showSharePopup, setShowSharePopup] = useState(false);
   const shareButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -38,6 +37,7 @@ export default function PostItem({ post }: { post: PostInterface }) {
     console.log("Postingan telah dilaporkan");
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleShare = () => {
     const postUrl = window.location.href;
     const text = encodeURIComponent(`Cek postingan ini!`);
@@ -91,6 +91,7 @@ export default function PostItem({ post }: { post: PostInterface }) {
     window.open(url, "_blank");
     setShowSharePopup(false);
   };
+  
 
   const handleComment = async (id: number) => {
     const urlEncodedData = new URLSearchParams();
@@ -134,8 +135,13 @@ export default function PostItem({ post }: { post: PostInterface }) {
     }
   };
 
-  const decodedToken: any = jwtDecode(token);
+  const isoDate = post.created_at;
+  const date = new Date(isoDate);
 
+  const options = { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' };
+  const formattedDate = date.toLocaleDateString('id-ID', options);
+
+  const decodedToken: any = jwtDecode(token);
   return (
     <>
       <div className="bg-gray-100 border border-gray-300 dark:border-gray-600 dark:bg-tertiaryDark p-4 rounded-lg">
@@ -145,17 +151,17 @@ export default function PostItem({ post }: { post: PostInterface }) {
             alt="avatar"
             className="w-10 h-10 rounded-full object-cover"
           />
-          <div>
-            <p className="font-semibold">@{post?.users?.username ?? "Unknown"}</p>
-            <span className="text-sm text-textBody dark:text-textBodyDark">{post.timestamp}</span>
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold text-sm md:text-base">@{post?.users?.username ?? "Unknown"}</p>
+            <span className="text-sm text-textBody dark:text-textBodyDark">{formattedDate}</span>
           </div>
         </div>
-            {
-                post.type === 'image' ? (
-                    <img src={import.meta.env.VITE_POST_SERVICE + post.image} className="w-50 rounded-sm" alt="" />       
-                ) : ''
-            }
-        <p className="text-sm md:text-base mb-3">{post.content}</p>
+        {
+          post.type === 'image' ? (
+            <img src={import.meta.env.VITE_POST_SERVICE + post.image} className="w-50 rounded-sm" alt="" />
+          ) : ''
+        }
+        <p className="text-xs md:text-base mb-3">{post.content}</p>
 
         <div className="flex justify-between text-textBody dark:text-textBodyDark text-sm z-10">
           <div className="flex gap-6">
@@ -172,19 +178,16 @@ export default function PostItem({ post }: { post: PostInterface }) {
             >
               <MessageCircle size={18} /> {post.comment_count}
             </button>
-            <button
-              className="flex items-center gap-1 hover:text-accent hover:cursor-pointer"
-              onClick={() => setShowPopup(true)}
-            >
-              <Eye size={18} /> Lihat Detail
-            </button>
             <div className="relative inline-block">
               <button
                 ref={shareButtonRef}
                 className="flex items-center gap-1 hover:text-accent hover:cursor-pointer"
                 onClick={() => setShowSharePopup(prev => !prev)}
               >
-                <Share2 size={18} /> Bagikan
+                <div className="flex mt-1">
+                  <Share2 size={18} />
+                </div>
+                <span className="hidden md:block">Bagikan</span>
               </button>
 
               <AnimatePresence>
@@ -249,74 +252,42 @@ export default function PostItem({ post }: { post: PostInterface }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="mt-4 bg-gray-200 dark:bg-gray-800 rounded-xl p-5 gap-2 flex flex-col"
+              className="mt-4 rounded-xl p-4 flex flex-col gap-4 border border-gray-200 dark:border-gray-700"
             >
+              {/* Komentar yang ada */}
               {post.comments.map((comment: any) => (
                 <Comment key={comment.id} postingan={post} comment={comment} />
               ))}
-              <div className="flex gap-2 items-center mt-3">
+
+              {/* Input Komentar */}
+              <div className="flex items-center gap-3 border-t pt-4 dark:border-gray-700 flex-wrap sm:flex-nowrap">
+                <img
+                  src="https://i.pravatar.cc/40"
+                  alt="avatar"
+                  className="w-9 h-9 rounded-full object-cover"
+                />
                 <input
                   type="text"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full bg-gray-300 dark:bg-gray-700 p-3 rounded-md"
-                  placeholder="Tulis komentarmu disini.."
+                  className="flex-1 bg-gray-100 dark:bg-gray-800 text-sm text-gray-900 dark:text-white p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-primary w-full sm:w-auto"
+                  placeholder="Tulis komentarmu..."
                   name="commentContent"
                   id="commentContent"
                 />
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => handleComment(post.id)}
-                    className="bg-primary p-4 text-white flex items-center justify-center rounded-2xl"
-                  >
-                    <Send size={15} />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => handleComment(post.id)}
+                  className="text-primary hover:text-blue-700 dark:hover:text-blue-400"
+                >
+                  <Send size={18} />
+                </button>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-      </div >
 
-      {/* Popup */}
-      <AnimatePresence>
-        {
-          showPopup && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              style={{ background: "rgba(0, 0, 0, .5)" }}
-              transition={{ duration: 0.2 }}
-              className="fixed flex items-center justify-center top-0 start-0 w-full h-screen z-50"
-            >
-              <motion.div
-                initial={{ scale: 0.8, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.8, y: 20 }}
-                transition={{ duration: 0.2 }}
-                className="w-[400px] h-auto p-5 bg-tertiary dark:bg-gray-700 rounded-2xl"
-              >
-                <div className="flex justify-between items-center">
-                  <h1 className="font-bold">Detail Postingan</h1>
-                  <button
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded"
-                    onClick={() => setShowPopup(false)}
-                  >
-                    <X />
-                  </button>
-                </div>
-                {post.type === "image" && (
-                  <img src={import.meta.env.VITE_POST_SERVICE + post.image} className="w-full" alt="" />
-                )}
-                <span>@{post?.users?.username ?? "Unknown"}</span>
-                <p className="text-gray-300">{post.content}</p>
-              </motion.div>
-            </motion.div>
-          )
-        }
-      </AnimatePresence >
+      </div >
     </>
   );
 }

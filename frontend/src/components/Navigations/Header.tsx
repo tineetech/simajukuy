@@ -47,7 +47,7 @@ export default function Header() {
             <div className={`container bg-gray-200 shadow dark:bg-gray-700 mt-5 mx-auto w-full px-10 rounded-4xl md:px-10 py-4 flex items-center filter justify-between ${scrolled ? 'backdrop-blur-sm bg-opacity-25' : ''}`}>
 
                 {/* Logo */}
-                <Link to="/" className="text-xl m-0 font-bold bg-">
+                <Link to="/" className="text-xl m-0 font-bold">
                     Simajukuy
                 </Link>
 
@@ -75,10 +75,12 @@ export default function Header() {
                     <div className="hidden md:block">
                         <DarkModeToggle />
                     </div>
-                    <NotificationWidget />
                     {
                         isLoggedIn ? (
-                            <ProfileWidget />
+                            <div className="flex gap-6 items-center">
+                                <NotificationWidget />
+                                <ProfileWidget />
+                            </div>
                         ) : (
                             <div onClick={() => window.location.href = '/login'} className="hidden lg:flex cursor-pointer">
                                 <LogIn />
@@ -88,7 +90,7 @@ export default function Header() {
                 </div>
 
                 {/* Mobile */}
-                <div className="flex items-center gap-4 md:hidden">
+                <div className="flex pl-4 items-center gap-4 md:hidden">
                     <DarkModeToggle />
                     {/* Hamburger (Mobile) */}
                     <button onClick={() => setIsOpen(!isOpen)}>
@@ -138,35 +140,35 @@ export default function Header() {
                                         </Link>
                                     );
                                 })}
-                                
+
                                 {
                                     isLoggedIn ? (
                                         <>
-                                        {/* Profile Link */}
-                                        <Link
-                                            to="/profile"
-                                            onClick={() => setIsOpen(false)}
-                                            className={`flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg transition ease-in-out ${location.pathname === "/profile"
-                                                ? "bg-accent text-textDark"
-                                                : "hover:bg-accent"
-                                                }`}
-                                        >
-                                            <User size={20} />
-                                            <span>Profile</span>
-                                        </Link>
+                                            {/* Profile Link */}
+                                            <Link
+                                                to="/profile"
+                                                onClick={() => setIsOpen(false)}
+                                                className={`flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg transition ease-in-out ${location.pathname === "/profile"
+                                                    ? "bg-accent text-textDark"
+                                                    : "hover:bg-accent"
+                                                    }`}
+                                            >
+                                                <User size={20} />
+                                                <span>Profile</span>
+                                            </Link>
 
-                                        {/* Logout Button */}
-                                        <button
-                                            onClick={() => {
-                                                setIsOpen(false);
-                                                // handle actual logout here
-                                                console.log("Logged out");
-                                            }}
-                                            className="flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg hover:bg-red-600 text-left transition"
-                                        >
-                                            <LogOut size={20} />
-                                            <span>Logout</span>
-                                        </button>
+                                            {/* Logout Button */}
+                                            <button
+                                                onClick={() => {
+                                                    setIsOpen(false);
+                                                    // handle actual logout here
+                                                    console.log("Logged out");
+                                                }}
+                                                className="flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg hover:bg-red-600 text-left transition"
+                                            >
+                                                <LogOut size={20} />
+                                                <span>Logout</span>
+                                            </button>
                                         </>
                                     ) : (
                                         <div onClick={() => window.location.href = '/login'} className="lg:hidden hover:bg-accent flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg transition ease-in-out cursor-pointer">
