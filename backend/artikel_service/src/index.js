@@ -3,8 +3,6 @@ import cors from "cors";
 
 import dotenv from "dotenv";
 dotenv.config();
-
-import { ArtikelRouter } from "./routers/artikel.router.js";
 import { ScrapeRouter } from "./routers/scrape.router.js";
 
 const PORT = process.env.PORT || 5001;
@@ -22,12 +20,10 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const artikelRouter = new ArtikelRouter().getRouter();
 const scrapeRouter = new ScrapeRouter().getRouter();
 
 
 app.use("/api/berita", scrapeRouter);
-app.use("/api/artikel", artikelRouter);
 
 // Route home
 app.get("/", (req, res) => {
