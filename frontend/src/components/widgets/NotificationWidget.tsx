@@ -68,7 +68,7 @@ export default function NotificationWidget() {
     };
 
     return (
-        <div className="relative hidden md:block" ref={notifRef}>
+        <div className="relative" ref={notifRef}>
             <button
                 onClick={() => setShowNotif(!showNotif)}
                 className="relative text-text dark:text-textDark"

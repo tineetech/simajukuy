@@ -6,7 +6,7 @@ type StatsCardProps = {
     bgColor: string;
     icon: JSX.Element;
     title: string;
-    value: string;
+    value: string | number;
     link: string;
 };
 

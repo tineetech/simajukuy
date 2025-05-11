@@ -45,7 +45,7 @@ export default function Dashboard() {
         },
     ];
 
-    const [recentUnverified, setRecentUnverified]: Report[] = useState([]);
+    const [recentUnverified, setRecentUnverified] = useState<Report[]>([]);
 
     useEffect(() => {
         if (dataLapor?.data?.data) {
@@ -96,7 +96,6 @@ export default function Dashboard() {
         }
     ];
 
-
     const datas = DataUser()
 
     return (
@@ -110,7 +109,9 @@ export default function Dashboard() {
                     {/* Hello World */}
                     <div className="bg-tertiary dark:bg-tertiaryDark flex gap-16 p-8 shadow-md rounded-md">
                         <div className="flex-col">
-                            <h1 className="font-semibold text-2xl mb-4">Hi {datas.data?.username?.toUpperCase() ?? '!'}</h1>
+                            <h1 className="font-semibold text-2xl mb-4">
+                                Hi {(datas.data?.username ?? 'Pengguna').toUpperCase()}
+                            </h1>
                             <p className="text-textBody dark:text-textBodyDark text-sm mb-8">Pantau dan kelola laporan masalah dari warga dengan mudah melalui dasbor admin Simajukuy. Dapatkan visibilitas lengkap atas isu-isu yang dilaporkan, lacak status penanganan, dan koordinasikan tindakan penyelesaian secara efisien.</p>
                             <Link to='/admin/laporan' className="bg-tertiaryDark dark:bg-tertiary text-textDark dark:text-text   px-6 py-3 rounded-md text-sm">
                                 Lihat Selengkapnya
