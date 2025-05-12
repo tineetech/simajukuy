@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 export interface Laporan {
     data: {
+        map: any;
         length?: number;
         user_id?: number;
         id?: number;

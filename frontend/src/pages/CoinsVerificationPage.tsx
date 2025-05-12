@@ -14,7 +14,7 @@ const statusColor = {
 export default function CoinVerificationPage() {
     const [search, setSearch] = useState("");
     const [filterStatus, setFilterStatus] = useState("Tertunda");
-    const statusOptions = ["Semua","Tertunda", "Berhasil", "Ditolak"];
+    const statusOptions = ["Semua", "Tertunda", "Berhasil", "Ditolak"];
     const [dummyData, setDummyData] = useState([
         {
             id: 1,
@@ -34,31 +34,34 @@ export default function CoinVerificationPage() {
             date: "2025-05-09 12:40",
             status: "Berhasil",
         },
-    ])
+    ]);
 
     useEffect(() => {
-        getPenukaran()
-    }, [])
-    
-    const token = localStorage.getItem('authToken') ?? '';
+        getPenukaran();
+    }, []);
+
+    const token = localStorage.getItem("authToken") ?? "";
     const getPenukaran = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_USER_SERVICE}/api/koin/riwayat-penukaran`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
+            const res = await fetch(
+                `${import.meta.env.VITE_USER_SERVICE}/api/koin/riwayat-penukaran`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
-            })
+            );
 
-            const data = await res.json()
+            const data = await res.json();
 
-            if (!res) console.log('gagal get penukaran: ', res)
+            if (!res) console.log("gagal get penukaran: ", res);
 
-            console.log(data)
-
+            console.log(data);
         } catch (e) {
-            console.log(e)
+            console.log(e);
         }
-    }
+    };
+
     const filteredData = dummyData.filter(
         (item) =>
             (filterStatus === "Semua" || item.status === filterStatus) &&
@@ -76,7 +79,7 @@ export default function CoinVerificationPage() {
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-between">
+            <div className="flex flex-col md:flex-row justify-between gap-3">
                 <OptionFilter
                     options={statusOptions}
                     selected={filterStatus}
@@ -91,7 +94,8 @@ export default function CoinVerificationPage() {
                 </div>
             </div>
 
-            <div className="bg-tertiary dark:bg-tertiaryDark shadow-md rounded-md border-textBody border overflow-x-auto">
+            {/* Desktop Table */}
+            <div className="bg-tertiary dark:bg-tertiaryDark shadow-md rounded-md border border-textBody overflow-x-auto hidden md:block">
                 <table className="min-w-full text-sm">
                     <thead className="text-left uppercase text-xs bg-primary dark:bg-primaryDark text-textDark">
                         <tr>
@@ -135,7 +139,7 @@ export default function CoinVerificationPage() {
                                             onClick={() => handleVerify(item.id)}
                                             disabled={item.status !== "Tertunda"}
                                             className={clsx(
-                                                "p-1.5 rounded-md cursor-pointer",
+                                                "p-1.5 rounded-md",
                                                 item.status === "Tertunda"
                                                     ? "bg-green-500 hover:bg-green-600"
                                                     : "bg-green-900 opacity-40 cursor-not-allowed"
@@ -147,7 +151,7 @@ export default function CoinVerificationPage() {
                                             onClick={() => handleReject(item.id)}
                                             disabled={item.status !== "Tertunda"}
                                             className={clsx(
-                                                "p-1.5 rounded-md cursor-pointer",
+                                                "p-1.5 rounded-md",
                                                 item.status === "Tertunda"
                                                     ? "bg-red-500 hover:bg-red-600"
                                                     : "bg-red-900 opacity-40 cursor-not-allowed"
@@ -168,6 +172,73 @@ export default function CoinVerificationPage() {
                         )}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden space-y-3">
+                {filteredData.map((item) => (
+                    <motion.div
+                        key={item.id}
+                        layout
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="bg-tertiary dark:bg-tertiaryDark rounded-md p-4 shadow-md border border-textBody"
+                    >
+                        <div className="flex flex-col gap-1 text-sm">
+                            <div className="flex justify-between w-full items-center">
+                                <h3 className="text-lg font-medium">{item.user}</h3>
+                                <span
+                                    className={clsx(
+                                        "px-2 py-1 rounded-full text-xs font-medium inline-block",
+                                        statusColor[item.status as keyof typeof statusColor]
+                                    )}
+                                >
+                                    {item.status}
+                                </span>
+                            </div>
+                            <h4 className="text-textBody dark:text-textBodyDark">{item.email}</h4>
+                            <h4 className="text-lg">Metode : {item.method}</h4>
+                            <h4 className="text-lg">Jumlah : {item.coin}</h4>
+                        </div>
+
+                        <div className="flex justify-between mt-4 items-center">
+                            <h4>{item.date}</h4>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => handleVerify(item.id)}
+                                    disabled={item.status !== "Tertunda"}
+                                    className={clsx(
+                                        "p-2 rounded-md text-white",
+                                        item.status === "Tertunda"
+                                            ? "bg-green-500 hover:bg-green-600"
+                                            : "bg-green-900 opacity-40 cursor-not-allowed"
+                                    )}
+                                >
+                                    <Check className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => handleReject(item.id)}
+                                    disabled={item.status !== "Tertunda"}
+                                    className={clsx(
+                                        "p-2 rounded-md text-white",
+                                        item.status === "Tertunda"
+                                            ? "bg-red-500 hover:bg-red-600"
+                                            : "bg-red-900 opacity-40 cursor-not-allowed"
+                                    )}
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                ))}
+
+                {filteredData.length === 0 && (
+                    <div className="text-center text-gray-400 p-4">
+                        Tidak ada data ditemukan.
+                    </div>
+                )}
             </div>
         </div>
     );

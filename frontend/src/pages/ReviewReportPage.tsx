@@ -146,17 +146,16 @@ export default function ReviewReportPage() {
 
     return (
         <>
-            <div className="grid grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
                 {/* Kiri */}
-                <div className="flex flex-col col-span-8">
-
+                <div className="flex flex-col md:col-span-8">
                     {/* Laporan Tertunda */}
                     <div className="flex flex-col">
-                        <div className="flex items-center justify-between">
-                            <h1 className="text-xl font-semibold mb-4">Laporan Tertunda</h1>
+                        <div className="flex items-center justify-between mb-4">
+                            <h1 className="text-xl font-semibold">Laporan Tertunda</h1>
                             <p className="text-textBody dark:text-textBodyDark">{pendingReports.length} Laporan</p>
                         </div>
-                        <div className="grid grid-cols-12 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {pendingReports.length > 0 ? (
                                 pendingReports.slice(0, 3).map((report, index) => (
                                     <ReportCard
@@ -164,7 +163,7 @@ export default function ReviewReportPage() {
                                         index={index}
                                         item={report}
                                         onViewDetail={setSelectedReport}
-                                        colSpan="col-span-4"
+                                        colSpan="col-span-1"
                                     />
                                 ))
                             ) : (
@@ -176,9 +175,9 @@ export default function ReviewReportPage() {
                     </div>
 
                     {/* Filter dan Search */}
-                    <div className="flex items-center justify-between my-8">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between my-8 gap-4">
                         <h1 className="text-xl font-semibold">Seluruh Laporan</h1>
-                        <div className="flex gap-4">
+                        <div className="flex flex-col sm:flex-row gap-4">
                             <SearchBar value={searchTerm} onChange={setSearchTerm} placeHolder="Cari laporan..." />
                             <SelectCategoryFilter
                                 value={filterCategory}
@@ -204,7 +203,7 @@ export default function ReviewReportPage() {
                         />
                     </div>
 
-                    {/* ALL Report */}
+                    {/* All Report */}
                     <div ref={reportListRef} className="flex flex-col gap-4">
                         <AnimatePresence>
                             {paginatedReports.map((report, index) => (
@@ -214,13 +213,12 @@ export default function ReviewReportPage() {
                     </div>
 
                     {/* Pagination */}
-                    <div className="flex justify-center mt-6 gap-2">
+                    <div className="flex justify-center mt-6 gap-2 flex-wrap">
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                             <button
                                 key={page}
                                 onClick={() => setCurrentPage(page)}
-                                className={`px-3 py-1 rounded-md ${currentPage === page ? "bg-primary text-white" : "bg-gray-200 dark:bg-gray-700"
-                                    }`}
+                                className={`px-3 py-1 min-w-[36px] text-sm rounded-md ${currentPage === page ? "bg-primary text-white" : "bg-gray-200 dark:bg-gray-700"}`}
                             >
                                 {page}
                             </button>
@@ -229,10 +227,9 @@ export default function ReviewReportPage() {
                 </div>
 
                 {/* Kanan */}
-                <div className="flex flex-col col-span-4">
-
+                <div className="flex flex-col md:col-span-4">
                     {/* Report Progress */}
-                    <div className="mb-4">
+                    <div className="mb-6">
                         <h1 className="text-xl font-semibold mb-4">Proses Laporan</h1>
                         <div className="flex flex-col gap-4">
                             {dummyReports
@@ -241,7 +238,13 @@ export default function ReviewReportPage() {
                                 .map((report, idx) => {
                                     const icon = categoryIcons[report.category] || <AlertCircle className="text-gray-400" />;
                                     return (
-                                        <ReportProgressList idx={idx} report={report} icon={icon} onViewDetail={setSelectedReport} />
+                                        <ReportProgressList
+                                            key={idx}
+                                            idx={idx}
+                                            report={report}
+                                            icon={icon}
+                                            onViewDetail={setSelectedReport}
+                                        />
                                     );
                                 })}
                             {dummyReports.filter((r) => r.status === "Diproses").length > 3 && (
@@ -257,17 +260,15 @@ export default function ReviewReportPage() {
                         </div>
                     </div>
 
-
                     {/* Status Chart */}
                     <div className="flex flex-col">
                         <h1 className="text-xl font-semibold mb-4">Statistik Laporan</h1>
-                        <div className="bg-tertiary dark:bg-tertiaryDark rounded-md shadow-md w-full p-4">
+                        <div className="bg-tertiary dark:bg-tertiaryDark rounded-md shadow-md w-full p-4 overflow-x-auto">
                             <StatusReportChart />
                         </div>
                     </div>
                 </div>
             </div>
-
 
             {/* Modal Laporan */}
             <ReportModal
