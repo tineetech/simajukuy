@@ -310,63 +310,6 @@ export class UsersController {
     }
   }
 
-  async bayarPenukaranKoin(req, res) {
-    try {
-      const { idOrder, productId, productName, price, userId, userName, email, nomor_tujuan } = req.body;
-  
-      // Hitung total harga item
-      const parsedPrice = parseInt(price);
-      const parsedQty = 1;
-      const itemTotal = parsedPrice * 1;
-  
-      // Hitung pajak dan biaya layanan
-      const taxAmount = itemTotal * (10 / 100); // 10% pajak
-      const serviceCharge = itemTotal * (2 / 100); // 2% biaya layanan
-      
-      // Hitung gross amount
-      var grossAmount = itemTotal + taxAmount + serviceCharge;
-  
-      const parameter = {
-        transaction_details: {
-          order_id: idOrder,
-          gross_amount: grossAmount,
-        },
-        item_details: [
-          {
-            id: productId,
-            price: parsedPrice,
-            quantity: parsedQty,
-            name: productName,
-          },
-          {
-            id: 'tax',
-            price: Math.round(taxAmount),
-            quantity: 1,
-            name: 'Tax (10%)',
-          },
-          {
-            id: 'service_charge',
-            price: Math.round(serviceCharge),
-            quantity: 1,
-            name: 'Service Charge (2%)',
-          },
-        ],
-        customer_details: {
-          first_name: userName,
-          nomor_tujuan,
-          email: `${email}`,
-        },
-      };
-  
-      const transaction = await snap.createTransaction(parameter);
-      res.status(200).json({ token: transaction.token, redirect_url: transaction.redirect_url });
-      
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Failed to create transaction', details: error.message });
-    }
-  }
-
   async updateKoin(req, res) {
     let connection;
     try {
