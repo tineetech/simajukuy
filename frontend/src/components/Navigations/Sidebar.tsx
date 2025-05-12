@@ -23,7 +23,7 @@ export default function Sidebar() {
             <div className="flex flex-col gap-8 text-textDark">
                 {sidebarItems.map((item, index) => {
                     return (
-                        <Link key={index} to={item.path}>
+                        <Link key={index} onClick={() => window.location.href = item.path}>
                             <motion.div
                                 whileHover={{ scale: 1.2 }}
                                 whileTap={{ scale: 0.95 }}

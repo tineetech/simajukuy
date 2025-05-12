@@ -1,5 +1,5 @@
 @echo off
-cd /d C:\Project\Sikuy1\backend
+@REM cd /d C:\Project\Sikuy1\backend
 
 start cmd /k "cd laporan_service && npm start"
 start cmd /k "cd post_service && npm start"

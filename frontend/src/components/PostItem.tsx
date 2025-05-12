@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ThumbsUp, MessageCircle, Share2, Send, Flag, MessageCircleMore, Facebook, Twitter, Instagram, X } from "lucide-react";
+import { ThumbsUp, MessageCircle, Share2, Send, Flag, MessageCircleMore, Facebook, Twitter, Instagram, X, Circle } from "lucide-react";
 import Comment from "./Comment";
 import { jwtDecode } from "jwt-decode";
 import { PostInterface } from "../types";
@@ -196,6 +196,52 @@ export default function PostItem({ post }: { post: PostInterface }) {
       console.error(e);
     }
   }
+
+  const [postId, setPostId] = useState('')
+  const laporKan = async () => {
+    if (postId === '') return alert('silakan pilih postingan yang ingin di laporkan.')
+
+    const urlEncodedData = new URLSearchParams();
+    urlEncodedData.append("reason", "Ujaran kebencian");
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_POST_SERVICE}/api/postingan/${postId}/report`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: urlEncodedData.toString(),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        console.error(data);
+        Swal.fire({
+          title: "Gagal Melaporkan Postingan",
+          text: "Terjadi kesalahan saat menghubungi server.",
+          icon: "error",
+        });
+        return;
+      }
+
+      const data = await res.json();
+      console.log(data);
+
+      Swal.fire({
+        title: "Berhasil Melaporkan Postingan.",
+        text: "Postingan telah di laporkan.",
+        icon: "success",
+      }).then((res) => {
+        if (res.isConfirmed) {
+          location.reload();
+        }
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
+  }
   return (
     <>
       <div className="bg-gray-100 border border-gray-300 dark:border-gray-600 dark:bg-tertiaryDark p-4 rounded-lg">
@@ -292,10 +338,29 @@ export default function PostItem({ post }: { post: PostInterface }) {
           <div className="flex justify-end">
             <button
               className="flex items-center gap-1 hover:text-accent hover:cursor-pointer"
-              onClick={handleReportedPost}
+              onClick={() => setPostId(post.id.toString())}
             >
               <Flag size={18} /> Laporkan
             </button>
+          </div>
+          <div className={`w-full h-screen fixed start-0 top-0 ${postId !== "" ? 'flex' : "hidden"} items-center justify-center`} style={{background: "rgba(0,0,0,.2)", zIndex: '999'}}>
+            <div className="flex w-[300px] container px-3 h-auto py-10 rounded-2xl bg-gray-300 dark:bg-gray-800 flex-col">
+              <div className="flex justify-between items-center">
+                <h1 className="font-bold">Laporkan Postingan</h1>
+                <X onClick={() => setPostId('')} />
+              </div>
+                <div className="flex flex-col gap-2 mt-5">
+                  <div className="w-full flex gap-2 items-center h-auto p-3 rounded-md bg-gray-700">
+                    <Circle size={15} />
+                    <span>
+                      Ujaran kebencian
+                    </span>
+                  </div>
+                  <button className="w-full py-3 mt-3 rounded-md bg-primary" onClick={() => laporKan()}>
+                    Laporkan
+                  </button>
+                </div>
+            </div>
           </div>
         </div>
 

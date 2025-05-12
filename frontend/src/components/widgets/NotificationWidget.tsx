@@ -4,37 +4,46 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Bell } from "lucide-react";
 import { isThisWeek, parseISO } from "date-fns";
 
-// Dummy notifikasi dengan status 'checked' dan tanggal
-const dummyNotifications = [
-    {
-        id: 1,
-        title: "Pengguna baru mendaftar",
-        detail: "Seorang pengguna baru telah membuat akun di sistem.",
-        date: "2025-05-10",
-        checked: false,
-    },
-    {
-        id: 2,
-        title: "Laporan baru dari pengguna",
-        detail: "Ada laporan baru tentang jalan rusak di pusat kota.",
-        date: "2025-05-08",
-        checked: false,
-    },
-    {
-        id: 3,
-        title: "Sistem update berhasil",
-        detail: "Update sistem backend berhasil dilakukan pada pukul 02:00.",
-        date: "2025-04-28",
-        checked: true,
-    },
-];
-
 export default function NotificationWidget() {
-    const [notifications, setNotifications] = useState(dummyNotifications);
+    const [notifications, setNotifications] = useState([]);
     const [showNotif, setShowNotif] = useState(false);
     const notifRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+    const token = localStorage.getItem('authToken') ?? '';
 
+    const getAllNotif = async () => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_NOTIF_SERVICE}/api/notification`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            })
+
+            if (!res.ok) {
+                console.log("gagal get notif: ", res)
+                return 
+            }
+
+            const data = await res.json()
+            console.log(data)
+            if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
+                const mappedNotifications = data.data.map((item: any) => ({
+                    id: item.id,
+                    title: item.title,
+                    detail: item.message,
+                    date: item.created_at.split('T')[0], // Ambil hanya bagian tanggal
+                    checked: !!item.is_read, // Konversi is_read menjadi boolean
+                    // Anda bisa menambahkan mapping field lain jika dibutuhkan
+                }));
+                setNotifications(mappedNotifications);
+            } else {
+                console.log("Tidak ada data notifikasi yang valid dari API.");
+                setNotifications([]); // Set state ke array kosong jika tidak ada data
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
@@ -46,7 +55,12 @@ export default function NotificationWidget() {
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
+
     }, []);
+
+    useEffect(() => {
+        getAllNotif()
+    }, [])
 
     // Filter notifikasi minggu ini
     const thisWeekNotifications = notifications.filter((notif) =>
@@ -89,8 +103,8 @@ export default function NotificationWidget() {
                     >
                         <h2 className="text-text dark:text-textDark font-semibold mb-3">Notifikasi</h2>
                         <ul className="space-y-2 text-sm text-text dark:text-textDark">
-                            {thisWeekNotifications.length > 0 ? (
-                                thisWeekNotifications.map((notif) => (
+                            {notifications.length > 0 ? (
+                                notifications.map((notif) => (
                                     <li
                                         key={notif.id}
                                         className="rounded-lg p-3 cursor-pointer hover:shadow-md transition bg-gray-50 dark:bg-gray-800"
