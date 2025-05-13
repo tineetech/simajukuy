@@ -36,6 +36,7 @@ export class LaporController {
       access: "public",
       token: process.env.BLOB_READ_WRITE_TOKEN,
       contentType: file.mimetype,
+      addRandomSuffix: true,
     });
 
     const imagePath = blob.url
@@ -229,6 +230,7 @@ export class LaporController {
           access: "public",
           token: process.env.BLOB_READ_WRITE_TOKEN,
           contentType: file.mimetype,
+          addRandomSuffix: true,
         });
         imageUrl = blob.url;
       } else {
