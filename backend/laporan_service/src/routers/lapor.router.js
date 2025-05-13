@@ -47,6 +47,7 @@ export class LaporRouter {
       this.laporController.deleteLapor,
       this.authMiddleware.checkRole("admin")
     );
+    
 
     this.router.post(
       "/status/:id",
