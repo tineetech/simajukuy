@@ -4,142 +4,125 @@ dotenv.config();
 
 export class PostController {
   static async createPost(req, res) {
-    let connection;
-    try {
-      connection = await pool.getConnection();
+  let connection;
+  try {
+    connection = await pool.getConnection();
 
-      const { content, type, status, polling_options, postingan_comments } =
-        req.body;
-      const user_id = req.user?.id;
+    const {
+      content = req.body.content,
+      type,
+      status,
+      media_url, // dari frontend (Vercel Blob)
+      polling_options,
+      postingan_comments,
+    } = req.body;
+    const user_id = req.user?.id;
 
-      if (!user_id) {
-        return res.status(401).json({ message: "Unauthorized" });
+    if (!user_id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const statusValue = status || "active";
+    const allowedTypes = ["text", "image", "video", "polling"];
+    const cleanType = allowedTypes.includes(type) ? type : "text";
+
+    // Start transaction
+    await connection.beginTransaction();
+
+    const [result] = await connection.query(
+      "INSERT INTO postingan (user_id, type, content, status) VALUES (?, ?, ?, ?)",
+      [user_id, cleanType, content, statusValue]
+    );
+
+    const postId = result.insertId;
+
+    if (cleanType === "image") {
+      if (!media_url) {
+        await connection.rollback();
+        return res
+          .status(400)
+          .json({ message: "URL gambar harus disertakan." });
       }
 
-      const statusValue = status || "active";
-      const allowedTypes = ["text", "image", "video", "polling"];
-      const cleanType = allowedTypes.includes(type) ? type : "text";
-
-      // Start transaction
-      await connection.beginTransaction();
-
-      const [result] = await connection.query(
-        "INSERT INTO postingan (user_id, type, content, status) VALUES (?, ?, ?, ?)",
-        [user_id, cleanType, content, statusValue]
+      await connection.query(
+        "INSERT INTO postingan_image (post_id, image) VALUES (?, ?)",
+        [postId, media_url]
       );
+      await connection.commit();
+      return res.status(201).json({
+        message: "Postingan berhasil dibuat dengan gambar",
+        postId,
+      });
+    }
 
-      const postId = result.insertId;
-      const file = req.files?.[0];
+    if (cleanType === "video") {
+      if (!media_url) {
+        await connection.rollback();
+        return res
+          .status(400)
+          .json({ message: "URL video harus disertakan." });
+      }
 
-      if (cleanType === "image") {
-        if (!file) {
-          await connection.rollback();
-          return res
-            .status(400)
-            .json({ message: "File gambar harus diupload." });
-        }
+      await connection.query(
+        "INSERT INTO postingan_video (post_id, url_video) VALUES (?, ?)",
+        [postId, media_url]
+      );
+      await connection.commit();
+      return res.status(201).json({
+        message: "Postingan berhasil dibuat dengan video",
+        postId,
+      });
+    }
 
-        const allowedImageTypes = [
-          "image/jpeg",
-          "image/png",
-          "image/jpg",
-          "image/gif",
-        ];
-        if (!allowedImageTypes.includes(file.mimetype)) {
-          await connection.rollback();
-          return res.status(400).json({
-            message: "File harus berupa gambar (JPEG, PNG, JPG, GIF).",
-          });
-        }
+    if (cleanType === "polling") {
+      if (
+        !polling_options ||
+        !Array.isArray(polling_options) ||
+        polling_options.length < 2
+      ) {
+        await connection.rollback();
+        return res.status(400).json({
+          message: "Polling harus memiliki minimal dua pilihan.",
+        });
+      }
 
-        const imageUrl = "/storage/images/" + file.filename;
+      for (const optionContent of polling_options) {
         await connection.query(
-          "INSERT INTO postingan_image (post_id, image) VALUES (?, ?)",
-          [postId, imageUrl]
+          "INSERT INTO postingan_polling_options (post_id, content) VALUES (?, ?)",
+          [postId, optionContent]
         );
-        await connection.commit();
-        return res.status(201).json({
-          message: "Postingan berhasil dibuat dengan gambar",
-          postId,
-        });
-      }
-
-      if (cleanType === "video") {
-        if (!file) {
-          await connection.rollback();
-          return res
-            .status(400)
-            .json({ message: "File video harus diupload." });
-        }
-
-        const allowedVideoTypes = ["video/mp4", "video/webm", "video/ogg"];
-        if (!allowedVideoTypes.includes(file.mimetype)) {
-          await connection.rollback();
-          return res.status(400).json({
-            message: "File harus berupa video (MP4, WEBM, OGG).",
-          });
-        }
-
-        const videoUrl = "/storage/videos/" + file.filename;
-        await connection.query(
-          "INSERT INTO postingan_video (post_id, url_video) VALUES (?, ?)",
-          [postId, videoUrl]
-        );
-        await connection.commit();
-        return res.status(201).json({
-          message: "Postingan berhasil dibuat dengan video",
-          postId,
-        });
-      }
-
-      if (cleanType === "polling") {
-        if (
-          !polling_options ||
-          !Array.isArray(polling_options) ||
-          polling_options.length < 2
-        ) {
-          await connection.rollback();
-          return res.status(400).json({
-            message: "Polling harus memiliki minimal dua pilihan.",
-          });
-        }
-
-        for (const optionContent of polling_options) {
-          await connection.query(
-            "INSERT INTO postingan_polling_options (post_id, content) VALUES (?, ?)",
-            [postId, optionContent]
-          );
-        }
-
-        await connection.commit();
-        return res.status(201).json({
-          message: "Postingan polling berhasil dibuat",
-          postId,
-        });
-      }
-
-      if (postingan_comments?.length > 0) {
-        for (const comment of postingan_comments) {
-          await connection.query(
-            "INSERT INTO postingan_comments (post_id, user_id, content) VALUES (?, ?, ?)",
-            [postId, user_id, comment]
-          );
-        }
       }
 
       await connection.commit();
       return res.status(201).json({
-        message: "Postingan berhasil dibuat",
+        message: "Postingan polling berhasil dibuat",
         postId,
-        type: cleanType,
       });
-    } catch (error) {
-      if (connection) await connection.rollback();
-      return res.status(500).json({ message: error.message });
-    } finally {
-      if (connection) connection.release();
     }
+
+    if (postingan_comments?.length > 0) {
+      for (const comment of postingan_comments) {
+        await connection.query(
+          "INSERT INTO postingan_comments (post_id, user_id, content) VALUES (?, ?, ?)",
+          [postId, user_id, comment]
+        );
+      }
+    }
+
+    await connection.commit();
+    return res.status(201).json({
+      message: "Postingan berhasil dibuat",
+      postId,
+      type: cleanType,
+    });
+  } catch (error) {
+    if (connection) await connection.rollback();
+    return res.status(500).json({ message: error.message });
+  } finally {
+    if (connection) connection.release();
   }
+}
+
   
   static async getAllPosts(req, res) {
       let connection;
