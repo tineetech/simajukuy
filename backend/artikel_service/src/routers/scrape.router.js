@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { scrapeData } from '../controllers/scrape.controller.js';
+import { scrapeDataWithDetails, getArticlePopuler } from '../controllers/scrape.controller.js';
 
 export class ScrapeRouter {
   router;
@@ -10,7 +10,9 @@ export class ScrapeRouter {
   }
 
   initializeRoutes() {
-    this.router.get('/scrape', scrapeData);
+    this.router.get('/scrape', scrapeDataWithDetails);
+
+    this.router.get('/scrape/populer', getArticlePopuler);
   }
 
   getRouter() {
