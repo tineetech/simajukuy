@@ -19,27 +19,22 @@ const ensureFolderExists = async (folderPath) => {
 
 // Konfigurasi storage dengan folder yang berbeda untuk image dan video
 const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    let folderPath = '';
-
+  destination: (req, file, cb) => {
+    let folderPath = '/tmp/';
+    
     if (file.mimetype.startsWith('image')) {
-      folderPath = path.join(__dirname, '../../storage/images'); // Folder khusus untuk gambar
+      folderPath += 'images';
     } else if (file.mimetype.startsWith('video')) {
-      folderPath = path.join(__dirname, '../../storage/videos'); // Folder khusus untuk video
+      folderPath += 'videos';
     } else {
       return cb(new Error('File harus berupa gambar atau video!'), false);
     }
-
-    try {
-      await ensureFolderExists(folderPath); // Pastikan folder ready (async)
-      cb(null, folderPath); // Tentukan folder tujuan
-    } catch (err) {
-      cb(err);
-    }
+    
+    cb(null, folderPath);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname)); // Nama file unik
+    cb(null, uniqueSuffix + path.extname(file.originalname));
   }
 });
 
@@ -57,7 +52,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 export const upload = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // Maksimal 10MB per file
   fileFilter: fileFilter
 });

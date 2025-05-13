@@ -5,6 +5,7 @@ import fs from "fs";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import { put } from "@vercel/blob";
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,14 +32,19 @@ export class LaporController {
       });
     }
 
-    const imagePath = path.join(
-      __dirname,
-      "../../storage/images/",
-      file.filename
-    );
+    const blob = await put(file.originalname, file.buffer, {
+      access: "public",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      contentType: file.mimetype,
+    });
+
+    const imagePath = blob.url
     try {
-      const imageData = fs.readFileSync(imagePath);
-      const base64Image = Buffer.from(imageData).toString("base64");
+      const response = await axios.get(imagePath, {
+        responseType: "arraybuffer",
+      });
+      const base64Image = Buffer.from(response.data).toString("base64");
+
 
       // Daftar API Keys
       const apiKeys = [
@@ -129,7 +135,7 @@ export class LaporController {
           });
         }
         console.log("Respon dari Gemini API:", responseData);
-        return res.status(200).json({ data: responseData });
+        return res.status(200).json({ data: responseData, image: blob.url });
       } catch (error) {
         console.error("Error :", error);
         return res
@@ -178,6 +184,8 @@ export class LaporController {
         location_long,
         event_date,
         category,
+        urlImage,
+        isVerifyWithAi,
         description,
         type_verification,
         status,
@@ -185,8 +193,9 @@ export class LaporController {
       } = req.body;
 
       // Validasi file
+      let imageUrl;
       const file = req.file;
-      if (!file) {
+      if (!file && !isVerifyWithAi) {
         return res.status(400).json({ message: "File gambar harus diupload." });
       }
 
@@ -215,7 +224,17 @@ export class LaporController {
         return res.status(400).json({ message: "User not found" });
       }
 
-      const imageUrl = "/storage/images/" + file.filename;
+      if (!isVerifyWithAi) {
+        const blob = await put(file.originalname, file.buffer, {
+          access: "public",
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+          contentType: file.mimetype,
+        });
+        imageUrl = blob.url;
+      } else {
+        imageUrl = urlImage
+      }
+
       connection = await pool.getConnection();
 
       const [result] = await connection.query(
@@ -240,58 +259,6 @@ export class LaporController {
         status: 200,
         data: result,
         message: "Berhasil membuat laporan!",
-      });
-    } catch (error) {
-      console.error("Error:", error);
-      res.status(500).json({
-        error:
-          error instanceof Error ? error.message : "Unknown error occurred",
-      });
-    } finally {
-      if (connection) connection.release();
-    }
-  }
-
-  async updateLapor(req, res) {
-    let connection;
-    try {
-      const { user_id, description, type_verification, status, notes } =
-        req.body;
-
-      const image = req.file ? req.file.path : null;
-
-      // Verifikasi user
-      const findUser = await axios.get(
-        `${process.env.USER_SERVICE}/api/users/${user_id}`
-      );
-      if (!findUser) {
-        return res.status(400).json({ message: "User not found" });
-      }
-
-      connection = await pool.getConnection();
-      const [result] = await connection.query(
-        `UPDATE laporan 
-        SET user_id = ?, image = ?, description = ?, type_verification = ?, status = ?, notes = ? 
-        WHERE id = ?`,
-        [
-          user_id,
-          image,
-          description,
-          type_verification,
-          status,
-          notes,
-          req.params.id,
-        ]
-      );
-
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "Laporan tidak ditemukan" });
-      }
-
-      res.status(200).json({
-        status: 200,
-        message: "success update data",
-        data: result,
       });
     } catch (error) {
       console.error("Error:", error);

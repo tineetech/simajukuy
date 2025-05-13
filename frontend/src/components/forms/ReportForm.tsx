@@ -105,7 +105,7 @@ export default function ReportForm() {
                 console.log("gagal analisis tidak ada hasil :", resAi)
             }
             
-            if (resAi.includes('YA')) {
+            if (resAi?.res?.includes('YA')) {
                 setProgress(100)
                 setMessage('Analisa berhasil, gambar tersebut terverifikasi sebagai laporan bencana alam atau kerusakan.')
                 
@@ -117,6 +117,8 @@ export default function ReportForm() {
                 formData.append('event_date', estimasiWaktu ?? '');
                 formData.append('category', jenisMasalah);
                 formData.append('description', deskripsi);
+                formData.append('isVerifyWithAi', 'true');
+                formData.append('urlImage', resAi?.image ?? '');
                 formData.append('type_verification', 'manual'); // Atau sesuai kebutuhan
                 formData.append('status', 'pending'); // Atau status default lainnya
                 formData.append('notes', ''); // Atau nilai default lainnya
@@ -150,7 +152,7 @@ export default function ReportForm() {
                 console.error('Error sending report:', error);
                 alert('Terjadi kesalahan saat mengirim laporan.');
                 }
-            } else if (resAi.includes("TIDAK")) {
+            } else if (resAi?.res?.includes("TIDAK")) {
                 setProgress(100)
                 setMessage('Analisa berhasil, gambar tersebut tidak terverifikasi sebagai laporan bencana alam atau kerusakan.')
             }
@@ -182,7 +184,10 @@ export default function ReportForm() {
             if (data) {
                 setProgress(40)
                 setMessage('Mengambil respon..')
-                return data.data.candidates[0].content.parts[0].text
+                return {
+                    res: data.data.candidates[0].content.parts[0].text,
+                    image: data.image
+                }
             }
         } catch (e) {
             console.error(e)
