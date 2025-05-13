@@ -1,7 +1,7 @@
 // src/services/getArtikel.ts
 import axios from 'axios';
 
-export interface ArticleInterface {
+export interface ArticleInterface1 {
   id: number;
   title: string;
   image: string;
@@ -30,7 +30,7 @@ export interface PopularArticlesResponse {
 
 const API_BASE_URL = import.meta.env.VITE_ARTIKEL_SERVICE;
 
-export const fetchArticles = async (): Promise<ArticleInterface[]> => {
+export const fetchArticles = async (): Promise<ArticleInterface1[]> => {
   try {
     const response = await axios.get(`${API_BASE_URL}/api/berita/scrape`);
     return response.data;

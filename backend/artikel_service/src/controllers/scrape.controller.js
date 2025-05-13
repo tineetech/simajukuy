@@ -135,6 +135,23 @@ export const getArticlePopuler = async (req, res) => {
   }
 };
 
+export async function getSorotanFromHTML() {
+  const response = await axios.get("https://www.kompas.com");
+  const $ = cheerio.load(response.data);
+  
+  const sorotanData = $('.spotlightItem').map((index, element) => {
+    const item = $(element);
+    return {
+      title: item.find('.spotlightTitle').text().trim(),
+      link: item.find('a').attr('href'),
+      image: item.find('img').attr('data-src'),
+      channel: item.find('.spotlightChannel').text().trim()
+    };
+  }).get();
+
+  return sorotanData;
+}
+
 export const scrapeDataWithDetails = async (req, res) => {
   try {
     const response = await axios.get("https://www.kompas.com");

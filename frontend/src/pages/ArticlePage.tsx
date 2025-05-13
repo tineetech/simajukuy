@@ -72,7 +72,7 @@ export default function ArticlePage() {
           md:grid-cols-4 md:grid-rows-3 md:h-[600px]"
           style={{
             gridTemplateAreas:
-              window.innerWidth >= 768
+              typeof window !== "undefined" && window.innerWidth >= 768
                 ? `
               "a a b c"
               "a a g c"
@@ -92,77 +92,17 @@ export default function ArticlePage() {
 
           {articles.length > 0 && articles[0]?.image && (
             <>
-              <div
-                className={`bg-tertiary dark:bg-tertiaryDark hidden md:flex md:flex-col rounded-xl p-4 justify-between md:[grid-area:b]`}
-                style={{
-                  backgroundImage: `url('${articles[0].image}')`,
-                  backgroundColor: "var(--tertiary)",
-                  backgroundSize: "cover", // Gambar menutupi seluruh div
-                  backgroundPosition: "center", // Menjaga gambar tetap terpusat
-                  backgroundRepeat: "no-repeat", // Menghindari pengulangan gambar
-                }}
-              >
-                <h2 className="font-semibold text-lg mb-1">
-                  {articles[0].title}
-                </h2>
-                <p className="text-textBody dark:text-textBodyDark text-sm">
-                  {articles[0].category}
-                </p>
-              </div>
+              {/* Article 1 */}
+              <ArticleThumbnail article={articles[0]} gridArea="b" />
 
-              <div
-                className="bg-tertiary dark:bg-tertiaryDark hidden md:flex md:flex-col rounded-xl p-4 md:[grid-area:c]"
-                style={{
-                  backgroundImage: `url('${articles[1].image}')`,
-                  backgroundColor: "var(--tertiary)", // Fallback jika gambar gagal
-                  backgroundSize: "cover", // Gambar menutupi seluruh elemen
-                  backgroundPosition: "center", // Menjaga gambar tetap terpusat
-                  backgroundRepeat: "no-repeat", // Menghindari pengulangan gambar
-                }}
-              >
-                <h2 className="font-semibold text-lg mb-1">
-                  {articles[1].title}
-                </h2>
-                <p className="text-textBody dark:text-textBodyDark text-sm">
-                  {articles[1].category}
-                </p>
-              </div>
+              {/* Article 2 */}
+              <ArticleThumbnail article={articles[1]} gridArea="c" />
 
-              <div
-                className="bg-tertiary dark:bg-tertiaryDark hidden md:flex md:flex-col rounded-xl p-4 md:[grid-area:d]"
-                style={{
-                  backgroundImage: `url('${articles[2].image}')`,
-                  backgroundColor: "var(--tertiary)", // Fallback jika gambar gagal
-                  backgroundSize: "cover", // Gambar menutupi seluruh elemen
-                  backgroundPosition: "center", // Gambar tetap terpusat
-                  backgroundRepeat: "no-repeat", // Menghindari pengulangan gambar
-                }}
-              >
-                <h2 className="font-semibold text-lg mb-1">
-                  {articles[2].title}
-                </h2>
-                <p className="text-textBody dark:text-textBodyDark text-sm">
-                  {articles[2].category}
-                </p>
-              </div>
+              {/* Article 3 */}
+              <ArticleThumbnail article={articles[2]} gridArea="d" />
 
-              <div
-                className="bg-tertiary dark:bg-tertiaryDark hidden md:flex md:flex-col rounded-xl p-4 md:[grid-area:e]"
-                style={{
-                  backgroundImage: `url('${articles[3].image}')`,
-                  backgroundColor: "var(--tertiary)", // Fallback jika gambar gagal
-                  backgroundSize: "cover", // Menjamin gambar mengisi seluruh area
-                  backgroundPosition: "center", // Menjaga gambar tetap terpusat
-                  backgroundRepeat: "no-repeat", // Menghindari pengulangan gambar
-                }}
-              >
-                <h2 className="font-semibold text-lg mb-1">
-                  {articles[3].title}
-                </h2>
-                <p className="text-textBody dark:text-textBodyDark text-sm">
-                  {articles[3].category}
-                </p>
-              </div>
+              {/* Article 4 */}
+              <ArticleThumbnail article={articles[3]} gridArea="e" />
             </>
           )}
 
@@ -176,7 +116,6 @@ export default function ArticlePage() {
             className="bg-tertiary dark:bg-tertiaryDark rounded-xl p-4 flex items-center justify-center text-center md:[grid-area:f]"
             style={{
               backgroundImage: `url('/images/latbak.png')`,
-
               backgroundColor: "var(--tertiary)", // Fallback jika gambar gagal
             }}
           >
@@ -215,5 +154,42 @@ export default function ArticlePage() {
         </div>
       </div>
     </section>
+  );
+}
+
+// Separate component for article thumbnails to improve code organization
+function ArticleThumbnail({ article, gridArea }) {
+  return (
+    <a
+      href={article.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`
+        hidden md:block
+        rounded-xl
+        md:[grid-area:${gridArea}]
+        group relative overflow-hidden
+      `}
+      style={{
+        backgroundImage: `url('${article.image}')`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundColor: "var(--tertiary)",
+      }}
+    >
+      {/* Dark gradient overlay that shows on hover */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-70 transition-opacity duration-300"></div>
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col justify-end h-full p-4">
+        <h2 className="font-semibold text-lg mb-1 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {article.title}
+        </h2>
+        <p className="text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {article.category}
+        </p>
+      </div>
+    </a>
   );
 }
