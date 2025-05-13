@@ -252,7 +252,7 @@ export default function PostItem({ post }: { post: PostInterface }) {
             className="w-10 h-10 rounded-full object-cover"
           />
           <div className="flex flex-col gap-1">
-            <p className="font-semibold text-sm md:text-base">@{post?.users?.username ?? "Unknown"}</p>
+            <p className="font-semibold text-sm md:text-base">@{post?.user?.username ?? "Unknown"}</p>
             <span className="text-sm text-textBody dark:text-textBodyDark">{formattedDate}</span>
           </div>
         </div>

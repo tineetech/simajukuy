@@ -9,7 +9,6 @@ export default function Contact() {
     });
 
     const [errors, setErrors] = useState({
-        name: false,
         email: false,
         message: false,
     });
@@ -23,15 +22,16 @@ export default function Contact() {
         e.preventDefault();
 
         const newErrors = {
-            name: formData.name.trim() === "",
             email: formData.email.trim() === "",
             message: formData.message.trim() === "",
         };
 
         setErrors(newErrors);
-
-        if (!newErrors.name && !newErrors.email && !newErrors.message) {
-            alert("Pesan berhasil dikirim!");
+        const text = `
+            Halo, email saya : ${formData.email}, pesan saya : ${formData.message}
+        `
+        if (!newErrors.email && !newErrors.message) {
+            window.open('https://wa.me/6287774487198?text=' + text)
             setFormData({ name: "", email: "", message: "" });
         }
     };

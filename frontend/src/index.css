@@ -79,3 +79,15 @@
 .bg-coverProfile {
     background: url('/images/banner2.jpg');
 }
+.loading-box {
+    opacity: 0;
+    animation: loadSkeleton .8s infinite ease-in-out alternate;
+}
+@keyframes loadSkeleton {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: .1;
+    }
+}

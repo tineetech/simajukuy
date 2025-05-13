@@ -5,13 +5,13 @@ import { Outlet } from "react-router-dom";
 
 export default function MainLayout() {
     return (
-        <>
+        <div className="">
             <Header />
-            <main>
-                <Outlet />
-            </main>
+                <main>
+                    <Outlet />
+                </main>
             <Footer />
             <ChatBot />
-        </>
+        </div>
     );
 }

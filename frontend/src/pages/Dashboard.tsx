@@ -60,7 +60,7 @@ export default function Dashboard() {
                 }),
                 description: item.description || 'Tidak ada deskripsi',
                 image: item.image || '/images/default-report.jpg',
-                status: item.status || 'Tertunda'
+                status: item.status || 'pending'
             }));
 
             setRecentUnverified(formattedReports);

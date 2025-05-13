@@ -33,15 +33,26 @@ export default function CommunityPage() {
 
     return (
         <section className="bg-background text-text dark:bg-backgroundDark py-10 dark:text-textDark h-full">
-            <div className="container mx-auto max-w-4xl py-12 pt-24 px-6">
+            <div className="container mx-auto w-full py-12 pt-24 px-6">
                 <h1 className="text-3xl font-bold mb-6">Komunitas</h1>
                 <PostForm />
                 <TrendingTopics />
                 <SortFilter sortBy={sortBy} setSortBy={setSortBy} />
                 <div className="space-y-6">
-                    {sortedPosts.map((post) => (
+                    {sortedPosts.length > 0 ? sortedPosts.map((post) => (
                         <PostItem key={post.id} post={post} />
-                    ))}
+                    )) : (
+                        <div className="flex flex-col gap-5 mt-5 ">
+                            <div className="bg-gray-100  dark:bg-tertiaryDark w-full overflow-hidden rounded-xl">
+                                <div className="loading-box w-full h-full py-20 bg-tertiaryDark dark:bg-white">
+                                </div>
+                            </div>
+                            <div className="bg-gray-100  dark:bg-tertiaryDark w-full overflow-hidden rounded-xl">
+                                <div className="loading-box w-full h-full py-20 bg-tertiaryDark dark:bg-white">
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </section>

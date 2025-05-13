@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="bg-slate-200 text-text dark:bg-tertiaryDark dark:text-textDark">
+    <footer className="bg-primary mx-6 px-5 rounded-4xl mb-10 text-white dark:text-textDark">
       <div className="container mx-auto py-10 px-6">
         <div className="justify-between flex flex-wrap gap-8">
           {/* Logo & Deskripsi */}
@@ -14,14 +14,14 @@ export default function Footer() {
           {/* Navigasi */}
           <div className="flex md:justify-center items-center space-x-6">
             <ul className="space-y-4 text-sm">
-              <li><a href="/" className="hover:bg-accent rounded-full py-1 px-2.5 transition-all ease-in-out">Beranda</a></li>
-              <li><a href="/lapor" className="hover:bg-accent rounded-full py-1 px-2.5 transition-all ease-in-out">Lapor Masalah</a></li>
-              <li><a href="/komunitas" className="hover:bg-accent rounded-full py-1 px-2.5 transition-all ease-in-out">Komunitas</a></li>
+              <li><a href="/" className="hover:bg-primary hover:text-white rounded-full py-1 px-2.5 transition-all ease-in-out">Beranda</a></li>
+              <li><a href="/lapor" className="hover:bg-primary hover:text-white rounded-full py-1 px-2.5 transition-all ease-in-out">Lapor Masalah</a></li>
+              <li><a href="/komunitas" className="hover:bg-primary hover:text-white rounded-full py-1 px-2.5 transition-all ease-in-out">Komunitas</a></li>
             </ul>
             <ul className="space-y-4 text-sm">
-              <li><a href="/ai" className="hover:bg-accent rounded-full py-1 px-2.5 transition-all ease-in-out">AI</a></li>
-              <li><a href="/artikel" className="hover:bg-accent rounded-full py-1 px-2.5 transition-all ease-in-out">Artikel</a></li>
-              <li><a href="/contact" className="hover:bg-accent rounded-full py-1 px-2.5 transition-all ease-in-out">Kontak</a></li>
+              <li><a href="/artikel" className="hover:bg-primary hover:text-white rounded-full py-1 px-2.5 transition-all ease-in-out">Artikel</a></li>
+              <li><a href="/login" className="hover:bg-primary hover:text-white rounded-full py-1 px-2.5 transition-all ease-in-out">Login</a></li>
+              <li><a href="/register" className="hover:bg-primary hover:text-white rounded-full py-1 px-2.5 transition-all ease-in-out">Register</a></li>
             </ul>
           </div>
 
