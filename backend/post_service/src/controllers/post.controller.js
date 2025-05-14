@@ -123,102 +123,126 @@ export class PostController {
   }
 }
 
-  
+
   static async getAllPosts(req, res) {
-      let connection;
-      try {
-          connection = await pool.getConnection();
+    let connection;
+    try {
+      connection = await pool.getConnection();
 
-          // Base query untuk mendapatkan postingan
-          const query = `
-              SELECT
-                  p.*,
-                  pi.image,
-                  pv.url_video,
-                  (SELECT COUNT(*) FROM postingan_likes WHERE post_id = p.id) AS like_count,
-                  (SELECT COUNT(*) FROM postingan_comments WHERE post_id = p.id) AS comment_count
-              FROM postingan p
-              LEFT JOIN postingan_image pi ON p.id = pi.post_id
-              LEFT JOIN postingan_video pv ON p.id = pv.post_id
-              ORDER BY p.created_at DESC;
-          `;
+      const { page = 1, limit = 10 } = req.query;
+      const pageNumber = parseInt(page);
+      const limitNumber = parseInt(limit);
 
-          const [posts] = await connection.query(query);
+      if (isNaN(pageNumber) || pageNumber < 1 || isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+        return res.status(400).json({ message: "Parameter page dan limit tidak valid." });
+      }
 
-          // Fungsi untuk mendapatkan user data
-          const fetchUser = async (userId) => {
-              try {
-                  const res = await fetch(`${process.env.USER_SERVICE}/api/users/${userId}`);
-                  const data = await res.json();
-                  return data.data[0] || null;
-              } catch (e) {
-                  console.error("Error fetching user:", e);
-                  return null;
-              }
-          };
+      const offset = (pageNumber - 1) * limitNumber;
 
-          // Proses setiap postingan
-          const processedPosts = await Promise.all(posts.map(async (post) => {
-              // Dapatkan data user untuk postingan
-              const postUser = await fetchUser(post.user_id);
-              
-              // Dapatkan komentar untuk postingan ini
-              const [comments] = await connection.query(
-                  "SELECT * FROM postingan_comments WHERE post_id = ?", 
-                  [post.id]
-              );
+      // Query untuk mendapatkan total jumlah postingan
+      const [totalPostsResult] = await connection.query("SELECT COUNT(*) AS total FROM postingan");
+      const totalPosts = totalPostsResult[0].total;
+      const totalPages = Math.ceil(totalPosts / limitNumber);
 
-              // Proses setiap komentar
-              const processedComments = await Promise.all(comments.map(async (comment) => {
-                  const commentUser = await fetchUser(comment.user_id);
-                  
-                  // Dapatkan replies untuk komentar ini
-                  const [replies] = await connection.query(
-                      "SELECT * FROM postingan_comment_replies WHERE comment_id = ?",
-                      [comment.id]
-                  );
+      // Base query untuk mendapatkan postingan dengan limit dan offset
+      const query = `
+        SELECT
+          p.*,
+          pi.image,
+          pv.url_video,
+          (SELECT COUNT(*) FROM postingan_likes WHERE post_id = p.id) AS like_count,
+          (SELECT COUNT(*) FROM postingan_comments WHERE post_id = p.id) AS comment_count
+        FROM postingan p
+        LEFT JOIN postingan_image pi ON p.id = pi.post_id
+        LEFT JOIN postingan_video pv ON p.id = pv.url_video
+        ORDER BY p.created_at DESC
+        LIMIT ? OFFSET ?;
+      `;
 
-                  // Proses setiap reply
-                  const processedReplies = await Promise.all(replies.map(async (reply) => {
-                      const replyUser = await fetchUser(reply.user_id);
-                      return {
-                          id: reply.id,
-                          user_id: reply.user_id,
-                          content: reply.content,
-                          created_at: reply.created_at,
-                          username: replyUser?.username || null,
-                          avatar: replyUser?.avatar || null
-                      };
-                  }));
+      const [posts] = await connection.query(query, [limitNumber, offset]);
 
-                  return {
-                      id: comment.id,
-                      user_id: comment.user_id,
-                      content: comment.content,
-                      created_at: comment.created_at,
-                      username: commentUser?.username || null,
-                      avatar: commentUser?.avatar || null,
-                      replies: processedReplies
-                  };
-              }));
+      // Fungsi untuk mendapatkan user data
+      const fetchUser = async (userId) => {
+        try {
+          const res = await fetch(`${process.env.USER_SERVICE}/api/users/${userId}`);
+          const data = await res.json();
+          return data.data?.[0] || null;
+        } catch (e) {
+          console.error("Error fetching user:", e);
+          return null;
+        }
+      };
 
-              return {
-                  ...post,
-                  user: {
-                      username: postUser?.username || null,
-                      avatar: postUser?.avatar || null
-                  },
-                  comments: processedComments
-              };
+      // Proses setiap postingan
+      const processedPosts = await Promise.all(posts.map(async (post) => {
+        // Dapatkan data user untuk postingan
+        const postUser = await fetchUser(post.user_id);
+
+        // Dapatkan komentar untuk postingan ini
+        const [comments] = await connection.query(
+          "SELECT * FROM postingan_comments WHERE post_id = ?",
+          [post.id]
+        );
+
+        // Proses setiap komentar
+        const processedComments = await Promise.all(comments.map(async (comment) => {
+          const commentUser = await fetchUser(comment.user_id);
+
+          // Dapatkan replies untuk komentar ini
+          const [replies] = await connection.query(
+            "SELECT * FROM postingan_comment_replies WHERE comment_id = ?",
+            [comment.id]
+          );
+
+          // Proses setiap reply
+          const processedReplies = await Promise.all(replies.map(async (reply) => {
+            const replyUser = await fetchUser(reply.user_id);
+            return {
+              id: reply.id,
+              user_id: reply.user_id,
+              content: reply.content,
+              created_at: reply.created_at,
+              username: replyUser?.username || null,
+              avatar: replyUser?.avatar || null
+            };
           }));
 
-          return res.status(200).json({ data: processedPosts });
-      } catch (error) {
-          console.error("Error in getAllPosts:", error);
-          return res.status(500).json({ message: error.message });
-      } finally {
-          if (connection) connection.release();
-      }
+          return {
+            id: comment.id,
+            user_id: comment.user_id,
+            content: comment.content,
+            created_at: comment.created_at,
+            username: commentUser?.username || null,
+            avatar: commentUser?.avatar || null,
+            replies: processedReplies
+          };
+        }));
+
+        return {
+          ...post,
+          user: {
+            username: postUser?.username || null,
+            avatar: postUser?.avatar || null
+          },
+          comments: processedComments
+        };
+      }));
+
+      return res.status(200).json({
+        data: processedPosts,
+        pagination: {
+          currentPage: pageNumber,
+          totalPages: totalPages,
+          totalItems: totalPosts,
+          itemsPerPage: limitNumber
+        }
+      });
+    } catch (error) {
+      console.error("Error in getAllPosts with pagination:", error);
+      return res.status(500).json({ message: error.message });
+    } finally {
+      if (connection) connection.release();
+    }
   }
 
   static async getPostById(req, res) {
