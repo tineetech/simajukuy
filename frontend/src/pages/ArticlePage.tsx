@@ -41,9 +41,16 @@ export default function ArticlePage() {
   if (loading) {
     return (
       <section className="bg-background dark:bg-backgroundDark text-text dark:text-textDark">
-        <div className="container mx-auto pt-35 px-4 md:px-20">
-          <div className="flex justify-center items-center h-screen">
-            <p>Loading articles...</p>
+        <div className="container mx-auto py-35 px-4 md:px-20">
+          <div className="flex flex-col gap-5 mt-5 ">
+              <div className="bg-gray-100  dark:bg-tertiaryDark w-full overflow-hidden rounded-xl">
+                  <div className="loading-box w-full h-full py-20 bg-tertiaryDark dark:bg-white">
+                  </div>
+              </div>
+              <div className="bg-gray-100  dark:bg-tertiaryDark w-full overflow-hidden rounded-xl">
+                  <div className="loading-box w-full h-full py-20 bg-tertiaryDark dark:bg-white">
+                  </div>
+              </div>
           </div>
         </div>
       </section>

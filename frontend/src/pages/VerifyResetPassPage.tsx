@@ -50,7 +50,7 @@ export default function VerifyResetPassPage() {
 	useCheckResetToken(token);
 	return (
 		<div className=" bg-background w-full flex items-center justify-center text-text dark:bg-backgroundDark py-40 dark:text-textDark h-auto">
-			<div className="bg-white dark:bg-gray-700 dark:border-0 border-1 text-center p-10 border-gray-300 w-[450px] h-auto rounded-2xl">
+			<div className="bg-white dark:bg-gray-700 dark:border-0 border-1 text-center p-10 border-gray-300 w-[90%] md:w-[450px] h-auto rounded-2xl">
 				<h1 className="text-center font-bold text-2xl">Reset Your Password</h1>
 				<form onSubmit={handleSubmit} className="flex flex-col gap-5 my-8">
 					{/* <input
