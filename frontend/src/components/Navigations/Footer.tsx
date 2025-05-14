@@ -1,10 +1,10 @@
 export default function Footer() {
   return (
-    <footer className="bg-primary mx-6 px-5 rounded-4xl mb-10 text-white dark:text-textDark">
-      <div className="container mx-auto py-10 px-6">
-        <div className="justify-between flex flex-wrap gap-8">
+    <footer className="mx-10">
+      <div className="container bg-gray-200 dark:bg-tertiaryDark dark:text-textDark rounded-xl mx-auto py-10 mb-10 px-10">
+        <div className="justify-between gap-10 flex flex-wrap md:gap-4">
           {/* Logo & Deskripsi */}
-          <div className="w-100">
+          <div className="w-90">
             <h2 className="text-2xl font-bold mb-3">Simajukuy</h2>
             <p className="text-sm leading-relaxed">
               Platform AI & komunitas untuk membantu masyarakat melaporkan masalah kota dan berbagi solusi demi lingkungan yang lebih baik.
@@ -31,7 +31,7 @@ export default function Footer() {
             <ul className="text-sm space-y-2">
               <li>Email: simajukuy@gmail.com</li>
               <li>WhatsApp: +62 812 3456 7890</li>
-              <li>Alamat: Jl. Kota Bersih No.1, Indonesia</li>
+              <li>Alamat: Jl. Raya Tajur, Kp. Buntar RT.02/RW.08, Kel. Muara sari, Kec. Bogor Selatan.</li>
             </ul>
           </div>
         </div>

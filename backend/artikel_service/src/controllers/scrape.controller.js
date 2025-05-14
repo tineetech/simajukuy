@@ -32,8 +32,8 @@ const getArticleDetails = async (url) => {
     });
 
     // Scrape metadata
-    const author = $(".read__author__name").text().trim();
-    const editor = $(".read__author__editor")
+    const author = $(".read_author_name").text().trim();
+    const editor = $(".read_author_editor")
       .text()
       .replace("Editor:", "")
       .trim();
@@ -42,7 +42,7 @@ const getArticleDetails = async (url) => {
     // Scrape tag terkait (tanpa duplikat)
     const tags = [
       ...new Set(
-        $(".tag__article__item")
+        $(".tag_article_item")
           .map((i, el) => $(el).text().trim())
           .get()
       ),
@@ -88,7 +88,16 @@ export const getArticlePopuler = async (req, res) => {
   try {
     // URL indeks berita terpopuler Kompas
     const url = "https://indeks.kompas.com/terpopuler/?site=all";
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9",
+        "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+        Referer: "https://www.google.com/",
+      },
+    });
+
     const $ = cheerio.load(response.data);
 
     // Scrape tanggal pemilihan
@@ -135,26 +144,18 @@ export const getArticlePopuler = async (req, res) => {
   }
 };
 
-export async function getSorotanFromHTML() {
-  const response = await axios.get("https://www.kompas.com");
-  const $ = cheerio.load(response.data);
-  
-  const sorotanData = $('.spotlightItem').map((index, element) => {
-    const item = $(element);
-    return {
-      title: item.find('.spotlightTitle').text().trim(),
-      link: item.find('a').attr('href'),
-      image: item.find('img').attr('data-src'),
-      channel: item.find('.spotlightChannel').text().trim()
-    };
-  }).get();
-
-  return sorotanData;
-}
-
 export const scrapeDataWithDetails = async (req, res) => {
   try {
-    const response = await axios.get("https://www.kompas.com");
+    const response = await axios.get("https://www.kompas.com", {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9",
+        "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+        Referer: "https://www.google.com/",
+      },
+    });
+
     const $ = cheerio.load(response.data);
 
     const mainHeadlineUrl = $(".hlItem a").first().attr("href");

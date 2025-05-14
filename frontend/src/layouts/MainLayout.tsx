@@ -5,7 +5,7 @@ import SikuyAi from "../components/SikuyAi";
 
 export default function MainLayout() {
     return (
-        <div className="">
+        <div className="bg-background dark:bg-backgroundDark">
             <SikuyAi />
             <Header />
                 <main>

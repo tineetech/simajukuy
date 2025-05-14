@@ -58,7 +58,7 @@ export default function About() {
                     transition={{ duration: 0.5, delay: 0.4 }}
                 >
                     <Link to="/komunitas" className="flex justify-center md:justify-start">
-                        <button className="px-2 py-2 bg-primary hover:bg-indigo-700 text-white transition-colors ease-in-out flex items-center gap-2 rounded-full text-sm md:text-base">
+                        <button className="px-2 py-2 bg-primary hover:bg-indigo-700 text-white cursor-pointer transition-colors ease-in-out flex items-center gap-2 rounded-full text-sm md:text-base">
                             <span className="mx-2">
                                 Lihat Komunitas
                             </span>
