@@ -58,9 +58,9 @@ export default function Hero() {
                                             <p className="">Sampaikan aspirasi dan laporkan masalah di lingkunganmu dengan mudah. Simajukuy hadir sebagai jembatan antara masyarakat dan pemerintah, didukung analisis AI untuk solusi yang lebih cepat dan tepat.</p>
                                             <div className="flex pr-5 justify-between w-full items-center mt-2">
                                                 <div>
-                                                    <p>2024/32/01 - Ms. Bean</p>
+                                                    <p>2024/32/01 - Kang Dedi Mulyadi</p>
                                                 </div>
-                                                <button className="bg-slate-500 rounded-full p-3">
+                                                <button className="bg-slate-500 rounded-full p-3 cursor-pointer" onClick={() => window.location.href = '/artikel'}>
                                                     <ArrowUpRight size={20} className="text-white" />
                                                 </button>
                                             </div>
@@ -78,7 +78,7 @@ export default function Hero() {
                                         </div>
                                         <img src="/images/maskot.png" className="w-[130px] lg:w-[200px] object-cover h-auto absolute bottom-0 right-0" alt="" />
 
-                                        <button className="bg-slate-500 absolute bottom-5 left-5 rounded-full p-3">
+                                        <button className="bg-slate-500 absolute bottom-5 left-5 rounded-full p-3 cursor-pointer" onClick={() => window.location.href = '/lapor'}>
                                             <ArrowUpRight size={20} className="text-white" />
                                         </button>
                                     </div>
