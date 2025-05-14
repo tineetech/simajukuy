@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import PostForm from "../components/forms/PostForm";
 import PostItem from "../components/PostItem";
 import SortFilter from "../components/widgets/SortFilter";
@@ -7,28 +7,54 @@ import { PostInterface } from "../types";
 
 export default function CommunityPage() {
     const [sortBy, setSortBy] = useState("terbaru");
-    const [posts, setPosts] = useState<PostInterface[]>([])
+    const [posts, setPosts] = useState<PostInterface[]>([]);
+    const [page, setPage] = useState(1);
+    const [loading, setLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const observer = useRef<IntersectionObserver | null>(null);
+
+    const fetchPosts = useCallback(async () => {
+        if (loading || !hasMore) return;
+        setLoading(true);
+        try {
+            const response = await fetch(
+                `${import.meta.env.VITE_POST_SERVICE}/api/postingan/?page=${page}&limit=10}`
+            );
+            const data = await response.json();
+            if (data?.data) {
+                setPosts((prevPosts) => [...prevPosts, ...data.data]);
+                setHasMore(data.pagination.currentPage < data.pagination.totalPages);
+            } else {
+                setHasMore(false);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    }, [page, loading, hasMore]);
 
     useEffect(() => {
-        const getPosts = async () => {
-            try {
-                fetch(`${import.meta.env.VITE_POST_SERVICE}/api/postingan/`)
-                .then(res => res.json()) 
-                .then(res => {
-                    console.log(res)
-                    setPosts(res.data)
-                })
-                
-            } catch (e) {
-                console.error(e)
-            }
-        }
-        getPosts()
-    }, [])
+        fetchPosts();
+    }, [fetchPosts]);
+
+    const lastPostElementRef = useCallback(
+        (node) => {
+            if (loading) return;
+            if (observer.current) observer.current.disconnect();
+            observer.current = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && hasMore) {
+                    setPage((prevPage) => prevPage + 1);
+                }
+            });
+            if (node) observer.current.observe(node);
+        },
+        [loading, hasMore]
+    );
 
     const sortedPosts = [...posts].sort((a, b) => {
-        if (sortBy === "populer") return b.likes - a.likes;
-        return b.id - a.id; // asumsi id urutan waktu (terbaru)
+        if (sortBy === "populer") return b.like_count - a.like_count;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
     return (
@@ -39,8 +65,10 @@ export default function CommunityPage() {
                 <TrendingTopics />
                 <SortFilter sortBy={sortBy} setSortBy={setSortBy} />
                 <div className="space-y-6">
-                    {sortedPosts.length > 0 ? sortedPosts.map((post) => (
-                        <PostItem key={post.id} post={post} />
+                    {sortedPosts.length > 0 ? sortedPosts.map((post, index) => (
+                        <div key={post.id} ref={index === sortedPosts.length - 1 ? lastPostElementRef : null}>
+                            <PostItem post={post} />
+                        </div>
                     )) : (
                         <div className="flex flex-col gap-5 mt-5 ">
                             <div className="bg-gray-100  dark:bg-tertiaryDark w-full overflow-hidden rounded-xl">
@@ -53,6 +81,8 @@ export default function CommunityPage() {
                             </div>
                         </div>
                     )}
+                    {loading && <p className="text-center">Loading more posts...</p>}
+                    {!hasMore && posts.length > 0 && <p className="text-center text-gray-500 mt-4">Tidak ada lagi postingan.</p>}
                 </div>
             </div>
         </section>
