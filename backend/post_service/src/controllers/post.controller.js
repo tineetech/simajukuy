@@ -138,7 +138,7 @@ export class PostController {
 
       const offset = (pageNumber - 1) * limitNumber;
 
-      // Query untuk mendapatkan total jumlah postingan
+      // Query untuk mendapatkan total jumlah postingan 
       const [totalPostsResult] = await connection.query("SELECT COUNT(*) AS total FROM postingan");
       const totalPosts = totalPostsResult[0].total;
       const totalPages = Math.ceil(totalPosts / limitNumber);
