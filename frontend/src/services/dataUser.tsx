@@ -17,13 +17,11 @@ export interface UserData {
 const DataUser = () => {
   const [data, setData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState('fa');
   const token = localStorage.getItem('authToken') ?? '';
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-    //   setError(null);
 
       if (token === '') {
         setLoading(false);

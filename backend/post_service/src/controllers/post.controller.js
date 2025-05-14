@@ -15,8 +15,8 @@ export class PostController {
       media_url, // dari frontend (Vercel Blob)
       polling_options,
       postingan_comments,
+      user_id,
     } = req.body;
-    const user_id = req.user?.id;
 
     if (!user_id) {
       return res.status(401).json({ message: "Unauthorized" });
