@@ -243,7 +243,6 @@ export default function PostItem({ post }: { post: PostInterface }) {
 
   }
 
-  console.log(post)
   return (
     <>
       <div className="bg-gray-100 border border-gray-300 dark:border-gray-600 dark:bg-tertiaryDark p-4 rounded-lg">
