@@ -16,6 +16,8 @@ import ProfilePage from "./pages/ProfilePage";
 import CoinsVerificationPage from "./pages/CoinsVerificationPage";
 import CoinExchangePage from "./pages/CoinsExcangePage";
 import NotFoundPage from "./pages/NotFoundPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import GuestRoute from "./components/GuestRoute";
 
 export default function App() {
   return (
@@ -24,19 +26,51 @@ export default function App() {
         <Route path="/" element={<MainLayout />}>
           <Route index element={<HomePage />} />
           <Route path="komunitas" element={<CommunityPage />} />
-          <Route path="lapor" element={<ReportPage />} />
+          <Route path="lapor" element={
+            <ProtectedRoute>
+              <ReportPage />
+            </ProtectedRoute>
+          } />
           <Route path="artikel" element={<ArticlePage />} />
           <Route path="artikel/:id" element={<ArticleDetailPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="tukar-coin" element={<CoinExchangePage />} />
+          <Route path="profile" element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+            } />
+          <Route path="tukar-coin" element={
+            <ProtectedRoute>
+              <CoinExchangePage />
+            </ProtectedRoute>
+          } />
 
-          <Route path="login" element={<LoginPage />} />
-          <Route path="register" element={<RegisterPage />} />
-          <Route path="reset-password" element={<ResetPassPage />} />
-          <Route path="verification/reset-password/:tokenReset" element={<VerifyResetPassPage />} />
+          <Route path="login" element={
+            <GuestRoute>
+              <LoginPage />
+            </GuestRoute>
+          } />
+          <Route path="register" element={
+            <GuestRoute>
+              <RegisterPage />
+            </GuestRoute>
+          } />
+          <Route path="reset-password" element={
+            <GuestRoute>
+              <ResetPassPage />
+            </GuestRoute>
+          } />
+          <Route path="verification/reset-password/:tokenReset" element={
+            <GuestRoute>
+              <VerifyResetPassPage />
+            </GuestRoute>
+          } />
         </Route>
 
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/admin" element={
+          <ProtectedRoute>
+            <AdminLayout />
+          </ProtectedRoute>
+          }>
           <Route index element={<Dashboard />} />
           <Route path="laporan" element={<ReviewReportPage />} />
           <Route path="koin" element={<CoinsVerificationPage />} />

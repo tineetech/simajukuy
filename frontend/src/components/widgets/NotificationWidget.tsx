@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bell } from "lucide-react";
 import { isThisWeek, parseISO } from "date-fns";
+import DataUser from "../../services/dataUser";
 
 export default function NotificationWidget() {
     const [notifications, setNotifications] = useState([]);
     const [showNotif, setShowNotif] = useState(false);
     const notifRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+    const datas = DataUser()
     const token = localStorage.getItem('authToken') ?? '';
 
     const getAllNotif = async () => {
@@ -27,7 +29,7 @@ export default function NotificationWidget() {
             const data = await res.json()
             console.log(data)
             if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
-                const mappedNotifications = data.data.map((item: any) => ({
+                const mappedNotifications = data.data.filter((item) => item.user_id === datas.data?.user_id).map((item: any) => ({
                     id: item.id,
                     title: item.title,
                     detail: item.message,

@@ -28,8 +28,16 @@ export default function PostItem({ post }: { post: PostInterface }) {
         const data = await res.json();
         console.log(data);
       }
-
-      alert("berhasil like");
+      
+      Swal.fire({
+          title: "Berhasil Like Postingan",
+          text: "Postingan berhasil dilike.",
+          icon: "success",
+      }).then((res) => {
+          if (res.isConfirmed) {
+              location.reload()
+          }
+      })
     } catch (e) {
       console.log(e);
     }
@@ -152,8 +160,11 @@ export default function PostItem({ post }: { post: PostInterface }) {
 
   const options = { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' };
   const formattedDate = date.toLocaleDateString('id-ID', options);
-
-  const decodedToken: any = jwtDecode(token);
+  
+  let decodedToken: any = ""
+  if (token) {
+    decodedToken = jwtDecode(token);
+  }
 
   const handleReply = async (commentId: number) => {
     const urlEncodedData = new URLSearchParams();
@@ -242,13 +253,12 @@ export default function PostItem({ post }: { post: PostInterface }) {
     }
 
   }
-
   return (
     <>
       <div className="bg-gray-100 border border-gray-300 dark:border-gray-600 dark:bg-tertiaryDark p-4 rounded-lg">
         <div className="flex items-center gap-3 mb-2">
           <img
-            src={post.avatar ?? "https://i.pinimg.com/736x/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg"}
+            src={post?.user?.avatar ?? "https://i.pinimg.com/736x/f1/0f/f7/f10ff70a7155e5ab666bcdd1b45b726d.jpg"}
             alt="avatar"
             className="w-10 h-10 rounded-full object-cover"
           />
