@@ -24,7 +24,7 @@ interface ButtonAiProps {
 
 const LoaderAi = (
   <div className="bubble bubble-ai rounded-md">
-    <span className="sender sender-ai">GreenAi</span>
+    <span className="sender sender-ai">SikuyAi</span>
     <div className="mess-greenai">
       <div className="loader"></div>
     </div>
@@ -135,7 +135,7 @@ const PopupAi: React.FC<PopupAiProps> = ({ aiActive, setAiActive }) => {
                   <span
                     className={`sender sender-${chat.role === "model" ? "ai" : "user"}`}
                   >
-                    {chat.role === "model" ? "GreenAi" : "User"}
+                    {chat.role === "model" ? "SikuyAi" : "User"}
                   </span>
                   <p className="mess-greenai">{chat.text}</p>
                 </div>

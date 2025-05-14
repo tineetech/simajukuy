@@ -20,7 +20,6 @@ export default function ArticlePage() {
     const loadArticles = async () => {
       try {
         const data = await fetchArticles();
-        // Combine main headline and secondary headlines
         const allArticles = [data.mainHeadline, ...data.secondaryHeadlines];
         setArticles(allArticles);
       } catch (err) {
@@ -72,7 +71,6 @@ export default function ArticlePage() {
   return (
     <section className="bg-background dark:bg-backgroundDark text-text dark:text-textDark">
       <div className="container mx-auto pt-35 px-4 md:px-20">
-        {/* Hero Section */}
         <div
           className="grid gap-4 mb-20
           grid-cols-2
@@ -99,31 +97,25 @@ export default function ArticlePage() {
 
           {articles.length > 0 && articles[0]?.image && (
             <>
-              {/* Article 1 */}
-              <ArticleThumbnail article={articles[0]} gridArea="b" />
-
-              {/* Article 2 */}
-              <ArticleThumbnail article={articles[1]} gridArea="c" />
-
-              {/* Article 3 */}
-              <ArticleThumbnail article={articles[2]} gridArea="d" />
-
-              {/* Article 4 */}
-              <ArticleThumbnail article={articles[3]} gridArea="e" />
+              <ArticleThumbnail article={articles[1]} gridArea="b" />
+              <ArticleThumbnail article={articles[2]} gridArea="c" />
+              <ArticleThumbnail article={articles[3]} gridArea="d" />
+              <ArticleThumbnail article={articles[4]} gridArea="e" />
+              <ArticleThumbnail article={articles[5]} gridArea="e" />
             </>
           )}
 
-          <div className="bg-tertiary dark:bg-tertiaryDark rounded-xl p-4 flex items-center justify-center text-center md:[grid-area:g]">
-            <span className="text-textBody dark:text-textBodyDark">
+          <div className="relative bg-[url('/images/pemlik.avif')] rounded-xl p-4 flex items-center justify-center text-center md:[grid-area:g]">
+            <p className="absolute bottom-4 left-4 font-bold drop-shadow-md text-left">
               🌱 Edukasi berkelanjutan
-            </span>
+            </p>
           </div>
 
           <div
             className="bg-tertiary dark:bg-tertiaryDark rounded-xl p-4 flex items-center justify-center text-center md:[grid-area:f]"
             style={{
               backgroundImage: `url('/images/latbak.png')`,
-              backgroundColor: "var(--tertiary)", // Fallback jika gambar gagal
+              backgroundColor: "var(--tertiary)",
             }}
           >
             <span className="text-textBody dark:text-textBodyDark">
@@ -143,7 +135,6 @@ export default function ArticlePage() {
           />
         </div>
 
-        {/* Article Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pb-20">
           {filteredArticles.map((article, index) => (
             <ArticleCard
@@ -164,8 +155,13 @@ export default function ArticlePage() {
   );
 }
 
-// Separate component for article thumbnails to improve code organization
-function ArticleThumbnail({ article, gridArea }) {
+function ArticleThumbnail({
+  article,
+  gridArea,
+}: {
+  article: ScrapedArticle;
+  gridArea: string;
+}) {
   return (
     <a
       href={article.url}
@@ -185,10 +181,8 @@ function ArticleThumbnail({ article, gridArea }) {
         backgroundColor: "var(--tertiary)",
       }}
     >
-      {/* Dark gradient overlay that shows on hover */}
       <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-70 transition-opacity duration-300"></div>
 
-      {/* Content */}
       <div className="relative z-10 flex flex-col justify-end h-full p-4">
         <h2 className="font-semibold text-lg mb-1 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           {article.title}

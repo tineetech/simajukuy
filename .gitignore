@@ -9,6 +9,8 @@
 /backend/node_modules
 /backend/migration/node_modules
 /backend/migration/laporan_service/node_modules
+/backend/migration/notification_service/node_modules
+/backend/migration/postingan_service/node_modules
 /backend/migration/user_service/node_modules
 /backend/artikel_service/node_modules
 /autostart/node_modules

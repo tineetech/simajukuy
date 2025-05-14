@@ -12,6 +12,9 @@ module.exports = {
     migrations: {
       directory: './migrations',
     },
+    seeds: {
+      directory: './seeds'
+    }
   },
 };
 //mysql -h nozomi.proxy.rlwy.net -u root -p BoKvzwOmSrEwAGEgWNnzsZcgBqpCMtRG --port 50887 --protocol=TCP railway

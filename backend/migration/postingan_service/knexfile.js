@@ -13,6 +13,9 @@ module.exports = {
     migrations: {
       directory: './migrations',
     },
+    seeds: {
+      directory: './seeds'
+    }
   },
   // mysql -h turntable.proxy.rlwy.net -u root -p ciXFaQEspTttnKcKDyNOPonpVGpXzaWI --port 45766 --protocol=TCP railway
   production: {
@@ -28,5 +31,8 @@ module.exports = {
     migrations: {
       directory: './migrations',
     },
+    seeds: {
+      directory: './seeds'
+    }
   },
 };
