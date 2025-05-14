@@ -38,12 +38,6 @@ const DataUser = () => {
         if (!response.ok) {
           const errorMessage = await response.json() || `Gagal mendapatkan data: Status ${response.status}`;
           
-          // setError(errorMessage);
-          // Swal.fire({
-          //   title: "Gagal Mendapatkan Data",
-          //   text: errorMessage,
-          //   icon: "error",
-          // });
           console.log(errorMessage)
         } else {
           const resData = await response.json();
@@ -51,12 +45,6 @@ const DataUser = () => {
         }
       } catch (e) {
         console.error("Error fetching user data:", e);
-        // setError("Terjadi kesalahan saat menghubungi server.");
-        // Swal.fire({
-        //   title: "Gagal Mendapatkan Data",
-        //   text: "Terjadi kesalahan saat menghubungi server.",
-        //   icon: "error",
-        // });
       } finally {
         setLoading(false);
       }
