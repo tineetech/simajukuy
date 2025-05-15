@@ -35,7 +35,7 @@ export default function ReportCard({
             animate={{ opacity: 1, x: 0 }}   
             transition={{ duration: 0.6 }}     
             key={index}
-            className={`bg-tertiary dark:bg-tertiaryDark rounded-md ${colSpan} shadow-md p-8 flex flex-col justify-between`}
+            className={`bg-tertiary dark:bg-tertiaryDark rounded-md ${colSpan} shadow-md p-8 m-0 flex flex-col justify-between`}
         >
             <div className="flex flex-col gap-2 mb-4 flex-grow">
                 <div className="flex justify-between items-start">

@@ -48,10 +48,10 @@ export default function Header() {
 
     return (
         <header
-            className={`fixed top-0 left-0 right-0 z-50 transition-all text-text w-full conainer mx-auto px-5 dark:text-white duration-300 ${scrolled ? "bg-transparent dark:bg-transparent" : "bg-transparent"
+            className={`fixed top-0 left-0 right-0 z-50 transition-all text-text w-full md:mx-auto md:px-5 dark:text-white duration-300 ${scrolled ? "bg-tertiary dark:bg-tertiaryDark md:bg-transparent md:dark:bg-transparent" : "bg-transparent dark:bg-transparent"
                 }`}
         >
-            <div className={`container bg-gray-200 shadow dark:bg-gray-700 mt-5 mx-auto w-full px-10 rounded-4xl md:px-10 py-4 flex items-center filter justify-between ${scrolled ? 'backdrop-blur-sm bg-opacity-25' : ''}`}>
+            <div className={`container md:bg-gray-200 shadow md:dark:bg-gray-700 mt-5 mx-auto w-full px-10 md:rounded-4xl md:px-10 py-4 flex items-center filter justify-between ${scrolled ? 'backdrop-blur-sm bg-opacity-25' : ''}`}>
 
                 {/* Logo */}
                 <Link to="/" className="text-xl m-0 font-bold">
@@ -81,7 +81,7 @@ export default function Header() {
                 </nav>
 
                 <div className="flex items-center gap-6">
-                    <div className="hidden md:block">
+                    <div className="hidden md:flex">
                         <DarkModeToggle />
                     </div>
                     {
@@ -91,8 +91,8 @@ export default function Header() {
                                 <ProfileWidget />
                             </div>
                         ) : (
-                            <div onClick={() => window.location.href = '/login'} className="hidden lg:flex cursor-pointer">
-                                <LogIn />
+                            <div onClick={() => window.location.href = '/login'} className="hidden md:flex items-center gap-1 cursor-pointer bg-accent dark:bg-accentDark px-2 py-1.5 rounded-full text-textDark">
+                                Sign in
                             </div>
                         )
                     }
@@ -115,24 +115,25 @@ export default function Header() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{ duration: 0.25 }}
-                                className="absolute top-full left-0 w-full bg-slate-300 dark:bg-tertiaryDark shadow-md flex flex-col items-start py-4 space-y-4 md:hidden px-6 z-50"
+                                className="absolute top-full left-0 w-full bg-tertiary dark:bg-tertiaryDark shadow-md flex flex-col items-start py-4 space-y-4 md:hidden px-6 z-50"
                             >
                                 {/* Profile Section */}
-                                {
-                                    isLoggedIn ? (
+                                {isLoggedIn && (
+                                    <div className="flex items-center justify-between w-full">
                                         <div className="flex items-center space-x-3 w-full">
                                             <img
-                                                src={datas.data?.avatar ?? ''}
+                                                src="/images/profile.jpg"
                                                 alt="Profile"
                                                 className="w-16 h-16 rounded-full object-cover"
                                             />
                                             <div>
-                                                <p className="text-lg font-semibold">{datas.data?.username ?? ''}</p>
-                                                <p className="text-sm text-textBody dark:text-textBodyDark">{datas.data?.email ?? ''}</p>
+                                                <p className="text-lg font-semibold">Username</p>
+                                                <p className="text-sm text-textBody dark:text-textBodyDark">john@example.com</p>
                                             </div>
                                         </div>
-                                    ) : ""
-                                }
+                                        <NotificationWidget />
+                                    </div>
+                                )}
 
                                 {/* Nav Links */}
                                 {navLinks.map((link) => {
@@ -145,7 +146,7 @@ export default function Header() {
                                             key={link.path}
                                             to={link.path}
                                             onClick={() => setIsOpen(false)}
-                                            className={`flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg transition ease-in-out ${isActive ? "bg-primary  text-textDark" : "hover:bg-primary "
+                                            className={`flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg transition ease-in-out ${isActive ? "bg-accent text-textDark" : "hover:bg-accent hover:text-textDark"
                                                 }`}
                                         >
                                             {link.icon}
@@ -185,7 +186,7 @@ export default function Header() {
                                             </button>
                                         </>
                                     ) : (
-                                        <div onClick={() => window.location.href = '/login'} className="lg:hidden hover:bg-primary  flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg transition ease-in-out cursor-pointer">
+                                        <div onClick={() => window.location.href = '/login'} className="lg:hidden hover:bg-accent hover:text-textDark flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg transition ease-in-out cursor-pointer">
                                             <LogIn size={20} />
                                             <span>Login</span>
                                         </div>
