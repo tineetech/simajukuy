@@ -106,7 +106,7 @@ const PopupAi: React.FC<PopupAiProps> = ({ aiActive, setAiActive }) => {
     >
       <div className="w-full py-2 border-bottom items-center flex justify-between">
         <div className="flex gap-2 items-center">
-          <span className="text-primary font-bold">SikuyAi</span>
+          <span className="text-primary dark:text-textDark font-bold">SikuyAi</span>
         </div>
         <button 
           className="btn btn-close text-black dark:text-white" 

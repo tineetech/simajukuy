@@ -5,11 +5,15 @@ type ReportListProps = {
     report: Report;
     index: number;
     onViewDetail?: (report: Report) => void;
-    hideDetailButton?: boolean; // tambah prop ini
-}
+    hideDetailButton?: boolean;
+};
 
-export default function ReportList({ report, onViewDetail, index, hideDetailButton = false }: ReportListProps) {
-
+export default function ReportList({
+    report,
+    onViewDetail,
+    index,
+    hideDetailButton = false,
+}: ReportListProps) {
     const getStatusBadgeColor = (status: string) => {
         switch (status) {
             case "Tertunda":
@@ -27,34 +31,34 @@ export default function ReportList({ report, onViewDetail, index, hideDetailButt
 
     return (
         <motion.div
-            className="flex bg-tertiary dark:bg-tertiaryDark p-4 rounded-md shadow-md"
+            className="bg-tertiary dark:bg-tertiaryDark p-4 rounded-md shadow-md"
             key={index}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            layout // opsional, untuk transisi yang lebih mulus saat list berganti
+            layout
         >
-            <div className="flex w-full justify-between items-center gap-6">
-                <div className="flex gap-4 items-start w-2/3">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-6">
+                {/* Left section */}
+                <div className="flex gap-4 w-full md:w-2/3">
                     <img
                         src={report.image}
                         alt=""
-                        className="rounded-md w-14 h-14 object-cover shrink-0"
+                        className="rounded-md w-16 h-16 object-cover shrink-0"
                     />
-                    <div className="flex flex-col gap-1">
-                        <h2 className="text-lg font-medium truncate max-w-xs">{report.title}</h2>
-                        <p className="text-sm text-textBody dark:text-textBodyDark line-clamp-1 max-w-md">
+                    <div className="flex flex-col gap-1 w-full">
+                        <h2 className="text-lg font-medium truncate">{report.title}</h2>
+                        <p className="text-sm text-textBody dark:text-textBodyDark line-clamp-2">
                             {report.description}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-4 shrink-0">
-                    <p className="text-sm text-right whitespace-nowrap">
-                        {report.submittedAt}
-                    </p>
-                    <div className="flex min-w-[100px] justify-center">
+                {/* Right section */}
+                <div className="flex items-center justify-between md:justify-end gap-2 md:gap-4 w-full md:w-auto">
+                    <p className="text-sm whitespace-nowrap">{report.submittedAt}</p>
+                    <div className="min-w-[100px]">
                         <span
                             className={`text-sm font-semibold px-2 py-0.5 rounded-full ${getStatusBadgeColor(
                                 report.status
@@ -66,7 +70,7 @@ export default function ReportList({ report, onViewDetail, index, hideDetailButt
                     {!hideDetailButton && (
                         <button
                             onClick={() => onViewDetail?.(report)}
-                            className="bg-primary hover:cursor-pointer px-4 py-2 text-white rounded-md text-sm whitespace-nowrap"
+                            className="bg-primary hover:bg-primary/90 px-4 py-2 text-white rounded-md text-sm whitespace-nowrap"
                         >
                             Detail Laporan
                         </button>
@@ -75,4 +79,4 @@ export default function ReportList({ report, onViewDetail, index, hideDetailButt
             </div>
         </motion.div>
     );
-};
+}

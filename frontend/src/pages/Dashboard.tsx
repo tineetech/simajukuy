@@ -40,15 +40,16 @@ export default function Dashboard() {
             bgColor: "bg-blue-200",
             icon: <Users size={16} />,
             title: "Total User",
-            value: dataUsers?.data?.data?.length,
+            value: dataUsers?.data?.data?.length ?? '0',
             link: "/profile"
         },
     ];
 
-    const [recentUnverified, setRecentUnverified]: Report[] = useState([]);
+    const [recentUnverified, setRecentUnverified] = useState<Report[]>([]);
 
     useEffect(() => {
         if (dataLapor?.data?.data) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const formattedReports = dataLapor.data.data.map((item: any) => ({
                 user_id: item.user_id || 0,
                 id: item.id || 0,
@@ -96,63 +97,66 @@ export default function Dashboard() {
         }
     ];
 
-
     const datas = DataUser()
 
     return (
         <>
             {/* Content */}
-            <div className="grid grid-cols-12 gap-8">
+            <div className="flex flex-col gap-8 md:grid md:grid-cols-12">
+                {/* Left Section */}
+                <div className="flex flex-col gap-8 md:col-span-8">
 
-                {/* Left */}
-                <div className="flex flex-col col-span-8 gap-8">
+                    {/* Hero / Welcome Section */}
+                    <div className="bg-tertiary dark:bg-tertiaryDark flex flex-col md:flex-row gap-8 md:gap-16 p-6 md:p-8 shadow-md rounded-md">
+                        <div className="flex-col flex-1">
+                            <h1 className="font-semibold text-2xl mb-4">
+                                Hi {(datas.data?.username ?? 'Pengguna').toUpperCase()}
+                            </h1>
+                            <p className="text-textBody dark:text-textBodyDark text-sm mb-6">
+                                Pantau dan kelola laporan masalah dari warga dengan mudah melalui dasbor admin Simajukuy.
+                                <span className="hidden md:inline"> Dapatkan visibilitas lengkap atas isu-isu yang dilaporkan, lacak status penanganan, dan koordinasikan tindakan penyelesaian secara efisien.</span>
+                            </p>
 
-                    {/* Hello World */}
-                    <div className="bg-tertiary dark:bg-tertiaryDark flex gap-16 p-8 shadow-md rounded-md">
-                        <div className="flex-col">
-                            <h1 className="font-semibold text-2xl mb-4">Hi {datas.data?.username?.toUpperCase() ?? '!'}</h1>
-                            <p className="text-textBody dark:text-textBodyDark text-sm mb-8">Pantau dan kelola laporan masalah dari warga dengan mudah melalui dasbor admin Simajukuy. Dapatkan visibilitas lengkap atas isu-isu yang dilaporkan, lacak status penanganan, dan koordinasikan tindakan penyelesaian secara efisien.</p>
-                            <Link to='/admin/laporan' className="bg-tertiaryDark dark:bg-tertiary text-textDark dark:text-text   px-6 py-3 rounded-md text-sm">
+                            <Link to='/admin/laporan' className="bg-tertiaryDark dark:bg-tertiary text-textDark dark:text-text px-6 py-3 rounded-md text-sm w-max">
                                 Lihat Selengkapnya
                             </Link>
                         </div>
-                        <img src="/images/cuate.svg" alt="" className="w-48" />
+                        <img src="/images/cuate.svg" alt="" className="w-40 md:w-48 self-center md:self-start hidden md:block" />
                     </div>
 
                     {/* Monthly Chart */}
-                    <div className="flex flex-col bg-tertiary dark:bg-tertiaryDark p-8 rounded-md shadow-md">
-                        <h1 className="text-lg font-semibold mb-8">Laporan Bulanan</h1>
+                    <div className="flex flex-col bg-tertiary dark:bg-tertiaryDark p-6 md:p-8 rounded-md shadow-md">
+                        <h1 className="text-lg font-semibold mb-6 md:mb-8">Laporan Bulanan</h1>
                         <MonthlyReportChart />
                     </div>
 
-                    {/* Report Card */}
+                    {/* Report Card Section */}
                     <div className="flex flex-col">
-                        <div className="flex justify-between px-8">
+                        <div className="flex justify-between px-4 md:px-8">
                             <h1 className="text-lg font-semibold mb-4">Laporan Terbaru</h1>
-                            <Link to={'/admin/laporan'} className="font-light">
+                            <Link to={'/admin/laporan'} className="font-light text-sm">
                                 Lihat Semua
-
                             </Link>
                         </div>
-                        <div className="grid grid-cols-12 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 px-4 md:px-8">
                             {recentUnverified.slice(0, 3).map((report, index) => (
                                 <ReportCard
                                     key={index}
                                     index={index}
                                     item={report}
                                     onViewDetail={setSelectedReport}
-                                    colSpan="col-span-4"
+                                    colSpan=""
                                 />
                             ))}
                         </div>
                     </div>
                 </div>
 
-                {/* Right */}
-                <div className="flex flex-col col-span-4 bg-tertiary dark:bg-tertiaryDark rounded-md shadow-md">
+                {/* Right Section */}
+                <div className="flex flex-col gap-6 md:col-span-4 bg-tertiary dark:bg-tertiaryDark rounded-md shadow-md mt-6 md:mt-0">
 
-                    {/* Stats */}
-                    <div className="flex flex-col p-8 gap-4">
+                    {/* Stats Cards */}
+                    <div className="flex flex-col p-6 gap-4">
                         {cards.map((card, index) => (
                             <StatsCard
                                 key={index}
@@ -166,15 +170,15 @@ export default function Dashboard() {
                     </div>
 
                     {/* Category Chart */}
-                    <div className="flex flex-col p-8">
-                        <h1 className="text-lg font-semibold mb-6">Kategori Laporan</h1>
+                    <div className="flex flex-col px-6">
+                        <h1 className="text-lg font-semibold mb-4">Kategori Laporan</h1>
                         <ReportCategoryChart />
                     </div>
 
                     {/* Reported Posts */}
-                    <div className="flex flex-col gap-4 p-8">
-                        <div className="flex w-full justify-between items-center">
-                            <h1 className="text-lg font-semibold mb-2">Postingan yang Dilaporkan</h1>
+                    <div className="flex flex-col gap-4 p-6 pb-8">
+                        <div className="flex justify-between items-center">
+                            <h1 className="text-lg font-semibold">Postingan yang Dilaporkan</h1>
                             <p className="text-sm text-textBody dark:text-textBodyDark">{reportedPosts.length} Post</p>
                         </div>
                         {reportedPosts.slice(0, 3).map((post, index) => (
@@ -182,8 +186,7 @@ export default function Dashboard() {
                         ))}
                     </div>
                 </div>
-            </div >
-
+            </div>
 
             <ReportModal report={selectedReport} onClose={() => setSelectedReport(null)}
             />
