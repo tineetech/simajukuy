@@ -55,7 +55,7 @@ export default function Hero() {
                                     <div className="hidden w-[710px] rounded-2xl h-[220px] lg:flex items-center justify-center bg-slate-700 text-white hover:bg-slate-600 ease-in-out transition-all dark:bg-gray-700">
                                         <div className="container mx-auto w-full h-full p-5 flex justify-center text-left flex-col">
                                             <h1 className="text-2xl font-bold mb-3">✨ Pentingnya Peduli Sekitar</h1>
-                                            <p className="">Sampaikan aspirasi dan laporkan masalah di lingkunganmu dengan mudah. Simajukuy hadir sebagai jembatan antara masyarakat dan pemerintah, didukung analisis AI untuk solusi yang lebih cepat dan tepat.</p>
+                                            <p className="">Sampaikan aspirasi dan laporkan masalah di lingkunganmu dengan mudah. Tidak perlu lagi menghadiri kantor kami, kini semua bisa serba digital dan maju. di analisis dengan AI untuk solusi yang lebih cepat dan tepat.</p>
                                             <div className="flex pr-5 justify-between w-full items-center mt-2">
                                                 <div>
                                                     <p>2024/32/01 - Kang Dedi Mulyadi</p>

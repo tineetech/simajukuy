@@ -105,11 +105,11 @@ export default function ArticlePage() {
             </>
           )}
 
-          <div className="relative bg-[url('/images/pemlik.avif')] rounded-xl p-4 flex items-center justify-center text-center md:[grid-area:g]">
+         <div className="relative bg-[url('/images/pemlik.avif')] rounded-xl   p-4 flex items-center justify-center text-center md:[grid-area:g]">
             <p className="absolute bottom-4 left-4 font-bold drop-shadow-md text-left">
               🌱 Edukasi berkelanjutan
             </p>
-          </div>
+        </div>
 
           <div
             className="bg-tertiary dark:bg-tertiaryDark rounded-xl p-4 flex items-center justify-center text-center md:[grid-area:f]"

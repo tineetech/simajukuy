@@ -4,8 +4,12 @@ export default function Footer() {
       <div className="container bg-gray-200 dark:bg-tertiaryDark dark:text-textDark rounded-xl mx-auto py-10 mb-10 px-10">
         <div className="justify-between gap-10 flex flex-wrap md:gap-4">
           {/* Logo & Deskripsi */}
-          <div className="w-90">
-            <h2 className="text-2xl font-bold mb-3">Simajukuy</h2>
+          <div className="w-90">            
+            <div className="flex gap-3 mb-3">
+              <img src="/images/logo.png" className="w-10 h-10 flex dark:hidden" alt="" />
+              <img src="/images/logo2.png" className="w-10 h-10 hidden dark:flex" alt="" />
+              <h2 className="text-2xl font-bold mb-3">Simajukuy</h2>
+            </div>
             <p className="text-sm leading-relaxed">
               Platform AI & komunitas untuk membantu masyarakat melaporkan masalah kota dan berbagi solusi demi lingkungan yang lebih baik.
             </p>
