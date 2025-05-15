@@ -25,7 +25,7 @@ export default function Hero() {
         fetchBerita();
     }, []);
     return (
-        <div className="bg-gradient-to-b from-tertiary to-background dark:from-tertiaryDark dark:to-backgroundDark overflow-hidden">
+        <div className="bg-gradient-to-b from-tertiary to-background pt-10 md:pt-0 dark:from-tertiaryDark dark:to-backgroundDark overflow-hidden">
             <div className=" container mx-auto overflow-hidden px-5">
                 <section className="relative flex flex-col pb-10 md:flex-col items-center pt-14 justify-center container mx-auto">
                     <div className="w-full text-center md:text-center relative z-10 pt-12 md:pt-35 items-center px-8 md:px-0">
@@ -48,19 +48,19 @@ export default function Hero() {
                         {/* new code */}
                         <div className="flex flex-col items-center lg:flex-row gap-3 py-10">
                             <div className="w-[280px] lg:w-[400px] rounded-2xl h-[450px] bg-white overflow-hidden">
-                                <img src="/images/banner1.jpg" className="w-full object-cover h-full" alt="" />
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Dedi_Mulyadi%2C_Gubernur_Jawa_barat_2025-2030.jpg/1200px-Dedi_Mulyadi%2C_Gubernur_Jawa_barat_2025-2030.jpg" className="w-full object-cover h-full" alt="" />
                             </div>
                             <div className="flex flex-col gap-3">
                                 <div className="flex flex-col md:flex-row gap-3">
                                     <div className="hidden w-[710px] rounded-2xl h-[220px] lg:flex items-center justify-center bg-slate-700 text-white hover:bg-slate-600 ease-in-out transition-all dark:bg-gray-700">
                                         <div className="container mx-auto w-full h-full p-5 flex justify-center text-left flex-col">
                                             <h1 className="text-2xl font-bold mb-3">✨ Pentingnya Peduli Sekitar</h1>
-                                            <p className="">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quibusdam consequuntur harum ratione soluta, explicabo sapiente ipsum laborum error libero distinctio culpa dolore deleniti ipsam molestias!</p>
+                                            <p className="">Sampaikan aspirasi dan laporkan masalah di lingkunganmu dengan mudah. Tidak perlu lagi menghadiri kantor kami, kini semua bisa serba digital dan maju. di analisis dengan AI untuk solusi yang lebih cepat dan tepat.</p>
                                             <div className="flex pr-5 justify-between w-full items-center mt-2">
                                                 <div>
-                                                    <p>2024/32/01 - Ms. Bean</p>
+                                                    <p>2024/32/01 - Kang Dedi Mulyadi</p>
                                                 </div>
-                                                <button className="bg-slate-500 rounded-full p-3">
+                                                <button className="bg-slate-500 rounded-full p-3 cursor-pointer" onClick={() => window.location.href = '/artikel'}>
                                                     <ArrowUpRight size={20} className="text-white" />
                                                 </button>
                                             </div>
@@ -69,16 +69,16 @@ export default function Hero() {
                                 </div>
                                 <div className="flex flex-col items-center md:flex-row gap-3">
                                     <div className="hidden lg:flex w-[350px] overflow-hidden rounded-2xl h-[220px] bg-white">
-                                        <img src="/images/banner1.jpg" className="w-full object-cover h-full" alt="" />
+                                        <img src="https://www.denpasarkota.go.id/public/uploads/berita/Sambut_Bulan_Bakti_Gotong_Royong_306847.jpg" className="w-full object-cover h-full" alt="" />
                                     </div>
                                     <div className="w-[280px] lg:w-[350px] overflow-hidden rounded-2xl h-[220px] flex items-start relative justify-start bg-slate-700 text-white hover:bg-slate-600 ease-in-out transition-all dark:bg-gray-700">
                                         <div className="p-5 w-[230px]">
                                             <h1 className="font-bold mb-2">Lapor Bijak Untuk Kita !</h1>
-                                            <p className="text-sm">Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quibusdam, animi!</p>
+                                            <p className="text-sm">Laporan mu membantu pemerintah mengambil tindakan yang efektif.</p>
                                         </div>
                                         <img src="/images/maskot.png" className="w-[130px] lg:w-[200px] object-cover h-auto absolute bottom-0 right-0" alt="" />
 
-                                        <button className="bg-slate-500 absolute bottom-5 left-5 rounded-full p-3">
+                                        <button className="bg-slate-500 absolute bottom-5 left-5 rounded-full p-3 cursor-pointer" onClick={() => window.location.href = '/lapor'}>
                                             <ArrowUpRight size={20} className="text-white" />
                                         </button>
                                     </div>

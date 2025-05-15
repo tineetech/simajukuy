@@ -1,10 +1,12 @@
 import { Router } from "express";
+import multer from "multer"; //
 import { AuthMiddleware } from "../middleware/auth.verify.js";
 import { PostController } from "../controllers/post.controller.js";
 import { ReportController } from "../controllers/report.controller.js";
 import { BridgeController } from "../controllers/bridge.controller.js";
-import { upload } from "../middleware/multer.js";
-
+import { uploadFile } from "../middleware/Vercelblob.js"; // Pastikan di middleware ada export seperti ini
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 export class PostRouter {
   router;
   authMiddleware;
@@ -31,9 +33,21 @@ export class PostRouter {
     this.router.post(
       "/create",
       this.authMiddleware.verifyToken,
-      upload.any(),
-      this.validateFileUpload,
-      PostController.createPost
+      upload.single("media"), // <- handle file dari frontend (field name: media)
+      async (req, res) => {
+        try {
+          // Upload dulu ke Vercel Blob kalau ada file
+          if (req.file) {
+            const mediaUrl = await uploadFile(req.file);
+            req.body.media_url = mediaUrl;
+          }
+
+          // Teruskan ke controller createPost
+          await PostController.createPost(req, res);
+        } catch (err) {
+          res.status(500).json({ message: err.message });
+        }
+      }
     );
 
     this.router.put(
@@ -65,7 +79,7 @@ export class PostRouter {
       this.authMiddleware.verifyToken,
       PostController.votePoll
     );
-    
+
     // ======================
     // COMMENT ROUTES
     // ======================
@@ -75,11 +89,31 @@ export class PostRouter {
       BridgeController.addComment
     );
 
-
     this.router.delete(
-      "/comments/:id",
+      "/:post_id/comments/:id",
       this.authMiddleware.verifyToken,
       BridgeController.deleteComment
+    );
+
+    // ======================
+    // REPLIES ROUTES
+    // ======================
+
+    this.router.post(
+      "/comments/:comment_id/replies",
+      this.authMiddleware.verifyToken,
+      BridgeController.addReply
+    );
+
+    this.router.get(
+      "/comments/:comment_id/replies",
+      BridgeController.getReplies
+    );
+
+    this.router.delete(
+      "/replies/:id",
+      this.authMiddleware.verifyToken,
+      BridgeController.deleteReply
     );
 
     // ======================
@@ -111,33 +145,6 @@ export class PostRouter {
       this.authMiddleware.verifyToken,
       ReportController.updateReportStatus
     );
-  }
-
-  /**
-   * Middleware to validate file uploads based on post type
-   */
-  validateFileUpload(req, res, next) {
-    if (req.files?.length > 0) {
-      const { type } = req.body;
-      const fileType = req.files[0]?.mimetype;
-
-      if (type === "image") {
-        const allowed = ["image/jpeg", "image/png", "image/gif", "image/jpg"];
-        if (!allowed.includes(fileType)) {
-          return res.status(400).json({
-            message: "Hanya file gambar (JPEG, PNG, JPG, GIF) yang diperbolehkan",
-          });
-        }
-      } else if (type === "video") {
-        const allowed = ["video/mp4", "video/webm", "video/ogg"];
-        if (!allowed.includes(fileType)) {
-          return res.status(400).json({
-            message: "Hanya file video (MP4, WEBM, OGG) yang diperbolehkan",
-          });
-        }
-      }
-    }
-    next();
   }
 
   getRouter() {

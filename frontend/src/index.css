@@ -79,3 +79,126 @@
 .bg-coverProfile {
     background: url('/images/banner2.jpg');
 }
+.loading-box {
+    opacity: 0;
+    animation: loadSkeleton .8s infinite ease-in-out alternate;
+}
+@keyframes loadSkeleton {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: .1;
+    }
+}
+
+.btn-ai {
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  animation: bounceDownUp 1s ease infinite alternate;
+}
+.popup-ai {
+  width: 300px;
+  height: 430px;
+}
+.img-greenai {
+  width: 30px;
+  height: 30px;
+}
+.body-chat-greenai {
+  height: 75%;
+  /* background-color: red; */
+  margin-bottom: 10px;
+  overflow-y: auto;
+  /* scrollbar-width: 0;
+  scrollbar-color: #0057A3 transparent; */
+}
+.body-chat-greenai::-webkit-scrollbar {
+  display: none;
+}
+.bubble {
+  width: 100%;
+  padding-inline: 10px;
+  padding-block: 2px;
+  /* margin-bottom: 3px; */
+}
+.bubble-ai {
+  background-color: #ffffff;
+  box-shadow: 0 0 5px rgba(243, 156, 18, 0.1);
+}
+.bubble-user {
+  background-color: #0057A3;
+  color: #ffffff;
+  text-align: right;
+}
+.sender {
+  font-size: 14px;
+  /* font-weight: bo; */
+}
+.sender-ai {
+  color: #0057A3;
+}
+.sender-user {
+  color: #ffffff;
+}
+.mess-greenai {
+  font-size: 12px;
+}
+@keyframes bounceDownUp {
+  0% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(5px);
+  }
+}
+.span-hover-greenai {
+  position: absolute;
+  top: -45px;
+  left: -80px;
+  padding: 5px 10px;
+  transition: all 0.3s ease;
+  opacity: 0;
+  border-radius: 20px 20px 5px 20px;
+}
+.con-btn-ai:hover .span-hover-greenai {
+  opacity: 1 !important;
+}
+
+.loader {
+  width: 30px;
+  aspect-ratio: 2;
+  margin-top: 10px !important;
+  margin-bottom: 16px !important;
+  --_g: no-repeat
+    radial-gradient(circle closest-side, #0057A3 90%, #0000);
+  background: var(--_g) 0% 50%, var(--_g) 50% 50%, var(--_g) 100% 50%;
+  background-size: calc(100% / 3) 50%;
+  animation: l3 1s infinite linear;
+}
+.loader-post {
+  width: 30px;
+  aspect-ratio: 2;
+  margin-top: 10px !important;
+  margin-bottom: 16px !important;
+  --_g: no-repeat
+    radial-gradient(circle closest-side, #FFF 90%, #0000);
+  background: var(--_g) 0% 50%, var(--_g) 50% 50%, var(--_g) 100% 50%;
+  background-size: calc(100% / 3) 50%;
+  animation: l3 1s infinite linear;
+}
+@keyframes l3 {
+  20% {
+    background-position: 0% 0%, 50% 50%, 100% 50%;
+  }
+  40% {
+    background-position: 0% 100%, 50% 0%, 100% 50%;
+  }
+  60% {
+    background-position: 0% 50%, 50% 100%, 100% 0%;
+  }
+  80% {
+    background-position: 0% 50%, 50% 50%, 100% 100%;
+  }
+}

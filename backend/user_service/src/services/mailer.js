@@ -66,7 +66,7 @@ export const sendResetPassEmail = async (email, token) => {
     const compiledTemplate = handlebars.compile(templateSource);
 
     const html = compiledTemplate({
-      link: `${process.env.BASE_URL_FE ?? "http://localhost:5173"}/verification/reset-password/${token}`,
+      link: `${process.env.BASE_URL_FE ?? "https://simajukuyy.web.app"}/verification/reset-password/${token}`,
     });
 
     await transporter.sendMail({  

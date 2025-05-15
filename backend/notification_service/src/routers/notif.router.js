@@ -2,6 +2,7 @@ import { Router } from "express";
 import { AuthMiddleware } from "../middleware/auth.verify.js";
 import { NotifController } from "../controllers/notif.controller.js";
 
+
 export class NotifRouter {
   router;
   notifController;
@@ -17,26 +18,31 @@ export class NotifRouter {
   initializeRoutes() {
     this.router.get(
       "/",
-      this.notifController.getNotifs,
-      this.authMiddleware.verifyToken
+      this.authMiddleware.verifyToken,
+      this.notifController.getNotifs
     );
 
     this.router.post(
       "/create",
-      this.notifController.createNotifs,
-      this.authMiddleware.checkRole('admin')
+      this.authMiddleware.checkRole("admin"),
+      this.notifController.createNotifs
     );
 
     this.router.post(
       "/update/:id",
       this.notifController.updateNotif,
-      this.authMiddleware.verifyToken
+      this.authMiddleware.checkRole('admin')
     );
 
     this.router.post(
       "/delete/:id",
-      this.notifController.deleteNotif,
-      this.authMiddleware.checkRole('admin')
+      this.authMiddleware.checkRole("admin"),
+      this.notifController.deleteNotif
+    );
+    this.router.get(
+      "/user",
+      this.authMiddleware.verifyToken,
+      this.notifController.getNotifsByUserId
     );
   }
 
@@ -44,4 +50,3 @@ export class NotifRouter {
     return this.router;
   }
 }
-

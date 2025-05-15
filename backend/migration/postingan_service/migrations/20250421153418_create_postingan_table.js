@@ -103,15 +103,14 @@ exports.up = async function (knex) {
       .inTable("postingan")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
-    table.integer("user_id").unsigned().notNullable(); // User yang melaporkan
-    table.text("reason").notNullable(); // Alasan laporan
+    table.integer("user_id").unsigned().notNullable(); 
+    table.text("reason").notNullable(); 
     table
       .enum("status", ["pending", "resolved", "rejected"])
       .defaultTo("pending");
     table.timestamp("created_at").defaultTo(knex.fn.now());
   });
 
-  // Tabel untuk komentar
   await knex.schema.createTable("postingan_comments", (table) => {
     table.increments("id").primary();
     table
@@ -127,9 +126,33 @@ exports.up = async function (knex) {
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table.timestamp("updated_at").defaultTo(knex.fn.now());
 
-    // Index untuk optimasi query
     table.index(["post_id"], "idx_comment_post");
     table.index(["user_id"], "idx_comment_user");
+  });
+
+  await knex.schema.createTable("postingan_comment_replies", (table) => {
+    table.increments("id").primary();
+    table
+      .integer("comment_id")
+      .unsigned()
+      .notNullable()
+      .references("id")
+      .inTable("postingan_comments")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
+    table.integer("user_id").unsigned().notNullable();
+    table.text("content").notNullable();
+    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
+    
+    table.integer("parent_reply_id").unsigned().nullable()
+      .references("id")
+      .inTable("postingan_comment_replies")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
+
+    table.index(["comment_id"], "idx_reply_comment");
+    table.index(["user_id"], "idx_reply_user");
   });
 };
 
@@ -138,7 +161,7 @@ exports.up = async function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = async function (knex) {
-  // Urutkan penghapusan dari yang punya foreign key terlebih dahulu
+  await knex.schema.dropTableIfExists("postingan_comment_replies");
   await knex.schema.dropTableIfExists("postingan_reports");
   await knex.schema.dropTableIfExists("postingan_comments");
   await knex.schema.dropTableIfExists("postingan_likes");

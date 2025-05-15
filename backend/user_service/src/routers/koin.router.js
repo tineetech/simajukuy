@@ -20,6 +20,18 @@ export class KoinRouter {
       this.authMiddleware.verifyToken,
       this.koinController.getTrxKoin,
     );
+
+    this.router.post(
+      "/bayar-penukaran",
+      this.authMiddleware.checkRole('admin'),
+      this.koinController.bayarPenukaranKoin,
+    );
+
+    this.router.post(
+      "/confirm-penukaran/:order_id",
+      this.authMiddleware.checkRole('admin'),
+      this.koinController.confirmPaymentPenukaranKoin,
+    );
   }
 
   getRouter() {

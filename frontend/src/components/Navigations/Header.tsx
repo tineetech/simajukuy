@@ -6,18 +6,25 @@ import DarkModeToggle from "../widgets/DarkmodeToggle";
 import NotificationWidget from "../widgets/NotificationWidget";
 import ProfileWidget from "../widgets/ProfileWidget";
 import checkIsLogin from "../../services/checkIsLogin";
+import DataUser from "../../services/dataUser";
+import logoutUser from "../../services/logout";
 
 export default function Header() {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const location = useLocation();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const datas = DataUser()
     const navLinks = [
         { name: "Home", path: "/", icon: <Home size={20} /> },
         { name: "Komunitas", path: "/komunitas", icon: <Users size={20} /> },
         { name: "Lapor", path: "/lapor", icon: <AlertCircle size={20} /> },
         { name: "Artikel", path: "/artikel", icon: <FileText size={20} /> },
     ];
+
+    const handleLogout = () => {
+        logoutUser();
+    };
 
     useEffect(() => {
         const verifyLogin = async () => {
@@ -48,7 +55,9 @@ export default function Header() {
 
                 {/* Logo */}
                 <Link to="/" className="text-xl m-0 font-bold">
-                    Simajukuy
+                    {/* Simajukuy */}
+                    <img src="/images/logo.png" className="w-10 flex dark:hidden" alt="" />
+                    <img src="/images/logo2.png" className="w-10 hidden dark:flex" alt="" />
                 </Link>
 
                 {/* Navigasi (Desktop) */}
@@ -62,7 +71,7 @@ export default function Header() {
                             <Link
                                 key={link.path}
                                 to={link.path}
-                                className={`px-4 py-2 space-x-2 transition ${isActive ? "bg-accent text-textDark dark:bg-accent rounded-3xl" : "hover:text-accent"
+                                className={`px-4 py-2 space-x-2 transition ${isActive ? "bg-primary  text-textDark dark:bg-primary  rounded-3xl" : "hover:text-accent"
                                     }`}
                             >
                                 {link.name}
@@ -154,8 +163,8 @@ export default function Header() {
                                                 to="/profile"
                                                 onClick={() => setIsOpen(false)}
                                                 className={`flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg transition ease-in-out ${location.pathname === "/profile"
-                                                    ? "bg-accent text-textDark"
-                                                    : "hover:bg-accent"
+                                                    ? "bg-primary  text-textDark"
+                                                    : "hover:bg-primary "
                                                     }`}
                                             >
                                                 <User size={20} />
@@ -167,6 +176,7 @@ export default function Header() {
                                                 onClick={() => {
                                                     setIsOpen(false);
                                                     // handle actual logout here
+                                                    handleLogout()
                                                     console.log("Logged out");
                                                 }}
                                                 className="flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg hover:bg-red-600 text-left transition"

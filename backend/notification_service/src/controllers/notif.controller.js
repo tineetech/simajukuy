@@ -1,110 +1,157 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import pool from "../services/db.js";
+import jwt from "jsonwebtoken";
 
 export class NotifController {
-  async getNotifs (req, res) {
+  async getNotifs(req, res) {
+    let connection;
     try {
-      const dataGet = await prisma.notification.findMany({
-        include: {
-          user: true
-        }
-      })
-
-      const sanitizedData = dataGet;
-
-      res.json({ status: 200, message: 'success get data', data: sanitizedData })
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      return res.status(500).json({ error: message });
-    }
-  }
-
-  async createNotifs (req, res) {
-    try {
-      const { 
-        target,
-        target_user_id,
-        title,
-        description,
-        content,
-        status_notification
-      } = req.body
-
-      const notifCreate = await prisma.notification.create({
-        data: {
-          target,
-          target_user_id: target_user_id ?? null,
-          title,
-          description: description ?? null,
-          content,
-          status_notification: status_notification ?? 'normal'
-        }
-      })
+      connection = await pool.getConnection();
+      const sql = `SELECT * FROM notifikasi`;
+      const results = await connection.query(sql);
       
-      if (!notifCreate) {
-        return res.status(400).json({ message: "Failed create Notif" });
-      }
-
-      res.json({ status: 200, message: 'success create data', data: notifCreate })
+      res.json({ 
+        status: 200, 
+        message: "Success get data", 
+        data: results[0] 
+      });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
+      const message = error instanceof Error ? error.message : "Unknown error occurred";
       return res.status(500).json({ error: message });
+    } finally {
+      if (connection) connection.release();
     }
   }
 
-  async updateNotif (req, res) {
+  async createNotifs(req, res) {
+    let connection;
     try {
-      const { 
-        target,
-        target_user_id,
+      connection = await pool.getConnection();
+      const { user_id, laporan_id, title, message } = req.body;
+
+      await connection.beginTransaction();
+
+      const sql = `
+        INSERT INTO notifikasi (user_id, laporan_id, title, message)
+        VALUES (?, ?, ?, ?)
+      `;
+
+      const values = [user_id, laporan_id, title, message];
+      const result = await connection.query(sql, values);
+
+      await connection.commit();
+
+      res.json({
+        status: 200,
+        message: "Success create data",
+        data: { id: result[0].insertId, ...req.body },
+      });
+    } catch (error) {
+      if (connection) await connection.rollback();
+      const message = error instanceof Error ? error.message : "Unknown error occurred";
+      return res.status(500).json({ error: message });
+    } finally {
+      if (connection) connection.release();
+    }
+  }
+
+  async updateNotif(req, res) {
+    let connection;
+    try {
+      connection = await pool.getConnection();
+      const { user_id, laporan_id, title, message, is_read } = req.body;
+
+      await connection.beginTransaction();
+
+      const sql = `
+        UPDATE notifikasi
+        SET user_id = ?, laporan_id = ?, title = ?, message = ?, is_read = ?, updated_at = NOW()
+        WHERE id = ?
+      `;
+
+      const values = [
+        user_id,
+        laporan_id,
         title,
-        description,
-        content,
-        status_notification
-       } = req.body
+        message,
+        is_read ?? false,
+        parseInt(req.params.id),
+      ];
 
-      const dataUpdate = await prisma.notification.update({
-        where: { id: parseInt(req.params.id) },
-        data: {
-          target,
-          target_user_id: target_user_id ?? null,
-          title,
-          description: description ?? null,
-          content,
-          status_notification: status_notification ?? 'normal'
-        }
-      })
+      const result = await connection.query(sql, values);
 
-      if (!dataUpdate) {
-        return res.status(400).json({ message: "Failed Update notif" });
-      }
+      await connection.commit();
 
-      res.json({ status: 200, message: 'success update data', data: dataUpdate })
+      res.json({ 
+        status: 200, 
+        message: "Success update data", 
+        data: result[0] 
+      });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
+      if (connection) await connection.rollback();
+      const message = error instanceof Error ? error.message : "Unknown error occurred";
       return res.status(500).json({ error: message });
+    } finally {
+      if (connection) connection.release();
     }
   }
 
-  async deleteNotif (req, res) {
+  async deleteNotif(req, res) {
+    let connection;
     try {
-      const notif = await prisma.notification.delete({
-        where: { id: parseInt(req.params.id) }
-      })
+      connection = await pool.getConnection();
+      const id = parseInt(req.params.id);
 
-      if (!notif) {
-        return res.status(400).json({ message: "Failed Delete notif" });
+      await connection.beginTransaction();
+
+      const sql = `DELETE FROM notifikasi WHERE id = ?`;
+      const result = await connection.query(sql, [id]);
+
+      await connection.commit();
+
+      res.json({ 
+        status: 200, 
+        message: "Success remove data", 
+        data: result[0] 
+      });
+    } catch (error) {
+      if (connection) await connection.rollback();
+      const message = error instanceof Error ? error.message : "Unknown error occurred";
+      return res.status(500).json({ error: message });
+    } finally {
+      if (connection) connection.release();
+    }
+  }
+
+  async getNotifsByUserId(req, res) {
+    let connection;
+    try {
+      connection = await pool.getConnection();
+      const user_id = req.user?.id;
+      
+      if (!user_id) {
+        return res.status(400).json({ message: "User ID is required" });
       }
 
-      res.json({ status: 200, message: 'success remove data', data: notif })
+      const sql = `SELECT * FROM notifikasi WHERE user_id = ?`;
+      const [results] = await connection.query(sql, [user_id]);
+
+      if (results.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "No notifications found for this user" });
+      }
+
+      res.json({
+        status: 200,
+        message: "Success get notifications by user",
+        data: results,
+      });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
+      console.error("Error fetching notifications:", error);
+      const message = error instanceof Error ? error.message : "Unknown error occurred";
       return res.status(500).json({ error: message });
+    } finally {
+      if (connection) connection.release();
     }
   }
 }

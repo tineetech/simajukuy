@@ -37,15 +37,15 @@ export class LaporRouter {
     );
 
     this.router.post(
-      "/update/:id",
-      this.authMiddleware.verifyToken,
-      this.laporController.updateLapor,
-    );
-
-    this.router.post(
       "/update-status/:id",
       this.authMiddleware.verifyToken,
       this.laporController.updateStatus,
+    );
+
+     this.router.post(
+      "/status/:id",
+      this.laporController.updateStatusLaporan,
+      this.authMiddleware.verifyToken
     );
 
     this.router.post(

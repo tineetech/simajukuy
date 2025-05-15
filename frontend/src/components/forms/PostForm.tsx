@@ -2,6 +2,11 @@ import { useRef, useState } from "react";
 import { Image, Smile, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Swal from "sweetalert2";
+import DataUser from "../../services/dataUser";
+
+const LoaderAi = (
+    <div className="loader-post"></div>
+);
 
 export default function PostForm() {
     const [isFocused, setIsFocused] = useState(false);
@@ -10,6 +15,7 @@ export default function PostForm() {
     const [showEmojis, setShowEmojis] = useState(false);
     const [postContent, setPostContent] = useState("");
     const token = localStorage.getItem('authToken') ?? '';
+    const datasUser = DataUser()
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -45,18 +51,19 @@ export default function PostForm() {
     const handleEmojiClick = (emoji: string) => {
         setPostContent((prev) => prev + emoji);
     };
-
+    console.log(datasUser)
+    const [postProses, setPostProses] = useState(false)
     const post = async () => {
+        setPostProses(true)
         const formData = new FormData();
         formData.append('content', postContent?.toString() ?? '');
-        if (selectedImage !== null) {
-            formData.append('image', selectedImage);
-        }        
-
+        formData.append('user_id', datasUser?.data?.user_id?.toString() ?? '');
+        
         try {
             if (selectedImage !== null) {
 
-                formData.append('image', selectedImage ?? null);
+                formData.append('media', selectedImage ?? null);
+                formData.append('type', 'image');
 
                 const res = await fetch(`${import.meta.env.VITE_POST_SERVICE}/api/postingan/create`, {
                     method: "POST",
@@ -73,6 +80,7 @@ export default function PostForm() {
                         text: "Terjadi kesalahan saat menghubungi server.",
                         icon: "error",
                     });
+                    setPostProses(false)
                     return
                 }
 
@@ -80,7 +88,11 @@ export default function PostForm() {
                     title: "Berhasil Membuat Postingan",
                     text: "Postingan berhasil dibuat.",
                     icon: "success",
-                });
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        location.reload()
+                    }
+                })
                 return
             }
 
@@ -98,6 +110,7 @@ export default function PostForm() {
                     text: "Terjadi kesalahan saat menghubungi server.",
                     icon: "error",
                 });
+                setPostProses(false)
                 return
             }
 
@@ -105,7 +118,12 @@ export default function PostForm() {
                 title: "Berhasil Membuat Postingan",
                 text: "Postingan berhasil dibuat.",
                 icon: "success",
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    location.reload()
+                }
             });
+            setPostProses(false)
         } catch (e) {
             console.error(e)
         }
@@ -210,7 +228,13 @@ export default function PostForm() {
                                     </div>
                                 </div>
                                 <button className="bg-primary text-white px-4 py-1.5 rounded-lg hover:opacity-90 transition" onClick={() => post()}>
-                                    Posting
+                                    {
+                                        postProses ? (
+                                            <div>
+                                                {LoaderAi}
+                                            </div>
+                                        ) : 'Posting'
+                                    }
                                 </button>
                             </div>
 
