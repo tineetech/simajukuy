@@ -51,13 +51,13 @@ export default function PostForm() {
     const handleEmojiClick = (emoji: string) => {
         setPostContent((prev) => prev + emoji);
     };
-
+    console.log(datasUser)
     const [postProses, setPostProses] = useState(false)
     const post = async () => {
         setPostProses(true)
         const formData = new FormData();
         formData.append('content', postContent?.toString() ?? '');
-        formData.append('user_id', datasUser?.data?.id?.toString() ?? '');
+        formData.append('user_id', datasUser?.data?.user_id?.toString() ?? '');
         
         try {
             if (selectedImage !== null) {

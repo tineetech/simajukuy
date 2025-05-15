@@ -6,18 +6,25 @@ import DarkModeToggle from "../widgets/DarkmodeToggle";
 import NotificationWidget from "../widgets/NotificationWidget";
 import ProfileWidget from "../widgets/ProfileWidget";
 import checkIsLogin from "../../services/checkIsLogin";
+import DataUser from "../../services/dataUser";
+import logoutUser from "../../services/logout";
 
 export default function Header() {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const location = useLocation();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const datas = DataUser()
     const navLinks = [
         { name: "Home", path: "/", icon: <Home size={20} /> },
         { name: "Komunitas", path: "/komunitas", icon: <Users size={20} /> },
         { name: "Lapor", path: "/lapor", icon: <AlertCircle size={20} /> },
         { name: "Artikel", path: "/artikel", icon: <FileText size={20} /> },
     ];
+
+    const handleLogout = () => {
+        logoutUser();
+    };
 
     useEffect(() => {
         const verifyLogin = async () => {
@@ -48,7 +55,9 @@ export default function Header() {
 
                 {/* Logo */}
                 <Link to="/" className="text-xl m-0 font-bold">
-                    Simajukuy
+                    {/* Simajukuy */}
+                    <img src="/images/logo.png" className="w-10 flex dark:hidden" alt="" />
+                    <img src="/images/logo2.png" className="w-10 hidden dark:flex" alt="" />
                 </Link>
 
                 {/* Navigasi (Desktop) */}
@@ -109,17 +118,21 @@ export default function Header() {
                                 className="absolute top-full left-0 w-full bg-slate-300 dark:bg-tertiaryDark shadow-md flex flex-col items-start py-4 space-y-4 md:hidden px-6 z-50"
                             >
                                 {/* Profile Section */}
-                                <div className="flex items-center space-x-3 w-full">
-                                    <img
-                                        src="/images/profile.jpg"
-                                        alt="Profile"
-                                        className="w-16 h-16 rounded-full object-cover"
-                                    />
-                                    <div>
-                                        <p className="text-lg font-semibold">Username</p>
-                                        <p className="text-sm text-textBody dark:text-textBodyDark">john@example.com</p>
-                                    </div>
-                                </div>
+                                {
+                                    isLoggedIn ? (
+                                        <div className="flex items-center space-x-3 w-full">
+                                            <img
+                                                src={datas.data?.avatar ?? ''}
+                                                alt="Profile"
+                                                className="w-16 h-16 rounded-full object-cover"
+                                            />
+                                            <div>
+                                                <p className="text-lg font-semibold">{datas.data?.username ?? ''}</p>
+                                                <p className="text-sm text-textBody dark:text-textBodyDark">{datas.data?.email ?? ''}</p>
+                                            </div>
+                                        </div>
+                                    ) : ""
+                                }
 
                                 {/* Nav Links */}
                                 {navLinks.map((link) => {
@@ -162,6 +175,7 @@ export default function Header() {
                                                 onClick={() => {
                                                     setIsOpen(false);
                                                     // handle actual logout here
+                                                    handleLogout()
                                                     console.log("Logged out");
                                                 }}
                                                 className="flex items-center space-x-3 text-lg w-full py-2 px-4 rounded-lg hover:bg-red-600 text-left transition"

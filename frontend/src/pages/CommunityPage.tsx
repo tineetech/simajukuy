@@ -1,20 +1,19 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 import PostForm from "../components/forms/PostForm";
 import PostItem from "../components/PostItem";
 import SortFilter from "../components/widgets/SortFilter";
 import TrendingTopics from "../components/TrendingTopics";
 import { PostInterface } from "../types";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function CommunityPage() {
     const [sortBy, setSortBy] = useState("terbaru");
     const [posts, setPosts] = useState<PostInterface[]>([]);
     const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
-    const observer = useRef<IntersectionObserver | null>(null);
 
-    const fetchPosts = useCallback(async () => {
-        if (loading || !hasMore) return;
+    const fetchPosts = async () => {
         setLoading(true);
         try {
             const response = await fetch(
@@ -22,35 +21,31 @@ export default function CommunityPage() {
             );
             const data = await response.json();
             if (data?.data) {
-                setPosts((prevPosts) => [...prevPosts, ...data.data]);
-                setHasMore(data.pagination.currentPage < data.pagination.totalPages);
-            } else {
-                setHasMore(false);
+                setPosts(data.data);
+                setTotalPages(data.pagination.totalPages);
             }
         } catch (e) {
             console.error(e);
         } finally {
             setLoading(false);
         }
-    }, [page, loading, hasMore]);
+    };
 
     useEffect(() => {
         fetchPosts();
-    }, [fetchPosts]);
+    }, [page]);
 
-    const lastPostElementRef = useCallback(
-        (node) => {
-            if (loading) return;
-            if (observer.current) observer.current.disconnect();
-            observer.current = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && hasMore) {
-                    setPage((prevPage) => prevPage + 1);
-                }
-            });
-            if (node) observer.current.observe(node);
-        },
-        [loading, hasMore]
-    );
+    const handleNextPage = () => {
+        if (page < totalPages) {
+            setPage((prevPage) => prevPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (page > 1) {
+            setPage((prevPage) => prevPage - 1);
+        }
+    };
 
     const sortedPosts = [...posts].sort((a, b) => {
         if (sortBy === "populer") return b.like_count - a.like_count;
@@ -65,11 +60,7 @@ export default function CommunityPage() {
                 <TrendingTopics />
                 <SortFilter sortBy={sortBy} setSortBy={setSortBy} />
                 <div className="space-y-6">
-                    {sortedPosts.length > 0 ? sortedPosts.map((post, index) => (
-                        <div key={post.id} ref={index === sortedPosts.length - 1 ? lastPostElementRef : null}>
-                            <PostItem post={post} />
-                        </div>
-                    )) : (
+                    {loading ? (
                         <div className="flex flex-col gap-5 mt-5 ">
                             <div className="bg-gray-100  dark:bg-tertiaryDark w-full overflow-hidden rounded-xl">
                                 <div className="loading-box w-full h-full py-20 bg-tertiaryDark dark:bg-white">
@@ -80,9 +71,32 @@ export default function CommunityPage() {
                                 </div>
                             </div>
                         </div>
+                    ) : sortedPosts.length > 0 ? (
+                        sortedPosts.map((post) => (
+                            <PostItem key={post.id} post={post} />
+                        ))
+                    ) : (
+                        <p className="text-center text-gray-500 mt-4">Tidak ada postingan.</p>
                     )}
-                    {loading && <p className="text-center">Loading more posts...</p>}
-                    {!hasMore && posts.length > 0 && <p className="text-center text-gray-500 mt-4">Tidak ada lagi postingan.</p>}
+                </div>
+                <div className="flex justify-center items-center gap-4 mt-6">
+                    <button
+                        onClick={handlePrevPage}
+                        disabled={page === 1}
+                        className="px-4 py-2 mx-2 rounded-md bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 disabled:opacity-50"
+                    >
+                        <ChevronLeft />
+                    </button>
+                    <span className="text-gray-600 dark:text-gray-400">
+                        Halaman {page} dari {totalPages}
+                    </span>
+                    <button
+                        onClick={handleNextPage}
+                        disabled={page === totalPages}
+                        className="px-4 py-2 mx-2 rounded-md bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 disabled:opacity-50"
+                    >
+                        <ChevronRight />
+                    </button>
                 </div>
             </div>
         </section>

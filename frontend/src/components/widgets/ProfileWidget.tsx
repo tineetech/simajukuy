@@ -50,7 +50,7 @@ export default function ProfileWidget() {
                     >
                         <div className="flex flex-col items-center">
                             <img
-                                src="/images/profile.jpg"
+                                src={datas?.data?.avatar ?? ''}
                                 alt="Profile"
                                 className="w-16 h-16 rounded-full mb-2"
                             />

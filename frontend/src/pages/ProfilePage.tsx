@@ -21,8 +21,8 @@ export default function ProfilePage() {
         username: datas?.data?.username ?? '',
         joinedAt: datas.data?.created_at ?? '',
         coin: datas?.data?.amount ?? 0,
-        avatar: "/images/profile.jpg",
-        email: "ucup@gmail.com"
+        avatar: datas.data?.avatar ?? '',
+        email: datas.data?.email
     };
 
     const isoDate = dummyUser.joinedAt;
