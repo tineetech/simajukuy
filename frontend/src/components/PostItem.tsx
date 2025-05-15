@@ -253,6 +253,16 @@ export default function PostItem({ post }: { post: PostInterface }) {
     }
 
   }
+  
+  const extractHashtags = (text: string) => {
+    const hashtagRegex = /#\w+/g;
+    return text.match(hashtagRegex) || [];
+  };
+
+  const removeHashtags = (text: string) => {
+    return text.replace(/#\w+/g, '').trim();
+  };
+
   return (
     <>
       <div className="bg-gray-100 border border-gray-300 dark:border-gray-600 dark:bg-tertiaryDark p-4 rounded-lg">
@@ -272,7 +282,18 @@ export default function PostItem({ post }: { post: PostInterface }) {
             <img src={post.image} className="w-50 rounded-sm" alt="" />
           ) : ''
         }
-        <p className="text-xs md:text-base mb-3">{post.content}</p>
+        <p className="text-xs md:text-base mb-3">{removeHashtags(post.content)}</p>
+        
+        {/* Tambahkan ini untuk menampilkan hashtag */}
+        {extractHashtags(post.content).length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {extractHashtags(post.content).map((hashtag, index) => (
+              <span key={index} className="font-bold text-primary dark:text-primaryDark">
+                {hashtag}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="flex justify-between text-textBody dark:text-textBodyDark text-sm z-10">
           <div className="flex gap-6">

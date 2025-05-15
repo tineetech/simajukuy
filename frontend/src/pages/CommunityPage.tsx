@@ -4,7 +4,8 @@ import PostItem from "../components/PostItem";
 import SortFilter from "../components/widgets/SortFilter";
 import TrendingTopics from "../components/TrendingTopics";
 import { PostInterface } from "../types";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import checkIsLogin from "../services/checkIsLogin";
 
 export default function CommunityPage() {
     const [sortBy, setSortBy] = useState("terbaru");
@@ -51,13 +52,36 @@ export default function CommunityPage() {
         if (sortBy === "populer") return b.like_count - a.like_count;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
+    
+    const [isAuthenticated, setIsAuthenticated] = useState(null);
+    const [loadingCheck, setLoadingCheck] = useState(true);
+    useEffect(() => {
+        const verifyAuth = async () => {
+            const loggedIn: any = await checkIsLogin();
+            setIsAuthenticated(loggedIn);
+            setLoadingCheck(false);
+        };
+        verifyAuth();
+    }, []);
 
+    if (loading) {
+        return <div>Loading...</div>; // Atau tampilkan spinner
+    }
+    
     return (
         <section className="bg-background text-text dark:bg-backgroundDark py-10 dark:text-textDark h-full">
             <div className="container mx-auto w-full py-12 pt-24 px-6">
                 <h1 className="text-3xl font-bold mb-6">Komunitas</h1>
-                <PostForm />
-                <TrendingTopics />
+                {
+                    isAuthenticated ? (
+                        <PostForm />
+                    ) : ''
+                }
+                {
+                    sortedPosts.length > 0 ? (
+                        <TrendingTopics post={sortedPosts} />
+                    ) : ''
+                }
                 <SortFilter sortBy={sortBy} setSortBy={setSortBy} />
                 <div className="space-y-6">
                     {loading ? (
