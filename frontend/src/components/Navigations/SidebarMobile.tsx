@@ -58,7 +58,7 @@ export default function SidebarMobile({ isOpen = false, onClose }: SidebarProps)
                                 {sidebarItems.map((item, index) => {
                                     const isActive = location.pathname.startsWith(item.path);
                                     return (
-                                        <Link key={index} to={item.path} onClick={onClose}>
+                                        <div key={index} onClick={() => window.location.href = item.path}>
                                             <motion.div
                                                 whileTap={{ scale: 0.97 }}
                                                 className={`p-2 rounded-md flex items-center gap-3 w-full
@@ -67,7 +67,7 @@ export default function SidebarMobile({ isOpen = false, onClose }: SidebarProps)
                                                 {item.icon}
                                                 {item.label}
                                             </motion.div>
-                                        </Link>
+                                        </div>
                                     );
                                 })}
                             </div>

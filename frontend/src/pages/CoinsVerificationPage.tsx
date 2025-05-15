@@ -32,7 +32,7 @@ export default function CoinVerificationPage() {
                         Authorization: `Bearer ${token}`,
                     },
                 }
-            })
+            )
 
             
             if (!res.ok) console.log('gagal get penukaran: ', res)
