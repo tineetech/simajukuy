@@ -150,12 +150,17 @@ export class PostController {
           pi.image,
           pv.url_video,
           (SELECT COUNT(*) FROM postingan_likes WHERE post_id = p.id) AS like_count,
-          (SELECT COUNT(*) FROM postingan_comments WHERE post_id = p.id) AS comment_count
+          (SELECT COUNT(*) FROM postingan_comments WHERE post_id = p.id) AS comment_count,
+          (
+            SELECT JSON_ARRAYAGG(pl.user_id)
+            FROM postingan_likes pl
+            WHERE pl.post_id = p.id
+          ) AS likers
         FROM postingan p
         LEFT JOIN postingan_image pi ON p.id = pi.post_id
-        LEFT JOIN postingan_video pv ON p.id = pv.url_video
+        LEFT JOIN postingan_video pv ON p.id = pv.post_id
         ORDER BY p.created_at DESC
-        LIMIT ? OFFSET ?;
+        LIMIT ? OFFSET ?
       `;
 
       const [posts] = await connection.query(query, [limitNumber, offset]);
