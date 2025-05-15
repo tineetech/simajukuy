@@ -298,7 +298,7 @@ export default function PostItem({ post }: { post: PostInterface }) {
         <div className="flex justify-between text-textBody dark:text-textBodyDark text-sm z-10">
           <div className="flex gap-6">
             <button
-              className={`flex items-center gap-1 hover:text-accent hover:cursor-pointer ${post.user_id == decodedToken.id && post.like_count > 0 ? "text-red-400" : ""
+              className={`flex items-center gap-1 hover:text-accent hover:cursor-pointer ${post.user_id == decodedToken.user_id ? "text-red-400" : ""
                 }`}
               onClick={() => handleLike(post.id)}
             >
