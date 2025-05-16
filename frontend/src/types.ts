@@ -11,7 +11,7 @@ export interface PostInterface {
         username: string
     };
     created_at: string;
-    likes: number;
+    likers: string;
     comment_count: number;
     like_count: number;
     comments: object;

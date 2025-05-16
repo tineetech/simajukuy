@@ -263,6 +263,35 @@ export default function PostItem({ post }: { post: PostInterface }) {
     return text.replace(/#\w+/g, '').trim();
   };
 
+  const parseLikes = (likes: any) => {
+  try {
+    // Jika likes sudah berupa array, langsung return
+    if (Array.isArray(likes)) return likes;
+    
+    // Jika likes adalah string, coba parse
+    if (typeof likes === 'string') {
+      // Handle kasus khusus dimana string sudah berupa array (tanpa perlu parse)
+      if (likes.startsWith('[') && likes.endsWith(']')) {
+        return JSON.parse(likes);
+      }
+      // Format alternatif: "1831" atau "1831, 1832"
+      return likes.split(',').map(id => {
+        const num = parseInt(id.trim(), 10);
+        return isNaN(num) ? id.trim() : num;
+      });
+    }
+    
+    // Fallback untuk tipe data tidak dikenali
+    return [];
+  } catch (e) {
+    console.error('Gagal parsing likes:', e);
+    return [];
+  }
+};
+
+// Penggunaan:
+const parsedLikes = parseLikes(post?.likers);
+console.log(parsedLikes)
   return (
     <>
       <div className="bg-gray-100 border border-gray-300 dark:border-gray-600 dark:bg-tertiaryDark p-4 rounded-lg">
@@ -298,8 +327,11 @@ export default function PostItem({ post }: { post: PostInterface }) {
         <div className="flex justify-between text-textBody dark:text-textBodyDark text-sm z-10">
           <div className="flex gap-6">
             <button
-              className={`flex items-center gap-1 hover:text-accent hover:cursor-pointer ${post.user_id == decodedToken.user_id ? "text-red-400" : ""
-                }`}
+              className={`flex items-center gap-1 hover:text-accent hover:cursor-pointer ${
+                parsedLikes.some((like: any) => like.user_id === decodedToken.user_id) 
+                  ? "text-red-400" 
+                  : ""
+              }`}
               onClick={() => handleLike(post.id)}
             >
               <ThumbsUp size={18} /> {post.like_count}
